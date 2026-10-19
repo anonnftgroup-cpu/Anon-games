@@ -186,7 +186,7 @@ function renderLb() {
   });
   const g = lbs.find(x => x.id === lbGame);
   const box = $('#lbBox');
-  if (window.ANONLB) window.ANONLB.renderBoard(box, { game: g.id, order: g.order || 'desc', scoreLabel: g.scoreLabel || 'Score', periods: g.periods, movesLabel: g.movesLabel, hideMode: g.hideMode });
+  if (window.ANONLB) window.ANONLB.renderBoard(box, { game: g.id, order: g.order || 'desc', scoreLabel: g.scoreLabel || 'Score', periods: g.periods, movesLabel: g.movesLabel, hideMode: g.hideMode, modeLabels: g.modeLabels });
   else box.textContent = 'Leaderboard unavailable.';
 }
 

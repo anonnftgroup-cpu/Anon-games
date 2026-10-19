@@ -45,6 +45,62 @@
       "added": "2026-10-19"
     },
     {
+      "id": "word-unlimited",
+      "name": "ANON Word Unlimited",
+      "tagline": "Endless 5-letter words. Build your win streak.",
+      "path": "word-unlimited/",
+      "thumb": "word-unlimited/thumb.webp",
+      "category": "Word",
+      "tags": [
+        "word",
+        "puzzle",
+        "unlimited",
+        "5 letters",
+        "streak"
+      ],
+      "status": "live",
+      "leaderboard": true,
+      "scoreLabel": "Streak",
+      "order": "desc",
+      "periods": [
+        "day",
+        "all"
+      ],
+      "movesLabel": "guesses",
+      "hideMode": true,
+      "added": "2026-10-19"
+    },
+    {
+      "id": "connect4",
+      "name": "ANON Connect 4",
+      "tagline": "Pick your ANON and get four in a row",
+      "path": "connect4/",
+      "thumb": "connect4/thumb.webp",
+      "category": "Strategy",
+      "tags": [
+        "four in a row",
+        "connect four",
+        "board game",
+        "2 players",
+        "vs computer"
+      ],
+      "status": "live",
+      "leaderboard": true,
+      "scoreLabel": "Score",
+      "order": "desc",
+      "periods": [
+        "day",
+        "all"
+      ],
+      "movesLabel": "moves",
+      "modeLabels": {
+        "easy": "Easy",
+        "medium": "Medium",
+        "hard": "Hard"
+      },
+      "added": "2026-10-19"
+    },
+    {
       "id": "minesweeper",
       "name": "ANON Minesweeper",
       "tagline": "Clear the field to reveal ANON art",

@@ -8,100 +8,8 @@
 <meta name="description" content="Daily ANON Word: a free daily 5-letter word puzzle from ANON NFTs. Six guesses, one new word every day at midnight UK time. No sign-up.">
 <link rel="icon" href="../assets/logo.webp">
 <link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
-<style>
-:root{--gold:#d4af37;--gold2:#f3d77a;--pink:#ff3d9a;--grey:#3a3d44;--green:#2bff88;--t:58px;--kh:54px}
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;height:100%;overflow:hidden;overscroll-behavior:none}
-body{display:flex;flex-direction:column;height:100vh;height:100dvh;color:#e9e3cf;
-  font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-  background:radial-gradient(ellipse at 50% 30%,rgba(255,61,154,.10),transparent 60%),
-    linear-gradient(rgba(3,5,8,.62),rgba(3,5,8,.9)),url(../solitaire/assets/bg.jpg) center/cover no-repeat,#05070a;
-  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
-button{font:inherit;cursor:pointer}
-header{padding:calc(6px + env(safe-area-inset-top)) 10px 2px;max-width:560px;width:100%;margin:0 auto}
-.top{display:flex;align-items:center;justify-content:space-between;gap:8px}
-.brand{display:flex;align-items:center;gap:9px;min-width:0}
-.brand img{width:36px;height:36px;border-radius:50%;box-shadow:0 0 0 1px rgba(212,175,55,.6),0 0 12px rgba(255,61,154,.25);flex:none}
-h1{margin:0;font-family:Georgia,"Times New Roman",serif;font-weight:700;font-size:clamp(16px,5vw,26px);letter-spacing:.1em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-  background:linear-gradient(180deg,#fff3c4 0%,#e9c858 45%,#b48a25 75%,#f5dc85 100%);-webkit-background-clip:text;background-clip:text;color:transparent;
-  filter:drop-shadow(0 0 8px rgba(255,61,154,.2))}
-.icon-btn{width:36px;height:36px;border-radius:50%;border:1px solid rgba(212,175,55,.6);background:rgba(0,0,0,.45);color:var(--gold2);font-weight:800;font-size:16px;flex:none;padding:0}
-.top-r{display:flex;gap:6px;flex:none}
-.back-btn{display:none;align-items:center;gap:4px;height:36px;padding:0 12px 0 9px;border-radius:18px;border:1px solid rgba(212,175,55,.7);background:rgba(0,0,0,.55);color:var(--gold2);font-weight:800;font-size:13px;letter-spacing:.04em;text-decoration:none;flex:none;white-space:nowrap;box-shadow:0 0 10px rgba(43,255,136,.12)}
-.in-hub .back-btn{display:inline-flex}
-.in-hub .brand img{display:none}
-.in-hub h1{font-size:clamp(14px,4.3vw,24px);letter-spacing:.06em}
-@media (max-width:430px){.in-hub h1 .d{display:none}}
-.subbar{display:flex;justify-content:center;gap:8px;margin-top:5px;font-size:12px;color:#9d9580;letter-spacing:.04em}
-.subbar b{color:var(--gold2);font-variant-numeric:tabular-nums}
-.pill{border:1px solid rgba(212,175,55,.32);border-radius:12px;padding:2px 9px;background:rgba(0,0,0,.45)}
-main{position:relative;flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:6px 8px}
-#lockNote{display:none;position:absolute;left:50%;bottom:6px;transform:translateX(-50%);white-space:nowrap;font-size:12.5px;font-weight:700;color:#140f02;background:linear-gradient(180deg,#f0cf5f,#b8901f);border-radius:14px;padding:5px 12px;box-shadow:0 0 12px rgba(243,215,122,.35)}
-#lockNote.on{display:block}
-#lockNote button{background:none;border:0;padding:0 0 0 6px;font:inherit;color:#140f02;text-decoration:underline}
-#board{display:grid;grid-template-rows:repeat(6,var(--t));gap:6px}
-.row{display:grid;grid-template-columns:repeat(5,var(--t));gap:6px}
-.row.shake{animation:shake .5s}
-@keyframes shake{10%,90%{transform:translateX(-2px)}20%,80%{transform:translateX(4px)}30%,50%,70%{transform:translateX(-7px)}40%,60%{transform:translateX(7px)}}
-.tile{width:var(--t);height:var(--t);display:flex;align-items:center;justify-content:center;border:2px solid rgba(212,175,55,.28);border-radius:8px;background:rgba(0,0,0,.42);
-  font-family:Georgia,"Times New Roman",serif;font-weight:700;font-size:calc(var(--t)*.56);line-height:1;color:#f6efd9;text-transform:uppercase;box-shadow:inset 0 0 12px rgba(255,255,255,.02)}
-.tile.filled{border-color:rgba(243,215,122,.75);animation:pop .1s}
-@keyframes pop{50%{transform:scale(1.1)}}
-.tile.flip{animation:flip .5s ease forwards}
-@keyframes flip{0%{transform:rotateX(0)}50%{transform:rotateX(90deg)}100%{transform:rotateX(0)}}
-.tile.correct,.key.correct{background:linear-gradient(180deg,#f0cf5f,#b8901f);border-color:#f3d77a;color:#140f02;box-shadow:0 0 14px rgba(243,215,122,.35)}
-.tile.present,.key.present{background:linear-gradient(180deg,#ff5aab,#c41f73);border-color:#ff8cc4;color:#fff;box-shadow:0 0 14px rgba(255,61,154,.35)}
-.tile.absent{background:var(--grey);border-color:#4a4d55;color:#d7d3c8}
-.key.absent{background:#1c1e22;border-color:#2a2c31;color:#6d6a62}
-.tile.win{animation:bounce .9s ease}
-@keyframes bounce{0%,20%{transform:translateY(0)}40%{transform:translateY(-26px)}50%{transform:translateY(4px)}60%{transform:translateY(-12px)}80%{transform:translateY(2px)}100%{transform:translateY(0)}}
-#kb{width:100%;max-width:520px;margin:0 auto;padding:2px 5px calc(6px + env(safe-area-inset-bottom));touch-action:manipulation}
-.krow{display:flex;gap:5px;margin-top:6px;justify-content:center}
-.key{flex:1;min-width:0;height:var(--kh);border-radius:7px;border:1px solid rgba(212,175,55,.45);background:linear-gradient(180deg,#24221a,#121109);color:var(--gold2);
-  font-weight:800;font-size:17px;text-transform:uppercase;padding:0;display:flex;align-items:center;justify-content:center;transition:background .2s}
-.key.wide{flex:1.55;font-size:12px;letter-spacing:.04em}
-.key:active{filter:brightness(1.35);transform:translateY(1px)}
-.spacer{flex:.5}
-footer{text-align:center;font-size:10.5px;color:#7d776a;padding:0 8px calc(4px + env(safe-area-inset-bottom));letter-spacing:.04em}
-footer a{color:#b9a35c;text-decoration:none}
-#toast{position:fixed;left:50%;top:84px;transform:translateX(-50%);background:rgba(10,10,10,.92);border:1px solid var(--gold);color:var(--gold2);padding:9px 16px;border-radius:10px;font-size:14px;font-weight:700;opacity:0;transition:opacity .2s;pointer-events:none;z-index:4500;white-space:nowrap}
-#toast.show{opacity:1}
-.overlay{position:fixed;inset:0;z-index:2000;display:none;align-items:center;justify-content:center;padding:14px;background:rgba(0,0,0,.62)}
-.overlay.show{display:flex}
-.panel{position:relative;width:100%;max-width:370px;max-height:calc(100% - 8px);overflow:auto;-webkit-overflow-scrolling:touch;background:rgba(6,8,11,.97);border:1px solid var(--gold);border-radius:16px;padding:16px 16px 14px;text-align:center;
-  box-shadow:0 0 0 4px rgba(212,175,55,.08),0 0 40px rgba(255,61,154,.16);animation:popin .3s ease}
-@keyframes popin{from{transform:scale(.88);opacity:0}to{transform:scale(1);opacity:1}}
-.panel h2{margin:0 0 6px;font-family:Georgia,serif;color:var(--gold2);letter-spacing:.08em;font-size:20px}
-.panel h3{margin:14px 0 6px;font-size:12px;letter-spacing:.16em;color:#9d9580;text-transform:uppercase}
-.panel p{margin:6px 0;font-size:14px;line-height:1.45;color:#d9d2bc;text-align:left}
-.x{position:absolute;right:8px;top:8px;width:34px;height:34px;border-radius:50%;border:1px solid rgba(212,175,55,.5);background:rgba(0,0,0,.4);color:var(--gold2);font-size:15px}
-.res-art{width:74px;height:74px;border-radius:50%;box-shadow:0 0 0 1px var(--gold),0 0 18px rgba(255,61,154,.35)}
-.res-word{display:flex;justify-content:center;gap:4px;margin:8px 0 2px}
-.res-word span{width:34px;height:34px;display:flex;align-items:center;justify-content:center;border-radius:6px;font-family:Georgia,serif;font-weight:700;font-size:19px;background:linear-gradient(180deg,#f0cf5f,#b8901f);color:#140f02}
-.res-word.lost span{background:var(--grey);color:#eee}
-.res-msg{font-size:15px;color:var(--gold2);letter-spacing:.04em;margin:4px 0 0}
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
-.stat{border:1px solid rgba(212,175,55,.3);border-radius:9px;padding:6px 2px;background:rgba(0,0,0,.4)}
-.stat b{display:block;font-size:21px;color:var(--gold2);font-variant-numeric:tabular-nums;line-height:1.15}
-.stat span{display:block;font-size:9.5px;letter-spacing:.06em;color:#9d9580;text-transform:uppercase;line-height:1.2}
-.dist{display:flex;flex-direction:column;gap:4px;text-align:left}
-.dr{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700}
-.dr i{font-style:normal;width:12px;color:#9d9580;text-align:center}
-.dr .bar{min-width:22px;padding:2px 7px;border-radius:4px;background:var(--grey);color:#eee;text-align:right;font-variant-numeric:tabular-nums}
-.dr.me .bar{background:linear-gradient(90deg,#b8901f,#f0cf5f);color:#140f02}
-.cd{font-size:26px;font-weight:800;color:var(--gold2);font-variant-numeric:tabular-nums;letter-spacing:.06em}
-.btnrow{display:flex;gap:8px;margin-top:14px}
-.btn{flex:1;min-height:46px;border-radius:11px;border:1px solid rgba(212,175,55,.75);background:linear-gradient(180deg,#1d1a0d,#0a0905);color:var(--gold2);font-weight:800;letter-spacing:.05em;font-size:14px}
-.btn.pri{background:linear-gradient(180deg,#ff5aab,#c41f73);border-color:#ff8cc4;color:#fff;box-shadow:0 0 16px rgba(255,61,154,.35)}
-.btn:active{transform:translateY(1px);filter:brightness(1.2)}
-.lbmsg{margin-top:10px;font-size:12.5px;color:#9d9580;min-height:17px;line-height:1.35}
-.lbmsg.ok{color:var(--green)}
-.lbmsg button{background:none;border:0;color:var(--gold);text-decoration:underline;font-size:12.5px;padding:2px 4px}
-.ex{display:flex;gap:4px;margin:6px 0 2px}
-.ex .tile{--t:34px;font-size:19px}
-.small{font-size:12px!important;color:#9d9580!important}
-.copybox{width:100%;height:150px;margin-top:8px;font:13px/1.35 ui-monospace,monospace;background:#0b0d10;color:var(--gold2);border:1px solid rgba(212,175,55,.6);border-radius:10px;padding:8px;-webkit-user-select:text;user-select:text}
-</style>
+<link rel="stylesheet" href="word.css?v=2">
+
 </head>
 <body>
 <header>
@@ -123,7 +31,9 @@ footer a{color:#b9a35c;text-decoration:none}
 <div class="overlay" id="modal"><div class="panel" id="panel" role="dialog" aria-modal="true"></div></div>
 
 <script src="../shared/leaderboard.js"></script>
-<script src="words.js"></script>
+<script src="../shared/newsletter.js"></script>
+<script src="words.js?v=2"></script>
+<script src="fx.js?v=2"></script>
 <script>
 (() => {
 'use strict';
@@ -282,9 +192,11 @@ async function submitGuess() {
   save();
   await paintRow(r, g, res, true);
   paintKeys(); busy = false;
-  if (won) { rows[r].cells.forEach((t, i) => setTimeout(() => t.classList.add('win'), i * 90)); toast(['Legendary ANON! 👑', 'Masterful! 🥷', 'Splendid! 💎', 'Great! ✨', 'Nice one!', 'Phew! Close one!'][r], 1800); }
-  else if (lost) toast(ANSWER.toUpperCase(), 2600);
+  const FX = window.ANONWordFX;
+  if (won) { rows[r].cells.forEach((t, i) => setTimeout(() => t.classList.add('win'), i * 90)); toast(FX ? FX.winMsg(r + 1) : 'Crowned! 👑', 1800); if (FX) setTimeout(() => FX.crown(board), 450); }
+  else if (lost) { toast((FX ? FX.loseMsg() : 'The shadows win this time') + ' · ' + ANSWER.toUpperCase(), 2600); if (FX) FX.shadows(); }
   if (won || lost) setTimeout(() => { showResult(); if (won) postScore(); }, won ? 1500 : 1800);
+  if ((won || lost) && window.ANONNews) window.ANONNews.gameOver({ delay: 4200 });   // newsletter pop-up after the result
 }
 function finish(won) {
   S.status = won ? 'won' : 'lost'; S.end = now();
@@ -350,7 +262,7 @@ function showResult() {
   openModal(p => {
     if (done) {
       const img = el('img', 'res-art'); img.src = '../assets/logo.webp'; img.alt = 'ANON hooded figure'; p.appendChild(img);
-      p.appendChild(el('h2', '', S.remote ? 'Already played today' : S.status === 'won' ? 'ANON wins!' : 'So close, ninja'));
+      p.appendChild(el('h2', '', S.remote ? 'Already played today' : S.status === 'won' ? 'Crowned! 👑' : 'The shadows win this time'));
       const w = el('div', 'res-word' + (S.status === 'lost' ? ' lost' : '')); ANSWER.split('').forEach(c => w.appendChild(el('span', '', c.toUpperCase()))); p.appendChild(w);
       p.appendChild(el('div', 'res-msg', S.remote ? 'Solved in ' + S.remote.moves + '/6 as ' + S.remote.nickname + ' · Word #' + S.n : S.status === 'won' ? 'Solved in ' + S.guesses.length + '/6 · Word #' + S.n : 'The word was ' + ANSWER.toUpperCase() + ' · Word #' + S.n));
       if (S.remote) p.appendChild(el('p', 'small', 'Your score for today is already on the leaderboard, so this word is locked. Come back for a new word at midnight UK time.'));
@@ -442,7 +354,7 @@ $('#lbBtn').onclick = openLB;
 fit(); load(); tick(); setInterval(tick, 1000);
 if (S.status !== 'playing') setTimeout(() => { showResult(); if (S.status === 'won' && !S.lb) postScore(); }, 400);
 else { if (!ls.get(K_SEEN, 0)) setTimeout(showHelp, 300); checkServer(); }
-window.ANON_WORD = { version: '1.1.0', checking: () => checking, state: () => JSON.parse(JSON.stringify(S)), number: () => T.n, shareText: () => shareText(), score, evaluate, valid: w => VALID.has(w), answerCount: ANSWERS.length, dayFor: ms => today(ms).n };
+window.ANON_WORD = { version: '1.2.0', checking: () => checking, state: () => JSON.parse(JSON.stringify(S)), number: () => T.n, shareText: () => shareText(), score, evaluate, valid: w => VALID.has(w), answerCount: ANSWERS.length, dayFor: ms => today(ms).n };
 })();
 </script>
 </body>

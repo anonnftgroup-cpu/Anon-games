@@ -43,15 +43,28 @@ const SUPABASE_ANON_KEY = 'sb_publishable_-f0lT5SuVJ-TbFzlfMd7kA_hH6ZXp-N';
     // plus the time bonus round(700000 / seconds). Every card needs a foundation move (52).
     solitaire: { minScore: 0, maxScore: t => 760 + Math.floor(700000 / Math.max(1, t)), minTime: 60, maxTime: 86400, minMoves: 52, maxMoves: 100000 },
     // Daily ANON Word: moves = guesses used (1-6). score = (7 - guesses) * 100 + max(0, 99 - floor(seconds / 6)).
-    'daily-word': { minScore: 100, maxScore: (t, m) => (7 - m) * 100 + Math.max(0, 99 - Math.floor(t / 6)), minTime: 3, maxTime: 86400, minMoves: 1, maxMoves: 6 }
+    'daily-word': { minScore: 100, maxScore: (t, m) => (7 - m) * 100 + Math.max(0, 99 - Math.floor(t / 6)), minTime: 3, maxTime: 86400, minMoves: 1, maxMoves: 6 },
+    // ANON Connect 4 (wins vs computer only): moves = the player's own moves (4-21), mode = easy | medium | hard.
+    // score = base (easy 100, medium 300, hard 600) + (22 - moves) * 10, and at least 1 second per move.
+    connect4: { minScore: 110, maxScore: (t, m) => 600 + (22 - m) * 10, minTime: 4, maxTime: 86400, minMoves: 4, maxMoves: 21,
+      check: (score, t, m, mode) => { const b = { easy: 100, medium: 300, hard: 600 }[mode];
+        if (!b) return 'bad mode'; if (score !== b + (22 - m) * 10) return 'score out of range'; if (t < m) return 'time out of range'; return ''; } },
+    // ANON Tic-Tac-Toe (best-of-5 series vs computer): mode = difficulty-wins-draws (e.g. hard-3-1), moves = your moves in the series.
+    // score = (easy 10, medium 30, hard 100) x (3 x wins + draws). Moves: at least 3 per win, 4 per draw, 2 per loss; 25 at most.
+    tictactoe: { minScore: 10, maxScore: () => 1500, minTime: 10, maxTime: 86400, minMoves: 2, maxMoves: 25,
+      check: (score, t, m, mode) => { const x = /^(easy|medium|hard)-([0-5])-([0-5])$/.exec(mode || ''); if (!x) return 'bad mode';
+        const w = +x[2], d = +x[3], l = 5 - w - d; if (l < 0) return 'bad mode';
+        if (score <= 0 || score !== { easy: 10, medium: 30, hard: 100 }[x[1]] * (3 * w + d)) return 'score out of range';
+        if (m < 3 * w + 4 * d + 2 * l || m > 25) return 'moves out of range'; if (t < Math.max(10, m)) return 'time out of range'; return ''; } }
   };
-  function sane(game, score, time, moves) {
+  function sane(game, score, time, moves, mode) {
     const r = Object.assign({}, RULES._default, RULES[game] || {});
     const isInt = n => Number.isInteger(n);
     if (!/^[a-z0-9-]{2,32}$/.test(game)) return 'bad game id';
     if (!isInt(score) || score < r.minScore || score > r.maxScore(time, moves)) return 'score out of range';
     if (!isInt(time) || time < r.minTime || time > r.maxTime) return 'time out of range';
     if (!isInt(moves) || moves < r.minMoves || moves > r.maxMoves) return 'moves out of range';
+    if (r.check) return r.check(score, time, moves, mode);
     return '';
   }
 
@@ -223,7 +236,7 @@ const SUPABASE_ANON_KEY = 'sb_publishable_-f0lT5SuVJ-TbFzlfMd7kA_hH6ZXp-N';
     const game = String(s.game || ''), score = Math.round(Number(s.score)), time = Math.round(Number(s.time)), moves = Math.round(Number(s.moves));
     const mode = s.mode ? String(s.mode).slice(0, 16) : null;
     const now = new Date().toISOString();
-    const why = sane(game, score, time, moves);
+    const why = sane(game, score, time, moves, mode);
     if (why) return { status: 'rejected', message: 'Score not posted (' + why + ').' };
     // local copy always
     localAdd(game, { nickname: getNickname() || 'You', score, time_seconds: time, moves, mode, created_at: now });
@@ -319,7 +332,7 @@ const SUPABASE_ANON_KEY = 'sb_publishable_-f0lT5SuVJ-TbFzlfMd7kA_hH6ZXp-N';
         if (!meDone && String(r.nickname).toLowerCase() === me && (res.online ? !!getNickname() : true)) { li.classList.add('alb-me'); meDone = true; }
         li.appendChild(el('span', 'alb-rk', i < 3 ? ['🥇', '🥈', '🥉'][i] : String(i + 1)));
         const nm = el('span', 'alb-nm', r.nickname);
-        const bits = []; if (r.time_seconds != null) bits.push(fmtTime(r.time_seconds)); if (r.moves != null) bits.push(r.moves + ' ' + (r.moves === 1 ? opts.movesLabel.replace(/e?s$/, '') : opts.movesLabel)); if (r.mode && !opts.hideMode) bits.push(String(r.mode).replace('draw', 'Draw '));
+        const bits = []; if (r.time_seconds != null) bits.push(fmtTime(r.time_seconds)); if (r.moves != null) bits.push(r.moves + ' ' + (r.moves === 1 ? opts.movesLabel.replace(/e?s$/, '') : opts.movesLabel)); if (r.mode && !opts.hideMode) bits.push(opts.modeLabels && opts.modeLabels[r.mode] || String(r.mode).replace('draw', 'Draw '));
         const sub = el('span', 'alb-sub', bits.join(' · '));
         const box = el('span'); box.style.minWidth = '0'; box.appendChild(nm); box.appendChild(sub);
         li.appendChild(box);
@@ -349,7 +362,7 @@ const SUPABASE_ANON_KEY = 'sb_publishable_-f0lT5SuVJ-TbFzlfMd7kA_hH6ZXp-N';
   }
 
   window.ANONLB = {
-    version: '1.2.0', isConfigured: configured, submit, fetchTop, renderBoard, openBoard, promptNickname,
+    version: '1.4.0', isConfigured: configured, submit, fetchTop, renderBoard, openBoard, promptNickname,
     getNickname, setNickname, validateNickname, isCleanName, randomNickname, seedLocal, sane, weekStart, ukDayStart, _cfg: CFG
   };
 })();
