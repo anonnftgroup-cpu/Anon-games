@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05070a">
+<title>Rug Pull Runner · ANON NFTs</title>
+<meta name="description" content="Rug Pull Runner: run across made-up NFT rugs before they get yanked. Grab magnifiers to check it on-chain. Free, no sign-up.">
+<link rel="icon" href="../assets/logo.webp">
+<link rel="stylesheet" href="../assets/nft/kit.css">
+<link rel="stylesheet" href="../assets/play/play.css">
+<link rel="stylesheet" href="bk.css">
+</head>
+<body>
+<header><div class="top">
+  <div class="brand"><a class="back-btn" href="../" aria-label="Back to ANON Arcade">&larr; Arcade</a><img src="../assets/logo.webp" alt=""><h1>RUG PULL RUNNER</h1></div>
+  <div class="top-r"><button class="icon-btn" id="sndBtn" aria-label="Sound">🔊</button><button class="icon-btn" id="lbBtn" aria-label="Leaderboard">🏆</button><button class="icon-btn" id="menuBtn" aria-label="Menu">↻</button></div>
+</div></header>
+<section class="view on" id="setup">
+  <img class="hero" id="hero" alt="ANON NFTs artwork">
+  <div class="lbl">Choose your ANON runner</div>
+  <div class="chars five" id="artPick"></div>
+  <button class="go" id="goBtn">RUN</button>
+  <p class="howto"><b>Tap</b> (or Space / ↑) to jump, tap again in the air to double-jump. The made-up projects' <b>rugs get yanked</b> just as you reach them! Grab a 🔍 <b>magnifier</b> to <b>check it on-chain</b>: for a few seconds you'll see which rugs are shaky before you step on them (+50 each). Stone blocks marked ✔ are records you've checked. Jump the hype signs.</p>
+  <div class="nick" id="nick"></div>
+  <p class="risk-foot">All projects in this game are made up. NFTs and cryptoassets are high-risk. Not financial advice. <a href="https://anonnfts.com/check-backing-on-chain-1" target="_top" rel="noopener">How to check backing on-chain</a></p>
+</section>
+<section class="view" id="play">
+  <div class="hud"><span id="dist">🏃 0 m</span><span id="mag">🔍 0</span><span id="sc">⭐ 0</span></div>
+  <div class="stage" id="stage"><canvas id="cv"></canvas><div class="tap" id="msg"></div></div>
+  <div class="bar"><button id="jumpBtn">⤒ Jump</button><button id="againBtn">Restart</button><button id="setBtn">Menu</button></div>
+</section>
+<script src="../shared/leaderboard.js"></script>
+<script src="../shared/newsletter.js"></script>
+<script src="../assets/nft/kit.js"></script>
+<script src="../assets/play/play.js"></script>
+<script src="bk.js"></script>
+<script>
+'use strict';
+const { $, ls, post, openLB, gameOver, art, ART } = AK;
+const GAME = 'rug-runner', TITLE = 'Rug Pull Runner';
+const NAMES = Object.fromEntries(ART.map(a => [a.id, a.name.replace(/^ANON /, '')]));
+const PROJ = ['MOON RUG CLUB', 'HYPE HAMSTERS', 'PUMP PALS', 'FOMO FROGS', 'ROCKET RACCOONS', 'LUCKY LIZARDS', 'SHINY SNAILS', 'GLITTER GOBLINS'];
+const HYPE = ['100x!', 'TRUST ME', 'BUY NOW', 'FOMO!', 'NO RISK!'];
+const V0 = 7, VMAX = 16, RAMP = 120, GR = 34, JV = 12.2, MAGT = 7, PX = 0.28; // world units: metres
+const pref = ls.get('anonRug.pref', { art: 'ghost', best: 0 });
+const show = id => document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === id));
+const setHero = () => $('#hero').src = art(pref.art).cover;
+AK.picker($('#artPick'), pref.art, id => { pref.art = id; ls.set('anonRug.pref', pref); setHero(); });
+setHero(); AK.nickLine($('#nick')); BK.muteBtn($('#sndBtn'));
+let C = null, S = null, ME = null, BG = null; const SPR = {};
+AP.img('../assets/nft/c-ghost.webp').then(i => BG = i);
+function mkSprite(im) { const d = 2, R = 48, c = document.createElement('canvas'); c.width = c.height = R * 2 * d; const x = c.getContext('2d'); x.scale(d, d);
+  x.save(); x.beginPath(); x.arc(R, R, R - 4, 0, 7); x.clip(); if (im) AP.cover(x, im, 4, 4, R * 2 - 8, R * 2 - 8); x.restore();
+  x.lineWidth = 5; x.strokeStyle = '#f3d77a'; x.beginPath(); x.arc(R, R, R - 3, 0, 7); x.stroke(); return c; }
+// ---- world generation: segments {x, w, kind: rug|shaky|stone, yank: 0..1}, signs, magnifiers ----
+function gen(s) {
+  while (s.genX < s.d + 60) {
+    const lvl = Math.min(1, s.d / 1500), last = s.seg[s.seg.length - 1];
+    const r = AP.rnd();
+    const kind = s.genX < 20 ? 'stone' : (r < .3 + lvl * .25 && last && last.kind !== 'shaky' ? 'shaky' : r < .62 ? 'rug' : 'stone');
+    // shaky rugs sit flush between solid ground, so the hole they leave is always jumpable
+    const gap = s.genX < 20 || kind === 'shaky' || (last && last.kind === 'shaky') ? 0 : (AP.rnd() < .45 + lvl * .25 ? 1 + AP.rnd() * (1.2 + lvl * 1.6) : 0);
+    let x = s.genX + gap;
+    const w = kind === 'shaky' ? 2.2 + AP.rnd() * (1.4 + lvl * 2) : 4 + AP.rnd() * 6;
+    const sg = { x, w, kind, yank: 0, name: AP.pick(PROJ), hue: AP.ri(0, 3) }; s.seg.push(sg); s.genX = x + w;
+    if (kind !== 'shaky' && w > 7 && AP.rnd() < .28 + lvl * .25 && s.genX > 30) s.signs.push({ x: x + w * (.45 + AP.rnd() * .2), w: .9, h: 1.1, t: AP.pick(HYPE) });
+    if (s.genX - s.lastMag > 22 && AP.rnd() < .35) { s.lastMag = s.genX; s.mags.push({ x: x + w / 2, y: 2.4 + AP.rnd() * 1.6, got: false }); }
+  }
+  s.seg = s.seg.filter(g => g.x + g.w > s.d - 12); s.signs = s.signs.filter(g => g.x > s.d - 12); s.mags = s.mags.filter(m => m.x > s.d - 12 && !m.got);
+}
+async function newRun() {
+  const a = art(pref.art); ME = SPR[a.id] || (SPR[a.id] = mkSprite(await AP.img(a.img)));
+  show('play'); if (!C) C = AP.canvas($('#cv'), .8, () => draw()); else C.fit();
+  S = { d: 0, t: 0, v: V0, y: 0, vy: 0, air: false, jumps: 0, over: false, count: 1.6, seg: [], signs: [], mags: [], genX: 0, lastMag: 0, magT: 0, mag: 0, yanked: 0, art: a.id, shake: 0, fall: false };
+  gen(S); hud(); L.start();
+}
+const sc = () => Math.floor(S.d) + S.mag * 50;
+const hud = () => { $('#dist').textContent = '🏃 ' + Math.floor(S.d) + ' m'; $('#mag').textContent = '🔍 ' + S.mag + (S.magT > 0 ? ' ' + Math.ceil(S.magT) + 's' : ''); $('#sc').textContent = '⭐ ' + sc(); };
+function jump() { if (!S || S.over) return; if (S.count > 0) return; if (!S.air) { S.vy = JV; S.air = true; S.jumps = 1; BK.play('jump'); } else if (S.jumps < 2) { S.vy = JV * .9; S.jumps = 2; BK.play('jump'); } }
+function groundAt(x) { for (const g of S.seg) if (x >= g.x - .05 && x <= g.x + g.w + .05 && g.yank < .35) return g; return null; }
+function step(dt) {
+  if (!S || S.over) return;
+  if (S.count > 0) { S.count -= dt; $('#msg').textContent = S.count > 0 ? 'Get ready… ' + Math.ceil(S.count) : ''; return; }
+  S.t += dt; S.v = V0 + (VMAX - V0) * Math.min(1, S.t / RAMP); S.d += S.v * dt; if (S.magT > 0) S.magT = Math.max(0, S.magT - dt); if (S.shake > 0) S.shake -= dt;
+  gen(S);
+  // yank shaky rugs as the runner arrives
+  for (const g of S.seg) { if (g.kind === 'shaky') { const lead = S.v * .42; if (!g.yank && g.x - S.d < lead && g.x + g.w > S.d) { g.yank = .001; BK.play('drop'); S.yanked++; S.shake = .2; } if (g.yank) g.yank = Math.min(1, g.yank + dt * 3.2); } }
+  // vertical
+  S.vy -= GR * dt; let ny = S.y + S.vy * dt; const foot = groundAt(S.d);
+  if (ny <= 0 && S.y >= -.45 && S.vy <= 0 && foot) { ny = 0; S.vy = 0; S.air = false; S.jumps = 0; } else if (!foot && !S.air && S.y <= 0) { S.air = true; S.jumps = 1; }
+  S.y = ny; if (S.y < -4) return crash('fell');
+  for (const sg of S.signs) if (Math.abs(sg.x - S.d) < sg.w / 2 + .3 && S.y < sg.h - .1) return crash('sign', sg);
+  for (const m of S.mags) if (!m.got && Math.abs(m.x - S.d) < .8 && Math.abs((S.y + .6) - m.y) < 1.1) { m.got = true; S.mag++; S.magT = MAGT; BK.play('perfect'); }
+  hud();
+}
+function draw() {
+  if (!C) return; const x = C.x, W = C.w, H = C.h, u = Math.max(24, Math.min(W / 11, H / 12)), gy = H * .74;
+  const sx = S && S.shake > 0 ? (AP.rnd() - .5) * 8 : 0; x.save(); x.translate(sx, 0);
+  AP.forest(x, W, H, S ? S.d * u : 0, BG);
+  if (!S) { x.restore(); return; }
+  const X = wx => (wx - S.d) * u + W * PX;
+  for (const g of S.seg) { const x0 = X(g.x), w = g.w * u; if (x0 > W + 10 || x0 + w < -10) continue;
+    if (g.kind === 'stone') { const gr = x.createLinearGradient(0, gy, 0, H); gr.addColorStop(0, '#6d6656'); gr.addColorStop(1, '#2a261e'); x.fillStyle = gr; x.fillRect(x0, gy, w, H - gy);
+      x.fillStyle = '#d4af37'; x.fillRect(x0, gy, w, 4); x.strokeStyle = 'rgba(0,0,0,.35)'; for (let k = x0 + u * 1.2; k < x0 + w; k += u * 1.2) { x.beginPath(); x.moveTo(k, gy + 4); x.lineTo(k, H); x.stroke(); }
+      if (w > u * 2.2) { x.fillStyle = '#2bff88'; x.font = 'bold ' + Math.round(u * .42) + 'px system-ui'; x.textAlign = 'center'; x.fillText('✔ ON-CHAIN', x0 + w / 2, gy + u * .9); } continue; }
+    { const gr = x.createLinearGradient(0, gy, 0, H); gr.addColorStop(0, '#3a2a1a'); gr.addColorStop(1, '#120c06'); x.fillStyle = gr; x.fillRect(x0, gy + u * .5, w, H - gy); }
+    const yk = g.yank, off = yk * yk * u * 9, lift = yk * u * 3; x.save(); x.translate(x0 + off, gy - lift); x.rotate(yk * .5);
+    const cols = [['#8a1538', '#d4143f'], ['#3b1a6b', '#7a3dd6'], ['#6b3a12', '#c46a1f'], ['#0f4a52', '#1f9fb0']][g.hue];
+    x.fillStyle = cols[0]; x.fillRect(0, 0, w, u * .55); x.fillStyle = cols[1]; for (let k = 0; k < w; k += u * .7) x.fillRect(k, u * .12, u * .35, u * .3);
+    x.strokeStyle = '#f3d77a'; x.lineWidth = 2; x.strokeRect(1, 1, w - 2, u * .55 - 2);
+    x.fillStyle = '#e9c858'; for (let k = 2; k < w; k += 5) x.fillRect(k, u * .55, 2, u * .18); // tassels
+    x.fillStyle = 'rgba(255,255,255,.75)'; x.font = 'bold ' + Math.round(u * .26) + 'px system-ui'; x.textAlign = 'center'; if (w > u * 2.4) x.fillText(g.name, w / 2, u * .4);
+    if (g.kind === 'shaky' && S.magT > 0 && !yk) { x.strokeStyle = '#ff3d3d'; x.lineWidth = 4; x.setLineDash([8, 5]); x.strokeRect(-2, -2, w + 4, u * .55 + 4); x.setLineDash([]);
+      x.fillStyle = '#ff5a5a'; x.font = 'bold ' + Math.round(u * .34) + 'px system-ui'; x.fillText('NO BACKING FOUND', w / 2, -u * .25); }
+    x.restore();
+    if (yk) { x.fillStyle = '#efe6d0'; const hx = x0 + off + w + u * .2, hy = gy - lift - u * .3; x.beginPath(); x.arc(hx, hy, u * .32, 0, 7); x.fill(); } // the yanking hand
+  }
+  for (const sg of S.signs) { const px = X(sg.x); x.fillStyle = '#5a400a'; x.fillRect(px - 2, gy - sg.h * u, 4, sg.h * u); x.fillStyle = '#ff3d9a'; AP.rr(x, px - u * .75, gy - sg.h * u - u * .2, u * 1.5, u * .6, 6); x.fill();
+    x.fillStyle = '#fff'; x.font = 'bold ' + Math.round(u * .3) + 'px system-ui'; x.textAlign = 'center'; x.fillText(sg.t, px, gy - sg.h * u + u * .2); }
+  for (const m of S.mags) { if (m.got) continue; const px = X(m.x), py = gy - m.y * u + Math.sin(S.t * 4 + m.x) * 4; x.save(); x.shadowColor = '#2bff88'; x.shadowBlur = 14; x.strokeStyle = '#f3d77a'; x.lineWidth = 4;
+    x.beginPath(); x.arc(px, py, u * .32, 0, 7); x.stroke(); x.beginPath(); x.moveTo(px + u * .22, py + u * .22); x.lineTo(px + u * .55, py + u * .55); x.stroke(); x.fillStyle = 'rgba(43,255,136,.25)'; x.beginPath(); x.arc(px, py, u * .28, 0, 7); x.fill(); x.restore(); }
+  const r = u * .7, py = gy - S.y * u - r; if (ME) { x.save(); x.shadowColor = S.magT > 0 ? '#2bff88' : '#ff3d9a'; x.shadowBlur = 16; x.translate(W * PX, py); if (!S.air) x.rotate(Math.sin(S.t * 14) * .08); x.drawImage(ME, -r, -r, r * 2, r * 2); x.restore(); }
+  if (S.magT > 0) { x.fillStyle = 'rgba(43,255,136,.9)'; x.font = 'bold 13px system-ui'; x.textAlign = 'left'; x.fillText('🔍 Checking on-chain… ' + Math.ceil(S.magT) + 's', 10, 20); }
+  x.restore();
+}
+const L = AP.loop(step, draw);
+const P = BK.autoPause({ running: () => !!S && !S.over && L.running, pause: () => { L.stop(); }, resume: () => { S.count = 1.6; L.start(); }, host: $('#stage') });
+function crash(why) {
+  S.over = true; L.stop(); S.shake = .3; draw(); BK.play('lose'); if (navigator.vibrate) navigator.vibrate([50, 40, 80]);
+  const score = sc(), secs = Math.max(1, Math.ceil(S.t)), a = art(S.art), pb = score > (pref.best || 0);
+  if (pb) { pref.best = score; ls.set('anonRug.pref', pref); }
+  const how = why === 'fell' ? 'A rug got pulled from under you!' : 'You ran into the hype!';
+  setTimeout(() => { BK.end({ art: a.img, title: pb ? 'New best! 🏆' : 'Rugged! 🧶', lb: score >= 10,
+    text: `${how}<br><b>${a.name}</b> ran <b>${Math.floor(S.d)} m</b>, checked on-chain <b>${S.mag}</b> time${S.mag === 1 ? '' : 's'} and dodged ${Math.max(0, S.yanked - (why === 'fell' ? 1 : 0))} rug pulls.`,
+    fact: 'Real rugs don\'t come with a magnifier. Before you buy any NFT, look up its contract and records on-chain yourself.',
+    buttons: [['RUN AGAIN', () => newRun()], ['Leaderboard', () => openLB(GAME, TITLE, NAMES, 'checks'), 1], ['Change ANON', () => show('setup'), 1]] });
+    if (score >= 10) post(GAME, score, secs, S.mag, S.art); }, 650);
+  gameOver();
+}
+const cv = $('#cv'); cv.addEventListener('pointerdown', e => { e.preventDefault(); jump(); });
+AP.keys({ ' ': jump, ArrowUp: jump, w: jump, Space: jump });
+$('#jumpBtn').onclick = jump;
+$('#goBtn').onclick = () => newRun(); $('#againBtn').onclick = () => { L.stop(); newRun(); };
+$('#setBtn').onclick = $('#menuBtn').onclick = () => { L.stop(); if (S) S.over = true; show('setup'); };
+$('#lbBtn').onclick = () => openLB(GAME, TITLE, NAMES, 'checks');
+window.G = { state: () => S, newRun, step, draw, jump, L, P, groundAt, C: () => C, K: { V0, VMAX, GR, JV } };
+</script>
+</body>
+</html>

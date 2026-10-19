@@ -972,6 +972,31 @@
       "movesLabel": "wave",
       "hideMode": true,
       "added": "2026-10-19"
+    },
+    {
+      "id": "rug-runner",
+      "name": "Rug Pull Runner",
+      "tagline": "Run across rugs before they get yanked. Check it on-chain!",
+      "path": "rug-runner/",
+      "thumb": "rug-runner/thumb.webp",
+      "category": "Learn",
+      "tags": [
+        "learn",
+        "runner",
+        "endless",
+        "backing"
+      ],
+      "status": "live",
+      "leaderboard": true,
+      "scoreLabel": "Score",
+      "order": "desc",
+      "periods": [
+        "day",
+        "all"
+      ],
+      "movesLabel": "checks",
+      "hideMode": true,
+      "added": "2026-10-19"
     }
   ]
 }
