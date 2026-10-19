@@ -35,7 +35,10 @@ h1{margin:0;font-family:Georgia,"Times New Roman",serif;font-weight:700;font-siz
 .subbar{display:flex;justify-content:center;gap:8px;margin-top:5px;font-size:12px;color:#9d9580;letter-spacing:.04em}
 .subbar b{color:var(--gold2);font-variant-numeric:tabular-nums}
 .pill{border:1px solid rgba(212,175,55,.32);border-radius:12px;padding:2px 9px;background:rgba(0,0,0,.45)}
-main{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:6px 8px}
+main{position:relative;flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:6px 8px}
+#lockNote{display:none;position:absolute;left:50%;bottom:6px;transform:translateX(-50%);white-space:nowrap;font-size:12.5px;font-weight:700;color:#140f02;background:linear-gradient(180deg,#f0cf5f,#b8901f);border-radius:14px;padding:5px 12px;box-shadow:0 0 12px rgba(243,215,122,.35)}
+#lockNote.on{display:block}
+#lockNote button{background:none;border:0;padding:0 0 0 6px;font:inherit;color:#140f02;text-decoration:underline}
 #board{display:grid;grid-template-rows:repeat(6,var(--t));gap:6px}
 .row{display:grid;grid-template-columns:repeat(5,var(--t));gap:6px}
 .row.shake{animation:shake .5s}
@@ -113,7 +116,7 @@ footer a{color:#b9a35c;text-decoration:none}
   </div>
   <div class="subbar"><span class="pill">Word <b id="pNum">#1</b></span><span class="pill">Next in <b id="pCd">--:--:--</b></span></div>
 </header>
-<main id="main"><div id="board" role="grid" aria-label="Guesses"></div></main>
+<main id="main"><div id="board" role="grid" aria-label="Guesses"></div><div id="lockNote" role="status"></div></main>
 <div id="kb" aria-label="Keyboard"></div>
 <footer>ANON NFTs · <a href="https://anonnfts.com" target="_blank" rel="noopener">anonnfts.com</a> · New word every day at midnight UK time</footer>
 <div id="toast" role="status" aria-live="polite"></div>
@@ -129,8 +132,26 @@ const EPOCH = Date.UTC(2026, 9, 19);           // Word #1 = 19 Oct 2026 (UK date
 const K_DAY = 'anonWord.v1.day', K_STATS = 'anonWord.v1.stats', K_SEEN = 'anonWord.v1.seenHelp';
 const $ = s => document.querySelector(s);
 const el = (t, c, x) => { const e = document.createElement(t); if (c) e.className = c; if (x != null) e.textContent = x; return e; };
-const ls = { get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
-             set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} } };
+/* Storage: localStorage + a cookie copy of today's game and the stats. If localStorage is blocked, cleared or
+   unavailable (private mode, some in-app browsers, Safari storage limits) the cookie still remembers the day.
+   Inside the GoDaddy iframe the cookie is written as a Partitioned cookie so third-party-iframe rules allow it. */
+const CK = { 'anonWord.v1.day': ['aw_day', 3], 'anonWord.v1.stats': ['aw_stats', 400] };
+const isFramed = () => { try { return window.self !== window.top; } catch (e) { return true; } };
+function ckGet(name) { try { const m = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)')); return m ? JSON.parse(decodeURIComponent(m[1])) : null; } catch (e) { return null; } }
+function ckSet(name, v, days) { try { const secure = location.protocol === 'https:' || location.hostname === 'localhost';
+  document.cookie = name + '=' + encodeURIComponent(JSON.stringify(v)) + '; path=/; max-age=' + days * 86400 +
+    (isFramed() ? '; SameSite=None; Secure; Partitioned' : '; SameSite=Lax' + (secure ? '; Secure' : '')); } catch (e) {} }
+const dayRank = x => x && typeof x.n === 'number' && Array.isArray(x.guesses) ? x.n * 1000 + (x.status && x.status !== 'playing' ? 500 : 0) + (x.remote ? 400 : 0) + x.guesses.length : -1;
+function better(k, a, b) {
+  if (a == null) return b; if (b == null) return a;
+  if (k === 'anonWord.v1.day') return dayRank(b) > dayRank(a) ? b : a;
+  if (k === 'anonWord.v1.stats') return (b.played || 0) > (a.played || 0) ? b : a;
+  return a;
+}
+const ls = {
+  get(k, d) { let v = null; try { const x = localStorage.getItem(k); v = x == null ? null : JSON.parse(x); } catch (e) {}
+    if (CK[k]) v = better(k, v, ckGet(CK[k][0])); return v == null ? d : v; },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} if (CK[k]) ckSet(CK[k][0], v, CK[k][1]); } };
 const now = () => (typeof window.ANON_WORD_NOW === 'number' ? window.ANON_WORD_NOW + (performance.now() - (window.__t0 || (window.__t0 = performance.now()))) : Date.now());
 
 /* Inside ANON Arcade (?hub=1 or framed): show the back button */
@@ -152,7 +173,7 @@ const VALID = new Set(D.v.match(/.{5}/g) || []); ANSWERS.forEach(w => VALID.add(
 const answerFor = n => ANSWERS[((n - 1) % ANSWERS.length + ANSWERS.length) % ANSWERS.length];
 
 /* ---------- state ---------- */
-let T, ANSWER, S, input = '', busy = false;
+let T, ANSWER, S, input = '', busy = false, checking = false;
 const blankStats = () => ({ played: 0, wins: 0, cur: 0, max: 0, dist: [0, 0, 0, 0, 0, 0], lastWon: 0, lastPlayed: 0 });
 const stats = () => Object.assign(blankStats(), ls.get(K_STATS, {}));
 function liveStats() { const s = stats(); if (s.cur && s.lastWon < T.n - 1) { s.cur = 0; ls.set(K_STATS, s); } return s; }
@@ -211,7 +232,16 @@ function paintKeys() {
   S.guesses.forEach(g => evaluate(g, ANSWER).forEach((r, i) => { const k = g[i]; if (!best[k] || RANK[r] > RANK[best[k]]) best[k] = r; }));
   Object.keys(keyEls).forEach(k => { keyEls[k].className = 'key' + (best[k] ? ' ' + best[k] : ''); });
 }
+function paintLock() {
+  const n = $('#lockNote'), done = S.status !== 'playing';
+  n.classList.toggle('on', done || checking); n.innerHTML = '';
+  if (checking && !done) { n.textContent = 'Checking today\'s board…'; return; }
+  if (!done) return;
+  n.appendChild(document.createTextNode(S.remote ? '✅ Already played today' : S.status === 'won' ? '✅ Solved · back tomorrow' : 'Done for today · back tomorrow'));
+  const b = el('button', '', 'Result'); b.type = 'button'; b.onclick = showResult; n.appendChild(b);
+}
 function paintAll() {
+  paintLock();
   for (let r = 0; r < 6; r++) {
     if (r < S.guesses.length) paintRow(r, S.guesses[r], evaluate(S.guesses[r], ANSWER), false);
     else paintRow(r, r === S.guesses.length && S.status === 'playing' ? input : '', null);
@@ -221,7 +251,7 @@ function paintAll() {
 
 /* ---------- input ---------- */
 function press(k) {
-  if (busy || S.status !== 'playing' || $('#modal').classList.contains('show') || document.querySelector('.alb-ov')) return;
+  if (checking || busy || S.status !== 'playing' || $('#modal').classList.contains('show') || document.querySelector('.alb-ov')) return;
   if (k === 'Enter') return submitGuess();
   if (k === 'Backspace') { input = input.slice(0, -1); return paintRow(S.guesses.length, input); }
   if (/^[a-z]$/.test(k) && input.length < 5) {
@@ -267,7 +297,8 @@ function finish(won) {
   }
 }
 const secsUsed = () => Math.min(86400, Math.max(3, Math.round(((S.end || now()) - (S.start || S.end || now())) / 1000)));
-function save() { ls.set(K_DAY, { n: T.n, guesses: S.guesses, status: S.status, start: S.start || 0, end: S.end || 0, lb: S.lb || null }); }
+function save() { ls.set(K_DAY, { n: T.n, guesses: S.guesses, status: S.status, start: S.start || 0, end: S.end || 0, lb: S.lb || null, remote: S.remote || null }); }
+const solvedIn = () => S.remote ? S.remote.moves : S.guesses.length;
 
 /* ---------- leaderboard ---------- */
 async function postScore() {
@@ -285,7 +316,7 @@ function paintLb() {
   const box = document.getElementById('lbMsg'); if (!box) return;
   box.innerHTML = ''; box.className = 'lbmsg' + (S.lb && S.lb.ok ? ' ok' : '');
   if (S.status !== 'won') { box.textContent = S.status === 'lost' ? 'Win to get on the leaderboard. Back tomorrow, ninja.' : ''; return; }
-  const sc = S.lb && S.lb.score != null ? S.lb.score : score(S.guesses.length, secsUsed());
+  const sc = S.lb && S.lb.score != null ? S.lb.score : score(solvedIn(), secsUsed());
   box.appendChild(document.createTextNode('Score ' + sc + '. ' + (S.lb ? S.lb.msg : '')));
   if (S.lb && S.lb.retry) { const b = el('button', '', 'Post score'); b.onclick = () => { S.lb = null; postScore(); }; box.appendChild(b); }
 }
@@ -319,9 +350,10 @@ function showResult() {
   openModal(p => {
     if (done) {
       const img = el('img', 'res-art'); img.src = '../assets/logo.webp'; img.alt = 'ANON hooded figure'; p.appendChild(img);
-      p.appendChild(el('h2', '', S.status === 'won' ? 'ANON wins!' : 'So close, ninja'));
+      p.appendChild(el('h2', '', S.remote ? 'Already played today' : S.status === 'won' ? 'ANON wins!' : 'So close, ninja'));
       const w = el('div', 'res-word' + (S.status === 'lost' ? ' lost' : '')); ANSWER.split('').forEach(c => w.appendChild(el('span', '', c.toUpperCase()))); p.appendChild(w);
-      p.appendChild(el('div', 'res-msg', S.status === 'won' ? 'Solved in ' + S.guesses.length + '/6 · Word #' + S.n : 'The word was ' + ANSWER.toUpperCase() + ' · Word #' + S.n));
+      p.appendChild(el('div', 'res-msg', S.remote ? 'Solved in ' + S.remote.moves + '/6 as ' + S.remote.nickname + ' · Word #' + S.n : S.status === 'won' ? 'Solved in ' + S.guesses.length + '/6 · Word #' + S.n : 'The word was ' + ANSWER.toUpperCase() + ' · Word #' + S.n));
+      if (S.remote) p.appendChild(el('p', 'small', 'Your score for today is already on the leaderboard, so this word is locked. Come back for a new word at midnight UK time.'));
     } else p.appendChild(el('h2', '', 'Statistics'));
     p.appendChild(el('h3', '', done ? 'Statistics' : 'Your record'));
     const g = el('div', 'stats');
@@ -329,7 +361,7 @@ function showResult() {
     p.appendChild(g);
     p.appendChild(el('h3', '', 'Guess distribution'));
     const d = el('div', 'dist'), mx = Math.max(1, ...st.dist);
-    st.dist.forEach((v, i) => { const r = el('div', 'dr' + (S.status === 'won' && S.guesses.length === i + 1 ? ' me' : '')); r.appendChild(el('i', '', String(i + 1)));
+    st.dist.forEach((v, i) => { const r = el('div', 'dr' + (S.status === 'won' && solvedIn() === i + 1 ? ' me' : '')); r.appendChild(el('i', '', String(i + 1)));
       const b = el('div', 'bar', String(v)); b.style.width = Math.max(8, v / mx * 100) + '%'; r.appendChild(b); d.appendChild(r); });
     p.appendChild(d);
     p.appendChild(el('h3', '', 'Next ANON word in')); p.appendChild(el('div', 'cd', fmtCd(T.next - now()))).id = 'mCd';
@@ -346,6 +378,7 @@ function showResult() {
 function shareText() {
   const E = { correct: '🟨', present: '🟪', absent: '⬛' };
   const grid = S.guesses.map(g => evaluate(g, ANSWER).map(r => E[r]).join('')).join('\n');
+  if (S.remote) return 'Daily ANON Word #' + S.n + ' ' + S.remote.moves + '/6\n\nPlay free: ' + LINK;
   return 'Daily ANON Word #' + S.n + ' ' + (S.status === 'won' ? S.guesses.length : 'X') + '/6\n\n' + grid + '\n\nPlay free: ' + LINK;
 }
 async function copyText(t) {
@@ -368,15 +401,38 @@ function load() {
   const d = ls.get(K_DAY, null);
   S = d && d.n === T.n && Array.isArray(d.guesses) ? d : { n: T.n, guesses: [], status: 'playing', start: 0, end: 0, lb: null };
   S.n = T.n; S.guesses = S.guesses.filter(g => /^[a-z]{5}$/.test(g)).slice(0, 6);
-  if (S.status !== 'playing' && S.guesses.length === 0) S.status = 'playing';
+  if (S.status !== 'playing' && S.guesses.length === 0 && !S.remote) S.status = 'playing';
   $('#pNum').textContent = '#' + T.n;
   closeModal(); paintAll(); liveStats();
   if (S.status === 'won' && S.lb && S.lb.retry === undefined && !S.lb.done) S.lb = null; // a post that was cut off by a reload: allow it again
 }
+/* Played somewhere else today? (another browser, the github.io page vs the anonnfts.com iframe, an in-app browser...)
+   Storage isn't shared between those, so ask the leaderboard whether this nickname already has today's score. */
+async function checkServer() {
+  const LB = window.ANONLB; if (!LB || !LB.isConfigured() || S.status !== 'playing') return;
+  const nick = LB.getNickname(); if (!nick) return;
+  const n = T.n; checking = true; paintLock();
+  try {
+    const c = LB._cfg, h = { apikey: c.key, Accept: 'application/json' }; if (/^eyJ/.test(c.key)) h.Authorization = 'Bearer ' + c.key;
+    const pat = nick.replace(/[\\_%*]/g, m => '\\' + m);       // ilike pattern: escape wildcards in the name
+    const ac = typeof AbortController !== 'undefined' ? new AbortController() : null, to = setTimeout(() => ac && ac.abort(), 4000);
+    const r = await fetch(String(c.url).replace(/\/+$/, '') + '/rest/v1/scores?select=nickname,score,moves,time_seconds&game=eq.' + GAME + '&mode=eq.n' + n +
+      '&nickname=ilike.' + encodeURIComponent(pat) + '&limit=1', { headers: h, mode: 'cors', credentials: 'omit', signal: ac && ac.signal });
+    clearTimeout(to);
+    const rows = r.ok ? await r.json() : [];
+    if (Array.isArray(rows) && rows.length && T.n === n && S.status === 'playing') {
+      const x = rows[0];
+      S.status = 'won'; S.remote = { moves: x.moves, score: x.score, nickname: x.nickname, time: x.time_seconds }; S.end = S.end || now();
+      S.lb = { done: true, ok: true, msg: 'Already on today\'s board as ' + x.nickname + '.', score: x.score };
+      input = ''; save(); checking = false; paintAll(); showResult();
+    }
+  } catch (e) { /* offline or slow: let them play; the server still allows only one score per name per day */ }
+  finally { checking = false; paintLock(); }
+}
 function tick() {
   const left = T.next - now();
   $('#pCd').textContent = fmtCd(left); const m = document.getElementById('mCd'); if (m) m.textContent = fmtCd(left);
-  if (left <= 0) { load(); toast('🥷 A new ANON word is ready!', 2500); tick(); }
+  if (left <= 0) { load(); toast('🥷 A new ANON word is ready!', 2500); tick(); checkServer(); }
 }
 
 $('#helpBtn').onclick = showHelp;
@@ -385,8 +441,8 @@ $('#lbBtn').onclick = openLB;
 
 fit(); load(); tick(); setInterval(tick, 1000);
 if (S.status !== 'playing') setTimeout(() => { showResult(); if (S.status === 'won' && !S.lb) postScore(); }, 400);
-else if (!ls.get(K_SEEN, 0)) setTimeout(showHelp, 300);
-window.ANON_WORD = { version: '1.0.0', state: () => JSON.parse(JSON.stringify(S)), number: () => T.n, shareText: () => shareText(), score, evaluate, valid: w => VALID.has(w), answerCount: ANSWERS.length, dayFor: ms => today(ms).n };
+else { if (!ls.get(K_SEEN, 0)) setTimeout(showHelp, 300); checkServer(); }
+window.ANON_WORD = { version: '1.1.0', checking: () => checking, state: () => JSON.parse(JSON.stringify(S)), number: () => T.n, shareText: () => shareText(), score, evaluate, valid: w => VALID.has(w), answerCount: ANSWERS.length, dayFor: ms => today(ms).n };
 })();
 </script>
 </body>
