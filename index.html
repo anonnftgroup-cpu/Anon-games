@@ -77,7 +77,10 @@ h1{margin:0;font-family:Georgia,"Times New Roman",serif;font-weight:700;font-siz
 .empty{text-align:center;color:var(--mut);padding:30px 10px;display:none}
 .empty.show{display:block}
 .view{display:none}.view.on{display:block}
-.lbhead{margin:12px 0 2px}
+.lbhead{margin:12px 0 2px;scroll-snap-type:x proximity;scroll-padding:0 12px;-webkit-mask-image:linear-gradient(90deg,#000 92%,transparent);mask-image:linear-gradient(90deg,#000 92%,transparent)}
+.lbhead .chip{scroll-snap-align:start;min-height:38px;touch-action:manipulation}
+.lbhead .chip.on{background:linear-gradient(180deg,#e9c858,#a47c1f);color:#120e02;border-color:#f3d77a}
+.lbhead::after{content:'';flex:none;width:24px}
 .lbbox{margin-top:8px;border:1px solid rgba(212,175,55,.35);border-radius:14px;background:rgba(0,0,0,.35);padding:10px 8px;min-height:300px}
 .lbbox .alb-list{max-height:none}
 .lbplay{display:flex;align-items:center;gap:10px;margin-top:10px;padding:8px;border:1px solid rgba(212,175,55,.55);border-radius:14px;background:linear-gradient(180deg,#0f1114,#07080a);box-shadow:0 0 14px rgba(43,255,136,.12)}
@@ -93,9 +96,6 @@ footer a{color:#b9a35c;text-decoration:none}
 #toast.show{opacity:1}
 .err{text-align:center;color:var(--mut);padding:30px 10px}
 .err button{margin-top:10px;min-height:40px;padding:0 18px;border-radius:11px;border:1px solid var(--gold);background:#111;color:var(--gold2);font-weight:700}
-.lbpick{margin:12px 0 2px;display:grid;grid-template-columns:1fr;gap:6px}
-.lbpick input,.lbpick select{width:100%;min-height:44px;padding:8px 12px;border-radius:12px;border:1px solid rgba(212,175,55,.55);background:#0b0d10;color:var(--gold2);font-size:16px;outline:none}
-.lbpick select{appearance:auto}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 @media (prefers-reduced-motion:reduce){.logo{animation:none}.tile{transition:none}}
 </style>
@@ -126,10 +126,7 @@ footer a{color:#b9a35c;text-decoration:none}
   </section>
 
   <section class="view" id="viewLb" aria-label="Leaderboards">
-    <div class="lbpick">
-      <label><span class="sr">Find a game</span><input id="lbFind" type="search" placeholder="Find a game…" autocomplete="off"></label>
-      <label><span class="sr">Choose a leaderboard</span><select id="lbGames"></select></label>
-    </div>
+    <div class="chips lbhead" id="lbGames" role="toolbar" aria-label="Choose a leaderboard"></div>
     <div class="lbplay" id="lbPlay" hidden></div>
     <div class="lbbox" id="lbBox"></div>
   </section>
@@ -224,14 +221,26 @@ function renderTools() {
 }
 
 function renderLb() {
-  const lbs = GAMES.filter(g => isLive(g) && g.leaderboard).slice().sort((a, b) => a.name.replace(/^ANON\s+/i, '').localeCompare(b.name.replace(/^ANON\s+/i, '')));
-  const sel = $('#lbGames');
-  if (!lbs.length) { $('#lbBox').textContent = 'No leaderboards yet.'; return; }
-  if (!lbGame || !lbs.find(g => g.id === lbGame)) lbGame = (GAMES.find(g => isLive(g) && g.leaderboard) || lbs[0]).id;
-  const q = ($('#lbFind').value || '').trim().toLowerCase();
-  const shown = lbs.filter(g => !q || g.id === lbGame || [g.name, g.category, ...(g.tags || [])].join(' ').toLowerCase().includes(q));
-  sel.innerHTML = '';
-  shown.forEach(g => { const o = el('option', '', g.name + ' · ' + g.category); o.value = g.id; if (g.id === lbGame) o.selected = true; sel.appendChild(o); });
+  // One scrollable row of game chips, in the hub's popularity order (GAMES is already sorted by popularity.json)
+  const lbs = GAMES.filter(g => isLive(g) && g.leaderboard);
+  const chips = $('#lbGames'), keepX = chips.scrollLeft;
+  if (!lbs.length) { chips.innerHTML = ''; $('#lbBox').textContent = 'No leaderboards yet.'; return; }
+  if (!lbGame || !lbs.find(g => g.id === lbGame)) lbGame = lbs[0].id;
+  const key = lbs.map(g => g.id).join(',');
+  if (chips.dataset.key !== key) {
+    chips.innerHTML = ''; chips.dataset.key = key;
+    lbs.forEach(g => {
+      const b = el('button', 'chip', g.name); b.type = 'button'; b.dataset.game = g.id;
+      b.onclick = () => { if (lbGame === g.id) return; lbGame = g.id; renderLb(); };
+      chips.appendChild(b);
+    });
+  }
+  chips.querySelectorAll('.chip').forEach(b => { const on = b.dataset.game === lbGame; b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); });
+  chips.scrollLeft = keepX;
+  // keep the selected chip in view without scrolling the parent page (works inside the anonnfts.com iframe)
+  const on = chips.querySelector('.chip.on');
+  if (on && chips.clientWidth && (on.offsetLeft < chips.scrollLeft || on.offsetLeft + on.offsetWidth > chips.scrollLeft + chips.clientWidth - 24))
+    chips.scrollLeft = Math.max(0, on.offsetLeft - 40);
   const g = lbs.find(x => x.id === lbGame);
   renderLbPlay(g);
   const box = $('#lbBox');
@@ -240,12 +249,6 @@ function renderLb() {
   if (window.ANONLB) window.ANONLB.renderBoard(box, { game: g.id, order: g.order || 'desc', scoreLabel: g.scoreLabel || 'Score', periods: g.periods, movesLabel: g.movesLabel, hideMode: g.hideMode, modeLabels: g.modeLabels });
   else box.textContent = 'Leaderboard unavailable.';
 }
-$('#lbGames').addEventListener('change', e => { lbGame = e.target.value; renderLb(); });
-$('#lbFind').addEventListener('input', () => {
-  renderLb(); const sel = $('#lbGames'), q = $('#lbFind').value.trim().toLowerCase();
-  const first = [...sel.options].find(o => o.value !== lbGame); // jump to the best match while typing
-  if (q && first && ![...sel.options].some(o => o.value === lbGame && o.textContent.toLowerCase().includes(q))) { lbGame = first.value; renderLb(); }
-});
 
 // Big "▶ Play <game>" button above the board being viewed. Same-frame link (like the tiles), so it stays inside the anonnfts.com iframe.
 function renderLbPlay(g) {
