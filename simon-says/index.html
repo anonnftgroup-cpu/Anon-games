@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05070a">
+<title>ANON Simon Says · ANON NFTs</title>
+<meta name="description" content="ANON Simon Says: watch the four NFT art pads light up and repeat the growing pattern of lights and sounds. Free, no sign-up.">
+<link rel="icon" href="../assets/logo.webp">
+<link rel="stylesheet" href="../assets/nft/kit.css">
+<link rel="stylesheet" href="../assets/play/play.css">
+<style>
+.pad{display:flex;gap:6px;justify-content:center;align-items:center;padding:4px 4px 2px;flex:none;user-select:none;-webkit-user-select:none}
+.pad button{min-width:52px;min-height:48px;border-radius:12px;border:1px solid rgba(212,175,55,.6);background:rgba(0,0,0,.55);color:var(--gold2);font-size:20px;font-weight:900;touch-action:none}
+.pad button.on{background:rgba(255,61,154,.35)}.pad .big{min-width:84px;background:linear-gradient(180deg,#ff5aab,#c41f73);color:#fff;font-size:15px}
+.dpad{display:grid;grid-template-columns:repeat(3,48px);grid-template-rows:repeat(2,40px);gap:4px}.dpad button{min-width:0;min-height:0}
+.dpad [data-k=U]{grid-column:2}.dpad [data-k=L]{grid-column:1;grid-row:2}.dpad [data-k=D]{grid-column:2;grid-row:2}.dpad [data-k=R]{grid-column:3;grid-row:2}
+@media (max-height:700px){.pad button{min-height:40px}.dpad{grid-template-rows:repeat(2,34px)}}
+</style>
+</head>
+<body>
+<header><div class="top">
+  <div class="brand"><a class="back-btn" href="../" aria-label="Back to ANON Arcade">&larr; Arcade</a><img src="../assets/logo.webp" alt=""><h1>SIMON SAYS</h1></div>
+  <div class="top-r"><button class="icon-btn" id="lbBtn" aria-label="Leaderboard">🏆</button><button class="icon-btn" id="menuBtn" aria-label="Menu">↻</button></div>
+</div></header>
+<section class="view on" id="setup">
+  <img class="hero" id="hero" alt="ANON NFTs artwork">
+  <div class="lbl">Choose your ANON</div>
+  <div class="chars five" id="artPick"></div>
+  
+  <button class="go" id="goBtn">PLAY</button>
+  <p class="howto">Watch the pads light up and listen to the notes, then tap them back in the same order. Each round adds one more step and gets faster. Keys: ↑ → ↓ ← or 1-4. One wrong pad ends the game. Your chosen ANON is the top-left pad.</p>
+  <div class="nick" id="nick"></div>
+</section>
+<section class="view" id="play">
+  <div class="hud"><span id="sc"></span><span id="rd"></span><span id="bs"></span></div>
+  <div class="stage"><canvas id="cv"></canvas><div class="tap" id="msg"></div></div>
+  
+  <div class="bar"><button id="againBtn">Restart</button><button id="setBtn">Change ANON</button></div>
+</section>
+<script src="../shared/leaderboard.js"></script>
+<script src="../shared/newsletter.js"></script>
+<script src="../assets/nft/kit.js"></script>
+<script src="../assets/play/play.js"></script>
+<script>
+const GAME = 'simon-says', TITLE = 'ANON Simon Says', PK = 'anonC2.simon-says', ASPECT = 1, MOVES = 'rounds';
+'use strict';
+const { $, ls, modal, post, openLB, gameOver, art, ART } = AK;
+const NAMES = Object.fromEntries(ART.map(a => [a.id, a.name.replace(/^ANON /, '')]));
+const DIFFN = { easy: 'Easy', medium: 'Medium', hard: 'Hard' };
+const pref = ls.get(PK, { art: 'anon', diff: 'medium', best: 0 });
+const show = id => document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === id));
+const setHero = () => $('#hero').src = art(pref.art).cover;
+AK.picker($('#artPick'), pref.art, id => { pref.art = id; ls.set(PK, pref); setHero(); });
+if ($('#diff')) AK.seg($('#diff'), pref.diff, v => { pref.diff = v; ls.set(PK, pref); });
+setHero(); AK.nickLine($('#nick'));
+// ---- sound: generated in the browser, nothing plays before the first tap/key ----
+let AC = null; window.__sfx = 0;
+const unlock = () => { if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } if (AC && AC.state === 'suspended') AC.resume(); };
+['pointerdown', 'keydown', 'touchstart'].forEach(t => window.addEventListener(t, unlock, { capture: true, passive: true }));
+function tone(f, d, type, vol, f2) { if (!AC || pref.mute) return; window.__sfx++; const t = AC.currentTime, o = AC.createOscillator(), g = AC.createGain();
+  o.type = type || 'square'; o.frequency.setValueAtTime(f, t); if (f2) o.frequency.exponentialRampToValueAtTime(Math.max(20, f2), t + d);
+  g.gain.setValueAtTime(vol || .08, t); g.gain.exponentialRampToValueAtTime(.0001, t + d); o.connect(g).connect(AC.destination); o.start(t); o.stop(t + d + .02); }
+function boom(d, vol) { if (!AC || pref.mute) return; window.__sfx++; const n = Math.floor(AC.sampleRate * d), b = AC.createBuffer(1, n, AC.sampleRate), c = b.getChannelData(0);
+  for (let i = 0; i < n; i++) c[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 2); const s = AC.createBufferSource(), g = AC.createGain(), fl = AC.createBiquadFilter();
+  fl.type = 'lowpass'; fl.frequency.value = 900; s.buffer = b; g.gain.value = vol || .25; s.connect(fl).connect(g).connect(AC.destination); s.start(); }
+// ---- shared loop, pause when hidden, game over ----
+let C = null, S = null;
+const imgs = {}; const IM = id => imgs[id];
+ART.forEach(a => { AP.img(a.img).then(i => imgs[a.id] = i); AP.img(a.cover).then(i => imgs['c-' + a.id] = i); });
+function ring(x, im, cx, cy, r, col) { x.save(); x.beginPath(); x.arc(cx, cy, r, 0, 7); x.closePath(); x.fillStyle = '#111'; x.fill(); x.clip(); if (im) AP.cover(x, im, cx - r, cy - r, r * 2, r * 2); x.restore();
+  x.lineWidth = Math.max(1.5, r * .16); x.strokeStyle = col || '#f3d77a'; x.beginPath(); x.arc(cx, cy, r, 0, 7); x.stroke(); }
+function bgArt(x, id, a) { const im = IM('c-' + id); if (!im) return; x.globalAlpha = a || .22; const k = Math.max(C.w / im.width, C.h / im.height); x.drawImage(im, (C.w - im.width * k) / 2, (C.h - im.height * k) / 2, im.width * k, im.height * k); x.globalAlpha = 1; }
+const L = AP.loop(dt => { if (S && !S.over && !S.paused) step(dt); }, () => draw());
+let paused = false;
+function pause() { if (!S || S.over || S.paused) return; S.paused = true; $('#msg').textContent = 'Paused\nTap to resume'; }
+function resume() { if (S && S.paused) { S.paused = false; $('#msg').textContent = ''; } }
+document.addEventListener('visibilitychange', () => { if (document.hidden) pause(); });
+$('#msg').parentElement.addEventListener('pointerdown', () => { if (S && S.paused) resume(); }, true);
+async function start() { show('play'); if (!C) C = AP.canvas($('#cv'), ASPECT, () => draw()); else C.fit(); $('#msg').textContent = ''; newRun(); L.start(); }
+function end(score, secs, moves, mode, title, text) {
+  if (!S || S.over) return; S.over = true; draw(); setTimeout(() => L.stop(), 50); if (navigator.vibrate) navigator.vibrate([40, 30, 70]);
+  const a = art(S.art || pref.art), pb = score > (pref.best || 0); if (pb) { pref.best = score; ls.set(PK, pref); }
+  S.final = { score, secs, moves, mode };
+  setTimeout(() => { modal({ art: a.img, title: pb && score > 0 ? 'New best! 🏆' : title, text, lb: score > 0,
+    buttons: [['PLAY AGAIN', () => start()], ['Leaderboard', () => lb(), 1], ['Change ANON', () => show('setup'), 1]] });
+    if (score > 0) post(GAME, score, Math.max(1, Math.round(secs)), moves, mode); }, 500);
+  gameOver();
+}
+const lb = () => openLB(GAME, TITLE, MODES, MOVES);
+$('#goBtn').onclick = () => start(); $('#againBtn').onclick = () => { if (S) S.over = true; start(); };
+$('#setBtn').onclick = $('#menuBtn').onclick = () => { if (S) S.over = true; L.stop(); show('setup'); };
+$('#lbBtn').onclick = lb;
+// hold-buttons for on-screen pads: data-k = key name
+const held = new Set(); window.__held = held;
+document.querySelectorAll('.pad [data-k]').forEach(b => { const k = b.dataset.k;
+  b.addEventListener('pointerdown', e => { e.preventDefault(); held.add(k); b.classList.add('on'); if (window.onPad) onPad(k); });
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach(t => b.addEventListener(t, () => { held.delete(k); b.classList.remove('on'); })); });
+const KM = { ArrowLeft: 'L', a: 'L', A: 'L', ArrowRight: 'R', d: 'R', D: 'R', ArrowUp: 'U', w: 'U', W: 'U', ArrowDown: 'D', s: 'D', S: 'D', ' ': 'B', Enter: 'B', x: 'B', z: 'B' };
+const playing = () => $('#play').classList.contains('on') && !document.querySelector('.modal.show,.alb-ov,.anw-ov');
+window.addEventListener('keydown', e => { const k = KM[e.key]; if (!k || !playing()) return; e.preventDefault(); if (S && S.paused) resume(); if (!held.has(k) && window.onPad) onPad(k); held.add(k); });
+window.addEventListener('keyup', e => { const k = KM[e.key]; if (k) held.delete(k); });
+
+const MODES = NAMES;
+const COLS = ['#f3d77a', '#ff3d9a', '#2bff88', '#5ab4ff'], FREQ = [329.6, 392, 493.9, 587.3];
+function padsFor(a) { const o = ['grumpy', 'ghost', 'apes', 'royals', 'anon', 'skulls'].filter(x => x !== a); return [a, o[0], o[1], o[2]]; }
+function newRun() { S = { art: pref.art, pads: padsFor(pref.art), seq: [], pos: 0, score: 0, round: 0, t: 0, phase: 'wait', lit: -1, litT: 0, show: 0, timer: 1 }; next(); }
+const hud = () => { $('#sc').textContent = '⭐ ' + S.score; $('#rd').textContent = 'Round ' + S.round; $('#bs').textContent = '🏆 ' + (pref.best || 0); };
+const gap = () => Math.max(.22, .62 - S.round * .025);
+function next() { S.seq.push(AP.ri(0, 3)); S.round = S.seq.length; S.pos = 0; S.phase = 'show'; S.show = 0; S.timer = .9; $('#msg').textContent = ''; hud(); }
+function light(i, d) { S.lit = i; S.litT = d; tone(FREQ[i], d, 'triangle', .14); }
+function press(i) {
+  if (!S || S.over || S.paused || S.phase !== 'input') return false; light(i, .25);
+  if (S.seq[S.pos] !== i) { S.phase = 'dead'; tone(110, .7, 'sawtooth', .12); setTimeout(finish, 600); return false; }
+  S.pos++; if (S.pos === S.seq.length) { S.score += S.round * 10; S.phase = 'wait'; S.timer = .8; hud(); }
+  S.it = 0; return true;
+}
+function step(dt) {
+  S.t += dt; if (S.litT > 0) { S.litT -= dt; if (S.litT <= 0) S.lit = -1; }
+  if (S.phase === 'show') { S.timer -= dt; if (S.timer <= 0) { if (S.show < S.seq.length) { light(S.seq[S.show], gap() * .8); S.show++; S.timer = gap(); } else { S.phase = 'input'; S.it = 0; $('#msg').textContent = ''; } } }
+  else if (S.phase === 'wait') { S.timer -= dt; if (S.timer <= 0) next(); }
+  else if (S.phase === 'input') { S.it += dt; if (S.it > 6) { S.phase = 'dead'; tone(110, .7, 'sawtooth', .12); finish('timeout'); } }
+}
+function finish(why) { const r = S.round - 1; end(S.score, S.t, r, S.art, why === 'timeout' ? 'Too slow! ⏳' : 'Wrong pad! 💥', `<b>${art(S.art).name}</b> remembered <b>${r} round${r === 1 ? '' : 's'}</b> in a row.<br>Score <b>${S.score}</b>`); }
+function padAt(px, py) { const r = $('#cv').getBoundingClientRect(), x = (px - r.left) / r.width - .5, y = (py - r.top) / r.height - .5; if (Math.hypot(x, y) < .1 || Math.hypot(x, y) > .5) return -1; return y < 0 ? (x < 0 ? 0 : 1) : (x < 0 ? 3 : 2); }
+$('#cv').addEventListener('pointerdown', e => { if (!S || S.paused) return; const i = padAt(e.clientX, e.clientY); if (i >= 0) press(i); });
+function onPad(k) { const m = { U: 0, R: 1, D: 2, L: 3 }; if (k in m) press(m[k]); }
+window.addEventListener('keydown', e => { if (/^[1-4]$/.test(e.key) && playing()) press(+e.key - 1); });
+function draw() {
+  if (!C) return; const x = C.x, W = C.w, H = C.h, cx = W / 2, cy = H / 2, R = Math.min(W, H) * .48; x.fillStyle = '#05070a'; x.fillRect(0, 0, W, H); if (!S) return; bgArt(x, S.art, .15);
+  for (let i = 0; i < 4; i++) { const a0 = -Math.PI + i * Math.PI / 2 + .05, a1 = a0 + Math.PI / 2 - .1, on = S.lit === i;
+    x.save(); x.beginPath(); x.arc(cx, cy, R, a0, a1); x.arc(cx, cy, R * .24, a1, a0, true); x.closePath(); x.clip(); const im = IM(S.pads[i]); const qx = cx + (i === 1 || i === 2 ? 1 : -1) * R * .5, qy = cy + (i >= 2 ? 1 : -1) * R * .5;
+    if (im) AP.cover(x, im, qx - R * .62, qy - R * .62, R * 1.24, R * 1.24); x.fillStyle = on ? 'rgba(255,255,255,.2)' : 'rgba(0,0,0,.38)'; x.fillRect(0, 0, W, H); x.restore();
+    x.save(); x.beginPath(); x.arc(cx, cy, R, a0, a1); x.arc(cx, cy, R * .24, a1, a0, true); x.closePath(); x.lineWidth = on ? 6 : 3; x.strokeStyle = COLS[i]; if (on) { x.shadowColor = COLS[i]; x.shadowBlur = 30; } x.stroke(); x.restore(); }
+  x.fillStyle = '#0b0d10'; x.beginPath(); x.arc(cx, cy, R * .22, 0, 7); x.fill(); x.strokeStyle = '#d4af37'; x.lineWidth = 3; x.stroke();
+  x.fillStyle = '#f3d77a'; x.font = `900 ${R * .07}px Georgia,serif`; x.textAlign = 'center'; x.textBaseline = 'middle';
+  x.fillText(S.phase === 'input' ? 'YOUR GO' : S.phase === 'show' ? 'WATCH' : S.phase === 'dead' ? 'OOPS' : 'NICE!', cx, cy - R * .04); x.font = `700 ${R * .06}px system-ui`; x.fillStyle = '#ff8cc4'; x.fillText(S.phase === 'input' ? (S.pos + '/' + S.seq.length) : 'Round ' + S.round, cx, cy + R * .09);
+}
+window.G = { state: () => S, step, press, next, C: () => C, L };
+
+</script>
+</body>
+</html>

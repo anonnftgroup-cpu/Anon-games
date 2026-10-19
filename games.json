@@ -710,6 +710,43 @@
         "hard": "Hard"
       },
       "added": "2026-10-19"
+    },
+    {
+      "id": "simon-says",
+      "name": "ANON Simon Says",
+      "tagline": "Repeat the light & sound pattern on 4 NFT pads",
+      "path": "simon-says/",
+      "thumb": "simon-says/thumb.webp",
+      "category": "Puzzle",
+      "tags": [
+        "memory",
+        "sequence",
+        "sound",
+        "retro",
+        "reflex"
+      ],
+      "status": "live",
+      "leaderboard": true,
+      "scoreLabel": "Score",
+      "order": "desc",
+      "periods": [
+        "day",
+        "all"
+      ],
+      "movesLabel": "rounds",
+      "modeLabels": {
+        "anon": "Revenue Share",
+        "apes": "Apes",
+        "royals": "King & Queen",
+        "aces": "Aces",
+        "ghost": "Ghost",
+        "skulls": "Skulls",
+        "eyes": "Eyes",
+        "lake": "Lake District",
+        "venge": "Vengeance",
+        "grumpy": "Grumpy Cat"
+      },
+      "added": "2026-10-19"
     }
   ]
 }
