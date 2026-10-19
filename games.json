@@ -620,6 +620,36 @@
       "movesLabel": "swaps",
       "hideMode": true,
       "added": "2026-10-19"
+    },
+    {
+      "id": "bomb-maze",
+      "name": "ANON Bomb Maze",
+      "tagline": "Blast crates and shadows with ANON bombs",
+      "path": "bomb-maze/",
+      "thumb": "bomb-maze/thumb.webp",
+      "category": "Arcade",
+      "tags": [
+        "maze",
+        "bombs",
+        "retro",
+        "action",
+        "power-ups"
+      ],
+      "status": "live",
+      "leaderboard": true,
+      "scoreLabel": "Score",
+      "order": "desc",
+      "periods": [
+        "day",
+        "all"
+      ],
+      "movesLabel": "enemies",
+      "modeLabels": {
+        "easy": "Easy",
+        "medium": "Medium",
+        "hard": "Hard"
+      },
+      "added": "2026-10-19"
     }
   ]
 }
