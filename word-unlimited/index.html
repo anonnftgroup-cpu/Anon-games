@@ -103,7 +103,7 @@ async function probe() {
   const LB = window.ANONLB;
   if (!LB || !LB.isConfigured()) { SRV = 'off'; return; }
   const r = await rpc('wu_start', { p_nickname: '' });      // an empty name is always refused: tells us the SQL is there without starting a round
-  SRV = r.ok || /nickname/i.test(r.msg || '') ? 'on' : r.missing ? 'missing' : r.net ? 'offline' : 'on';
+  SRV = r.missing ? 'missing' : r.net ? 'offline' : 'on';   // "nickname not allowed" (or ok) = the SQL is there
 }
 const nick = () => (window.ANONLB && window.ANONLB.getNickname()) || '';
 const online = () => SRV === 'on' && !!nick();
@@ -387,7 +387,7 @@ async function init() {
   paintAll();
 }
 init();
-window.ANON_WORDU = { version: '1.0.0', state: () => JSON.parse(JSON.stringify(R)), srv: () => SRV, stats, shareText: () => shareText(), next: nextWord, busy: () => busy, evaluate, valid: w => VALID.has(w) };
+window.ANON_WORDU = { version: '1.0.1', state: () => JSON.parse(JSON.stringify(R)), srv: () => SRV, stats, shareText: () => shareText(), next: nextWord, busy: () => busy, evaluate, valid: w => VALID.has(w) };
 })();
 </script>
 </body>
