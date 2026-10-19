@@ -1152,6 +1152,31 @@
       "movesLabel": "landings",
       "hideMode": true,
       "added": "2026-10-19"
+    },
+    {
+      "id": "light-trails",
+      "name": "ANON Light Trails",
+      "tagline": "Light-bike duels against ANON rivals",
+      "path": "light-trails/",
+      "thumb": "light-trails/thumb.webp",
+      "category": "Arcade",
+      "tags": [
+        "light bikes",
+        "trails",
+        "retro",
+        "vs computer"
+      ],
+      "status": "live",
+      "leaderboard": true,
+      "scoreLabel": "Score",
+      "order": "desc",
+      "periods": [
+        "day",
+        "all"
+      ],
+      "movesLabel": "rounds",
+      "hideMode": true,
+      "added": "2026-10-19"
     }
   ]
 }

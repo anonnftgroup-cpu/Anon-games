@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05070a">
+<title>ANON Light Trails · ANON NFTs</title>
+<meta name="description" content="ANON Light Trails: ride a glowing light bike against ANON NFT rivals. Box them in, never hit a trail, last rider wins. Free, no sign-up.">
+<link rel="icon" href="../assets/logo.webp">
+<link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
+<link rel="stylesheet" href="../assets/nft/kit.css">
+<link rel="stylesheet" href="../assets/retro-c1/rk.css">
+</head>
+<body>
+<script src="../shared/leaderboard.js"></script>
+<script src="../shared/newsletter.js"></script>
+<script src="../assets/nft/kit.js"></script>
+<script src="../assets/retro-c1/rk.js"></script>
+<script src="game.js"></script>
+<script>
+'use strict';
+(function () {
+  const G = LTGame, IDS = RK.ART.map(a => a.id), C = 10, W = G.GW * C, H = G.GH * C, COL = ['#f3d77a', '#ff3d9a', '#2bff88', '#9fb4ff']; let bg = null, riv = [];
+  function backdrop() { const c = document.createElement('canvas'), k = 2; c.width = W * k; c.height = H * k; const x = c.getContext('2d'); x.scale(k, k);
+    x.fillStyle = '#04050a'; x.fillRect(0, 0, W, H); RK.cover(x, RK.C.venge, 0, 0, W, H, 0.14); x.strokeStyle = 'rgba(159,180,255,.08)'; x.lineWidth = 1;
+    for (let i = 0; i <= G.GW; i++) { x.beginPath(); x.moveTo(i * C, 0); x.lineTo(i * C, H); x.stroke(); } for (let j = 0; j <= G.GH; j++) { x.beginPath(); x.moveTo(0, j * C); x.lineTo(W, j * C); x.stroke(); }
+    x.strokeStyle = '#d4af37'; x.lineWidth = 2; x.strokeRect(1, 1, W - 2, H - 2); return c; }
+  RK.shell({
+    game: 'light-trails', title: 'ANON Light Trails', h1: 'ANON LIGHT TRAILS', W, H, movesLabel: 'rounds', swipe: true, controls: ['pad'], pickLabel: 'Pick your rider', startMsg: 'GET READY…',
+    how: '<b>Swipe</b> anywhere, use the pad or the arrow keys to turn. Your gold light bike leaves a solid trail. Hitting any trail or the wall crashes you. Trap the ANON NFT rivals so they crash: +250 each, +500 × round for the last rider standing, +10 a second for staying alive. Every round is faster and the rivals get sharper. 3 lives.',
+    create: o => { const S = G.create(o); const others = IDS.filter(i => i !== o.art); riv = [o.art, others[(o.seed || 1) % others.length], others[((o.seed || 1) + 3) % others.length], others[((o.seed || 1) + 6) % others.length]]; return S; },
+    hud: S => `<span>⭐ ${S.score.toLocaleString()}</span><span>ROUND ${S.round}</span><span>RIVALS ${S.bikes.filter(b => !b.me && b.alive).length}</span><span>${'❤️'.repeat(Math.max(0, Math.min(5, S.lives)))}</span>`,
+    result: S => ({ score: S.score, time: S.t, moves: S.wins, text: `Round ${S.round} · ${S.wins} rounds won · ${S.kills} rivals trapped · ${Math.round(S.t)} s` }),
+    draw(x, S, t) {
+      if (!bg) bg = backdrop(); x.drawImage(bg, 0, 0, W, H); const g = S.grid;
+      for (let k = 1; k <= 4; k++) { x.fillStyle = COL[k - 1]; x.globalAlpha = S.bikes[k - 1] && S.bikes[k - 1].alive ? 0.9 : 0.35; x.beginPath(); for (let j = 0; j < g.length; j++) if (g[j] === k) x.rect((j % G.GW) * C + 0.5, ((j / G.GW) | 0) * C + 0.5, C - 1, C - 1); x.fill(); } x.globalAlpha = 1;
+      for (const b of S.bikes) { const cx = b.x * C + C / 2, cy = b.y * C + C / 2; if (b.alive) { x.save(); x.shadowColor = COL[b.i]; x.shadowBlur = 14; RK.portrait(x, RK.P[riv[b.i]], cx, cy, b.me ? 9 : 8, COL[b.i]); x.restore();
+          if (S.state === 'ready') { const d = S.D[b.dir]; x.fillStyle = COL[b.i]; x.beginPath(); x.moveTo(cx + d[0] * 18, cy + d[1] * 18); x.lineTo(cx + d[0] * 12 - d[1] * 5, cy + d[1] * 12 + d[0] * 5); x.lineTo(cx + d[0] * 12 + d[1] * 5, cy + d[1] * 12 - d[0] * 5); x.fill(); } } }
+      for (const f of S.flash) if (f.t > 0) { x.strokeStyle = COL[f.i]; x.globalAlpha = f.t; x.lineWidth = 3; x.beginPath(); x.arc(f.x * C + C / 2, f.y * C + C / 2, (0.8 - f.t) * 40 + 6, 0, 7); x.stroke(); x.globalAlpha = 1; }
+      if (S.state === 'ready') RK.text(x, 'ROUND ' + S.round + ' · ' + (S.bikes.length - 1) + ' RIVALS', W / 2, H / 2 - 30, 16);
+    }
+  });
+})();
+</script>
+</body>
+</html>
