@@ -867,6 +867,32 @@
         "grumpy": "Grumpy Cat"
       },
       "added": "2026-10-19"
+    },
+    {
+      "id": "flag-swipe",
+      "name": "Red Flag or Green Flag",
+      "tagline": "Swipe NFT claims: red flag or green flag? 60 seconds",
+      "path": "flag-swipe/",
+      "thumb": "flag-swipe/thumb.webp",
+      "category": "Learn",
+      "tags": [
+        "learn",
+        "backing",
+        "swipe",
+        "quiz",
+        "red flags"
+      ],
+      "status": "live",
+      "leaderboard": true,
+      "scoreLabel": "Score",
+      "order": "desc",
+      "periods": [
+        "day",
+        "all"
+      ],
+      "movesLabel": "cards",
+      "hideMode": true,
+      "added": "2026-10-19"
     }
   ]
 }

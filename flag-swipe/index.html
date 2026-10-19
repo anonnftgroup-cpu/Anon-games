@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05070a">
+<title>Red Flag or Green Flag · ANON NFTs</title>
+<meta name="description" content="Red Flag or Green Flag: swipe NFT claims into red flags and green flags in 60 seconds. Learn to check backing on-chain. Free, no sign-up.">
+<link rel="icon" href="../assets/logo.webp">
+<link rel="stylesheet" href="../assets/nft/kit.css">
+<link rel="stylesheet" href="../assets/play/play.css">
+<link rel="stylesheet" href="bk.css">
+<style>
+.deck{position:relative;flex:1;min-height:0;width:100%;display:flex;align-items:center;justify-content:center;padding:6px 14px;touch-action:none}
+.card{position:relative;width:min(100%,340px);min-height:min(330px,52vh);border-radius:18px;border:2px solid var(--gold);background:linear-gradient(180deg,rgba(22,18,8,.97),rgba(6,7,10,.97));box-shadow:0 0 22px rgba(255,61,154,.25);padding:14px 16px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;transition:transform .18s ease,opacity .18s;touch-action:none;cursor:grab}
+.card .who{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#b9a35c;font-weight:800;margin-bottom:8px}
+.card .doodle{width:66px;height:66px;border-radius:14px;margin-bottom:10px;display:flex;align-items:center;justify-content:center;font-size:34px;background:rgba(255,255,255,.06);border:1px dashed rgba(212,175,55,.45)}
+.card .txt{font-size:clamp(17px,5vw,21px);line-height:1.35;font-weight:700;color:#f1ead2}
+.card .lab{position:absolute;top:12px;font-weight:900;font-size:18px;padding:3px 10px;border-radius:10px;opacity:0;border:2px solid}
+.card .lab.l{left:12px;color:#ff5a5a;border-color:#ff5a5a;transform:rotate(-12deg)}.card .lab.r{right:12px;color:var(--green);border-color:var(--green);transform:rotate(12deg)}
+.card .me{position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);width:42px;height:42px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 2px var(--gold),0 0 12px rgba(255,61,154,.5)}
+.why{position:absolute;inset:6px 14px;z-index:5;display:none;align-items:center;justify-content:center}
+.why.show{display:flex}
+.why>div{width:min(100%,340px);border-radius:18px;border:2px solid #ff5a5a;background:rgba(20,6,8,.97);padding:16px;text-align:center}
+.why h3{margin:0 0 6px;color:#ff8a8a;font-family:Georgia,serif}.why p{margin:6px 0;font-size:15px;line-height:1.4;color:#f1ead2}
+.why button{margin-top:8px;min-height:40px;padding:0 16px;border-radius:12px;border:1px solid var(--gold2);background:rgba(0,0,0,.5);color:var(--gold2);font-weight:800}
+.picks{display:flex;gap:10px;width:100%;max-width:380px;padding:6px 12px calc(8px + env(safe-area-inset-bottom));flex:none}
+.picks button{flex:1;min-height:58px;border-radius:16px;font-weight:900;font-size:16px;letter-spacing:.04em}
+#redBtn{border:1px solid #ff8a8a;background:linear-gradient(180deg,#e2384b,#7e0f1d);color:#fff}
+#greenBtn{border:1px solid #8affc0;background:linear-gradient(180deg,#1fc66a,#0b5e31);color:#fff}
+#play{position:relative}
+</style>
+</head>
+<body>
+<header><div class="top">
+  <div class="brand"><a class="back-btn" href="../" aria-label="Back to ANON Arcade">&larr; Arcade</a><img src="../assets/logo.webp" alt=""><h1>RED FLAG OR GREEN FLAG</h1></div>
+  <div class="top-r"><button class="icon-btn" id="sndBtn" aria-label="Sound">🔊</button><button class="icon-btn" id="lbBtn" aria-label="Leaderboard">🏆</button><button class="icon-btn" id="menuBtn" aria-label="Menu">↻</button></div>
+</div></header>
+<section class="view on" id="setup">
+  <img class="hero" id="hero" alt="ANON NFTs artwork">
+  <div class="lbl">Choose your ANON inspector</div>
+  <div class="chars five" id="artPick"></div>
+  <button class="go" id="goBtn">START 60s ROUND</button>
+  <p class="howto">Each card is a claim about a made-up NFT project. <b>Swipe left</b> (or tap 🚩, or ←) if it's a <b>red flag</b>. <b>Swipe right</b> (or tap ✅, or →) if it's a <b>green flag</b>. Build a streak for bonus points. Get one wrong and you'll see why.</p>
+  <p class="howto">The habit to learn: <b>check it on-chain</b>. All projects in this game are made up.</p>
+  <div class="nick" id="nick"></div>
+  <p class="risk-foot">NFTs and cryptoassets are high-risk. Not financial advice. <a href="https://anonnfts.com/check-backing-on-chain-1" target="_top" rel="noopener">How to check backing on-chain</a></p>
+</section>
+<section class="view" id="play">
+  <div class="hud"><span id="tm">⏱ 60</span><span id="sc">⭐ 0</span><span id="st">🔥 0</span></div>
+  <div class="deck" id="deck"><div class="card" id="card"><span class="lab l">RED 🚩</span><span class="lab r">GREEN ✅</span><div class="who" id="who"></div><div class="doodle" id="dood">🃏</div><div class="txt" id="txt"></div><img class="me" id="me" alt=""></div>
+    <div class="why" id="why"><div><h3 id="whyH"></h3><p id="whyT"></p><button id="whyBtn">Got it →</button></div></div>
+    <div class="tap" id="msg"></div></div>
+  <div class="picks"><button id="redBtn">🚩 RED</button><button id="greenBtn">✅ GREEN</button></div>
+</section>
+<script src="../shared/leaderboard.js"></script>
+<script src="../shared/newsletter.js"></script>
+<script src="../assets/nft/kit.js"></script>
+<script src="../assets/play/play.js"></script>
+<script src="bk.js"></script>
+<script src="cards.js"></script>
+<script>
+'use strict';
+const { $, ls, post, openLB, gameOver, art } = AK;
+const GAME = 'flag-swipe', TITLE = 'Red Flag or Green Flag', ROUND = 60, GAP = .4;
+const DOODLES = ['🐹', '🐸', '🦝', '🦎', '🐌', '🦅', '👺', '🎩', '🧪', '🎰', '🚀', '🌙'];
+const pref = ls.get('anonFlag.pref', { art: 'eyes', best: 0 });
+const show = id => document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === id));
+const setHero = () => $('#hero').src = art(pref.art).cover;
+AK.picker($('#artPick'), pref.art, id => { pref.art = id; ls.set('anonFlag.pref', pref); setHero(); });
+setHero(); AK.nickLine($('#nick')); BK.muteBtn($('#sndBtn'));
+let S = null, deckOrder = [];
+function nextCard() { if (!deckOrder.length) deckOrder = AP.shuffle(FLAG_CARDS.map((c, i) => i)); return FLAG_CARDS[deckOrder.pop()]; }
+function paint() { const c = S.card; $('#who').textContent = c.r || /^(Moon|Hype|Pump|Fomo|Rocket|Lucky|Shiny|Velvet|Glitter|Mystery|Anonymous)/.test(c.who) ? c.who : c.who;
+  $('#txt').textContent = c.t; $('#dood').textContent = c.r ? AP.pick(DOODLES) : '🔎'; const k = $('#card'); k.style.transition = 'none'; k.style.transform = 'scale(.92)'; k.style.opacity = '.4';
+  k.querySelectorAll('.lab').forEach(l => l.style.opacity = 0); requestAnimationFrame(() => { k.style.transition = ''; k.style.transform = ''; k.style.opacity = 1; }); }
+function hud() { $('#tm').textContent = '⏱ ' + Math.max(0, Math.ceil(ROUND - S.t)); $('#sc').textContent = '⭐ ' + S.score; $('#st').textContent = '🔥 ' + S.streak; }
+function newRun() { show('play'); $('#me').src = art(pref.art).img; $('#why').classList.remove('show');
+  S = { t: 0, score: 0, streak: 0, best: 0, right: 0, wrong: 0, moves: 0, last: -9, over: false, why: false, count: 1.5, card: nextCard(), art: pref.art, missed: [] };
+  paint(); hud(); L.start(); }
+function answer(red) {
+  if (!S || S.over || S.why || S.count > 0 || S.t - S.last < GAP) return false;
+  S.last = S.t; S.moves++; const c = S.card, good = c.r === red, k = $('#card');
+  k.style.transform = `translateX(${red ? -420 : 420}px) rotate(${red ? -18 : 18}deg)`; k.style.opacity = 0;
+  if (good) { S.score += 10 + 2 * Math.min(S.streak, 5); S.streak++; S.right++; S.best = Math.max(S.best, S.streak); BK.play('good'); }
+  else { S.streak = 0; S.wrong++; BK.play('bad'); S.missed.push(c); if (navigator.vibrate) navigator.vibrate(60);
+    S.why = true; $('#whyH').textContent = c.r ? 'That one is a RED flag 🚩' : 'That one is a GREEN flag ✅'; $('#whyT').textContent = c.w; $('#why').classList.add('show');
+    S.whyT = 3.5; }
+  S.card = nextCard(); setTimeout(paint, 160); hud(); return true;
+}
+function closeWhy() { if (!S || !S.why) return; S.why = false; $('#why').classList.remove('show'); }
+function step(dt) {
+  if (!S || S.over) return;
+  if (S.count > 0) { S.count -= dt; $('#msg').textContent = S.count > 0 ? 'Get ready…' : ''; return; }
+  if (S.why) { S.whyT -= dt; if (S.whyT <= 0) closeWhy(); return; } // the clock stops while you read why
+  const before = Math.ceil(ROUND - S.t); S.t += dt; if (Math.ceil(ROUND - S.t) !== before && ROUND - S.t < 10) BK.play('tick');
+  if (S.t >= ROUND) { S.t = ROUND; finish(); } hud();
+}
+const L = AP.loop(step, () => {});
+const P = BK.autoPause({ running: () => !!S && !S.over && L.running, pause: () => L.stop(), resume: () => L.start(), host: $('#deck') });
+function finish() {
+  S.over = true; L.stop(); hud(); BK.play('win'); const a = art(S.art), pb = S.score > (pref.best || 0);
+  if (pb) { pref.best = S.score; ls.set('anonFlag.pref', pref); }
+  const acc = S.moves ? Math.round(S.right / S.moves * 100) : 0;
+  const tip = S.missed.length ? '<p style="font-size:13px">Tricky one: <i>' + BK.esc(S.missed[0].t) + '</i> ' + BK.esc(S.missed[0].w) + '</p>' : '';
+  BK.end({ art: a.img, title: pb && S.score ? 'New best! 🏆' : 'Time! ⏱', lb: S.score >= 10,
+    text: `<b>${S.right}</b> right, <b>${S.wrong}</b> wrong (${acc}%). Best streak <b>${S.best}</b>.` + tip,
+    buttons: [['PLAY AGAIN', () => newRun()], ['Leaderboard', () => openLB(GAME, TITLE, null, 'cards'), 1], ['Menu', () => show('setup'), 1]] });
+  if (S.score >= 10) post(GAME, S.score, ROUND, S.moves, null);
+  gameOver();
+}
+// swipe the card
+const deck = $('#deck'), card = $('#card'); let drag = null;
+deck.addEventListener('pointerdown', e => { if (!S || S.over || S.why || e.target.closest('.why')) return; drag = { x: e.clientX, y: e.clientY, dx: 0 }; try { deck.setPointerCapture(e.pointerId); } catch (_) {} card.style.transition = 'none'; });
+deck.addEventListener('pointermove', e => { if (!drag) return; drag.dx = e.clientX - drag.x; card.style.transform = `translateX(${drag.dx}px) rotate(${drag.dx / 18}deg)`;
+  card.querySelector('.lab.l').style.opacity = Math.max(0, -drag.dx / 90); card.querySelector('.lab.r').style.opacity = Math.max(0, drag.dx / 90); });
+const endDrag = () => { if (!drag) return; const dx = drag.dx; drag = null; card.style.transition = '';
+  if (Math.abs(dx) > 70 && answer(dx < 0)) return; card.style.transform = ''; card.querySelectorAll('.lab').forEach(l => l.style.opacity = 0); };
+deck.addEventListener('pointerup', endDrag); deck.addEventListener('pointercancel', endDrag);
+$('#redBtn').onclick = () => answer(true); $('#greenBtn').onclick = () => answer(false); $('#whyBtn').onclick = closeWhy;
+AP.keys({ ArrowLeft: () => answer(true), ArrowRight: () => answer(false), Enter: closeWhy, ' ': closeWhy });
+$('#goBtn').onclick = () => newRun();
+$('#menuBtn').onclick = () => { L.stop(); if (S) S.over = true; show('setup'); };
+$('#lbBtn').onclick = () => openLB(GAME, TITLE, null, 'cards');
+window.G = { state: () => S, newRun, step, answer, closeWhy, L, P, CARDS: FLAG_CARDS };
+</script>
+</body>
+</html>
