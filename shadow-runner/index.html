@@ -107,9 +107,9 @@ const L = AP.loop(step, draw); L.onHide = () => { if (S && !S.over) { L.stop(); 
 function crash() {
   S.over = true; L.stop(); draw(); if (navigator.vibrate) navigator.vibrate([50, 40, 80]);
   const sc = score(), t = Math.max(1, Math.ceil(S.t)), m = Math.floor(S.d), best = ls.get('anonRun.best', 0), pb = sc > best; if (pb) ls.set('anonRun.best', sc);
-  setTimeout(() => { modal({ art: '../assets/nft/p-anon.webp', title: pb ? 'New best! 🏆' : 'Caught in the forest! 🌲', text: `You ran <b>${m} m</b> and grabbed <b>${S.gems}</b> gems.<br>Score: ${m} + ${S.gems} × 10 = <b>${sc}</b>`, lb: sc > 0 && t >= 3,
+  ((S) => setTimeout(() => { modal({ art: '../assets/nft/p-anon.webp', title: pb ? 'New best! 🏆' : 'Caught in the forest! 🌲', text: `You ran <b>${m} m</b> and grabbed <b>${S.gems}</b> gems.<br>Score: ${m} + ${S.gems} × 10 = <b>${sc}</b>`, lb: sc > 0 && t >= 3,
     buttons: [['RUN AGAIN', () => newRun()], ['Leaderboard', () => openLB(GAME, TITLE, null, 'gems'), 1], ['Menu', () => show('setup'), 1]] });
-    if (sc > 0 && t >= 3) post(GAME, sc, t, S.gems, null); }, 650);
+    if (sc > 0 && t >= 3) post(GAME, sc, t, S.gems, null); }, 650))(S); // snapshot: a quick new game must not change this post
   gameOver();
 }
 const cv = $('#cv'); let sy = 0, sx = 0, st = 0;

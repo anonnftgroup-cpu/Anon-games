@@ -96,9 +96,9 @@ const medal = n => n >= 50 ? '🥇 Gold crown' : n >= 25 ? '🥈 Silver crown' :
 function crash() {
   S.over = true; L.stop(); draw(); if (navigator.vibrate) navigator.vibrate([40, 30, 70]);
   const n = S.score, t = Math.max(1, Math.ceil(S.t)), a = art(S.art), pb = n > (pref.best || 0); if (pb) { pref.best = n; ls.set('anonFlutter.pref', pref); }
-  setTimeout(() => { modal({ art: a.img, title: pb && n ? 'New best! 🏆' : 'Bonk! 🌲', text: `<b>${a.name}</b> flew through <b>${n}</b> gap${n === 1 ? '' : 's'}.${medal(n) ? '<br>' + medal(n) + ' earned!' : ''}`, lb: n > 0,
+  ((S) => setTimeout(() => { modal({ art: a.img, title: pb && n ? 'New best! 🏆' : 'Bonk! 🌲', text: `<b>${a.name}</b> flew through <b>${n}</b> gap${n === 1 ? '' : 's'}.${medal(n) ? '<br>' + medal(n) + ' earned!' : ''}`, lb: n > 0,
     buttons: [['FLY AGAIN', () => newRun()], ['Leaderboard', () => openLB(GAME, TITLE, null, 'taps'), 1], ['Change ANON', () => show('setup'), 1]] });
-    if (n > 0) post(GAME, n, t, Math.max(1, S.taps), null); }, 650);
+    if (n > 0) post(GAME, n, t, Math.max(1, S.taps), null); }, 650))(S); // snapshot: a quick new game must not change this post
   gameOver();
 }
 $('#cv').addEventListener('pointerdown', e => { e.preventDefault(); flap(); });

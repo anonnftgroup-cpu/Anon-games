@@ -157,9 +157,9 @@ function check() {
   if (S.over || S.p.some(p => !p.lock)) return;
   S.over = true; S.end = Date.now(); clearInterval(tick); hud(); draw();
   const t = Math.max(1, secs()), ok = t >= minTime(S.diff), sc = score(S.diff, t), a = art(S.art);
-  setTimeout(() => { modal({ art: a.cover, title: 'Puzzle complete! 🧩', text: `${NAMES[S.diff]} of <b>${a.name}</b> in <b>${t}s</b>.`, lb: true,
+  ((S) => setTimeout(() => { modal({ art: a.cover, title: 'Puzzle complete! 🧩', text: `${NAMES[S.diff]} of <b>${a.name}</b> in <b>${t}s</b>.`, lb: true,
     buttons: [['PLAY AGAIN', () => newGame()], ['Leaderboard', () => openLB(GAME, TITLE, NAMES, 'drags'), 1], ['Settings', () => show('setup'), 1]] });
-    if (ok) post(GAME, sc, t, Math.max(S.moves, 1), S.diff); else { const b = $('#lbMsg'); if (b) b.textContent = 'Too quick to verify, so this time is not posted.'; } }, 900);
+    if (ok) post(GAME, sc, t, Math.max(S.moves, 1), S.diff); else { const b = $('#lbMsg'); if (b) b.textContent = 'Too quick to verify, so this time is not posted.'; } }, 900))(S); // snapshot: a quick new game must not change this post
   gameOver();
 }
 $('#peekBtn').onclick = () => { peek = !peek; $('#peekBtn').classList.toggle('on', peek); draw(); };

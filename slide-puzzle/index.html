@@ -98,9 +98,9 @@ function check() {
   const b = $('#board'), last = el('div', 'tl'); last.style.cssText = `left:1px;top:1px;width:${T - 2}px;height:${T - 2}px;background-image:url(${art(S.art).cover});background-size:${T * S.n}px;background-position:${-(S.n - 1) * T}px ${-(S.n - 1) * T}px;transform:translate(${(S.n - 1) * T}px,${(S.n - 1) * T}px)`;
   b.appendChild(last); b.classList.add('won');
   const t = Math.max(1, secs()), ok = S.moves >= LV[S.diff].minMoves && t * 4 >= S.moves && t >= 5, sc = score(S.diff, S.moves, t), a = art(S.art);
-  setTimeout(() => { modal({ art: a.cover, title: 'Artwork restored! 🧩', text: `${NAMES[S.diff]} in <b>${S.moves}</b> moves and <b>${t}s</b>. You rebuilt <b>${a.name}</b>.`, lb: true,
+  ((S) => setTimeout(() => { modal({ art: a.cover, title: 'Artwork restored! 🧩', text: `${NAMES[S.diff]} in <b>${S.moves}</b> moves and <b>${t}s</b>. You rebuilt <b>${a.name}</b>.`, lb: true,
     buttons: [['PLAY AGAIN', () => newGame()], ['Leaderboard', () => openLB(GAME, TITLE, NAMES, 'moves'), 1], ['Settings', () => show('setup'), 1]] });
-    if (ok) post(GAME, sc, t, S.moves, S.diff); else { const m = $('#lbMsg'); if (m) m.textContent = 'Too quick to verify, so this one is not posted.'; } }, 1100);
+    if (ok) post(GAME, sc, t, S.moves, S.diff); else { const m = $('#lbMsg'); if (m) m.textContent = 'Too quick to verify, so this one is not posted.'; } }, 1100))(S); // snapshot: a quick new game must not change this post
   gameOver();
 }
 $('#board').addEventListener('pointerdown', e => { const t = e.target.closest('.tl'); if (!t || !S) return; tapIndex(S.a.indexOf(+t.dataset.v)); });

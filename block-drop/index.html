@@ -87,9 +87,9 @@ const L = AP.loop(step, draw); L.onHide = () => { if (S && !S.over) { L.stop(); 
 function end() {
   if (S.over) return; S.over = true; L.stop(); draw(); if (navigator.vibrate) navigator.vibrate([40, 30, 70]);
   const t = Math.max(1, Math.ceil(S.t)), best = ls.get('anonDrop.best', 0), pb = S.score > best; if (pb) ls.set('anonDrop.best', S.score);
-  setTimeout(() => { modal({ art: '../assets/nft/p-royals.webp', title: pb && S.score ? 'New best! 🏆' : 'The vault is full!', text: `<b>${S.lines}</b> rows cleared, level ${S.level}.`, lb: S.score > 0,
+  ((S) => setTimeout(() => { modal({ art: '../assets/nft/p-royals.webp', title: pb && S.score ? 'New best! 🏆' : 'The vault is full!', text: `<b>${S.lines}</b> rows cleared, level ${S.level}.`, lb: S.score > 0,
     buttons: [['PLAY AGAIN', () => newGame()], ['Leaderboard', () => openLB(GAME, TITLE, null, 'rows'), 1], ['Menu', () => show('setup'), 1]] });
-    if (S.score > 0) post(GAME, S.score, t, S.lines, null); }, 500);
+    if (S.score > 0) post(GAME, S.score, t, S.lines, null); }, 500))(S); // snapshot: a quick new game must not change this post
   gameOver();
 }
 // touch: drag = move by cells, tap = turn, quick swipe down = drop

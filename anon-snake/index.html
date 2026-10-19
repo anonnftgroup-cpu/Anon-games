@@ -97,9 +97,9 @@ const L = AP.loop(step, draw); L.onHide = () => { if (S && S.live && !S.over) { 
 function end(why) {
   S.over = true; L.stop(); draw(); if (navigator.vibrate) navigator.vibrate([40, 30, 70]);
   const t = Math.max(1, Math.ceil(S.t)), best = ls.get('anonSnake.best', 0), pb = S.score > best; if (pb) ls.set('anonSnake.best', S.score);
-  setTimeout(() => { modal({ art: '../assets/nft/p-anon.webp', title: pb && S.score ? 'New best! 🏆' : why === 'wall' ? 'Hit the wall! 🧱' : 'Tail bite! 🐍', text: `${NAMES[S.diff]} speed: <b>${S.gems}</b> gems, length ${S.body.length}.`, lb: S.score > 0,
+  ((S) => setTimeout(() => { modal({ art: '../assets/nft/p-anon.webp', title: pb && S.score ? 'New best! 🏆' : why === 'wall' ? 'Hit the wall! 🧱' : 'Tail bite! 🐍', text: `${NAMES[S.diff]} speed: <b>${S.gems}</b> gems, length ${S.body.length}.`, lb: S.score > 0,
     buttons: [['PLAY AGAIN', () => newGame()], ['Leaderboard', () => openLB(GAME, TITLE, NAMES, 'gems'), 1], ['Menu', () => show('setup'), 1]] });
-    if (S.score > 0) post(GAME, S.score, t, S.gems, S.diff); }, 550);
+    if (S.score > 0) post(GAME, S.score, t, S.gems, S.diff); }, 550))(S); // snapshot: a quick new game must not change this post
   gameOver();
 }
 AP.swipe($('#cv'), d => { if (d !== 'tap') turn(d); }, 18);

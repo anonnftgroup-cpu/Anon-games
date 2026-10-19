@@ -90,9 +90,9 @@ function check() {
   if (S.done.size !== S.deck.length) return;
   S.over = true; S.end = Date.now(); clearInterval(tick); hud();
   const t = Math.max(1, secs()), sc = score(S.diff, S.moves, t), ok = t >= minTime(S.diff), last = FACES.find(f => f.id === S.deck[[...S.done].pop()]);
-  setTimeout(() => { modal({ art: last.src, title: 'All pairs found! 🥷', text: `${NAMES[S.diff]}: <b>${S.moves}</b> turns in <b>${t}s</b>.`, lb: true,
+  ((S) => setTimeout(() => { modal({ art: last.src, title: 'All pairs found! 🥷', text: `${NAMES[S.diff]}: <b>${S.moves}</b> turns in <b>${t}s</b>.`, lb: true,
     buttons: [['PLAY AGAIN', () => newGame()], ['Leaderboard', () => openLB(GAME, TITLE, NAMES, 'turns'), 1], ['Settings', () => show('setup'), 1]] });
-    if (ok) post(GAME, sc, t, S.moves, S.diff); else { const m = $('#lbMsg'); if (m) m.textContent = 'Too quick to verify, so this one is not posted.'; } }, 700);
+    if (ok) post(GAME, sc, t, S.moves, S.diff); else { const m = $('#lbMsg'); if (m) m.textContent = 'Too quick to verify, so this one is not posted.'; } }, 700))(S); // snapshot: a quick new game must not change this post
   gameOver();
 }
 $('#grid').addEventListener('click', e => { const b = e.target.closest('.card'); if (b) { cur = +b.dataset.i; flip(cur); } });

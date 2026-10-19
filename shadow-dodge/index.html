@@ -97,9 +97,9 @@ function crash() {
   S.over = true; L.stop(); draw(); if (navigator.vibrate) navigator.vibrate([50, 40, 80]);
   const t = S.t, sc = Math.floor(t * 10), secs = Math.max(1, Math.ceil(t)), a = art(S.art), pb = t > (pref.best || 0);
   if (pb) { pref.best = +t.toFixed(1); ls.set('anonDodge.pref', pref); }
-  setTimeout(() => { modal({ art: a.img, title: pb ? 'New best! 🏆' : 'Hit! 💥', text: `<b>${a.name}</b> survived <b>${t.toFixed(1)}s</b> and dodged ${S.dodged} blocks.`, lb: sc >= 10,
+  ((S) => setTimeout(() => { modal({ art: a.img, title: pb ? 'New best! 🏆' : 'Hit! 💥', text: `<b>${a.name}</b> survived <b>${t.toFixed(1)}s</b> and dodged ${S.dodged} blocks.`, lb: sc >= 10,
     buttons: [['PLAY AGAIN', () => newRun()], ['Leaderboard', () => openLB(GAME, TITLE, NAMES, 'dodges'), 1], ['Change ANON', () => show('setup'), 1]] });
-    if (sc >= 10) post(GAME, sc, secs, S.dodged, S.art); }, 600);
+    if (sc >= 10) post(GAME, sc, secs, S.dodged, S.art); }, 600))(S); // snapshot: a quick new game must not change this post
   gameOver();
 }
 // controls: relative drag anywhere on the canvas

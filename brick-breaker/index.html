@@ -123,9 +123,9 @@ function draw() {
 const L = AP.loop(step, draw); L.onHide = () => { if (S && !S.over && !S.held) { L.stop(); S.paused = true; $('#msg').textContent = 'Paused. Tap to carry on'; } };
 function end() {
   S.over = true; L.stop(); draw(); const t = Math.max(1, Math.ceil(S.t)), a = art(lvArt(S.level));
-  setTimeout(() => { modal({ art: a.cover, title: 'Game over 🧱', text: `You reached <b>level ${S.level}</b> and broke <b>${S.broken}</b> bricks.`, lb: S.score > 0,
+  ((S) => setTimeout(() => { modal({ art: a.cover, title: 'Game over 🧱', text: `You reached <b>level ${S.level}</b> and broke <b>${S.broken}</b> bricks.`, lb: S.score > 0,
     buttons: [['PLAY AGAIN', () => newGame()], ['Leaderboard', () => openLB(GAME, TITLE, NAMES, 'bricks'), 1], ['Menu', () => show('setup'), 1]] });
-    if (S.score > 0) post(GAME, S.score, t, S.broken, 'l' + Math.min(99, S.level)); }, 500);
+    if (S.score > 0) post(GAME, S.score, t, S.broken, 'l' + Math.min(99, S.level)); }, 500))(S); // snapshot: a quick new game must not change this post
   gameOver();
 }
 const cv = $('#cv'); let drag = null, keyDir = 0;
