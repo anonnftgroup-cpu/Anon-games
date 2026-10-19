@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05070a">
+<title>ANON Hearts · ANON NFTs</title>
+<meta name="description" content="ANON Hearts: classic Hearts against three computer players, with ANON NFT court cards. Free, no sign-up.">
+<link rel="icon" href="../assets/logo.webp">
+<link rel="stylesheet" href="../assets/nft/kit.css">
+<style>
+:root{--cw:min(54px,13.4vw);--ch:calc(var(--cw)*1.42)}
+#play{position:relative}
+.table{flex:1;min-height:0;position:relative;margin:0 6px;border-radius:22px;border:1px solid rgba(212,175,55,.35);
+ background:radial-gradient(ellipse at center,rgba(10,40,24,.55),rgba(3,10,6,.85)),url(../assets/nft/c-anon.webp) center/cover;box-shadow:inset 0 0 40px rgba(0,0,0,.7)}
+.seat{position:absolute;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;font-weight:800;color:#d9d2bc;text-align:center;width:84px}
+.seat img{width:44px;height:44px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 2px var(--gold)}
+.seat.turn img{box-shadow:0 0 0 3px var(--pink),0 0 14px var(--pink)}
+.seat .sc{color:var(--gold2);font-size:12px}
+.seat .nm{max-width:84px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.s2{top:6px;left:50%;transform:translateX(-50%)}.s1{left:4px;top:38%}.s3{right:4px;top:38%}
+.backs{display:flex;margin-top:2px}.backs i{width:12px;height:17px;border-radius:2px;background:url(../solitaire/assets/back.webp) center/cover;margin-left:-6px;box-shadow:0 0 0 1px rgba(0,0,0,.6)}
+.trick{position:absolute;left:50%;top:50%;width:0;height:0}
+.trick .card{position:absolute;transition:transform .3s,opacity .3s}
+.tp0{transform:translate(-50%,15%)}.tp1{transform:translate(-145%,-50%)}.tp2{transform:translate(-50%,-118%)}.tp3{transform:translate(45%,-50%)}
+.msg{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);font-size:13px;font-weight:800;color:var(--gold2);background:rgba(0,0,0,.6);padding:4px 10px;border-radius:12px;white-space:nowrap}
+.me{display:flex;align-items:center;justify-content:space-between;padding:4px 10px 0;font-size:12px;font-weight:800}
+.me .sc{color:var(--gold2)}
+.hand{flex:none;height:calc(var(--ch) + 26px);position:relative;margin:0 auto;width:100%;max-width:560px}
+.hand .card{position:absolute;bottom:6px;transition:transform .15s,left .2s}
+.hand .card.dim{filter:brightness(.5)}
+.hand .card.up{transform:translateY(-16px)}
+.card{width:var(--cw);height:var(--ch);border-radius:6px;background:#fbf8ef;box-shadow:0 2px 6px rgba(0,0,0,.6),inset 0 0 0 1px rgba(0,0,0,.25);position:relative;overflow:hidden;color:#111;font-family:Georgia,"Times New Roman",serif;cursor:pointer}
+.card.red{color:#d0103a}
+.card .ix{position:absolute;left:3px;top:2px;display:flex;flex-direction:column;align-items:center;line-height:.95;font-weight:700;z-index:2}
+.card .ix b{font-size:calc(var(--cw)*.36);letter-spacing:-1px}.card .ix span{font-size:calc(var(--cw)*.32)}
+.card .pip{position:absolute;right:4px;bottom:2px;font-size:calc(var(--cw)*.62);line-height:1}
+.card .art{position:absolute;left:24%;right:4%;top:20%;bottom:4%;border-radius:4px;background-size:cover;background-position:center;box-shadow:0 0 0 2px #d4af37}
+.card .art::after{content:attr(data-s);position:absolute;right:2px;bottom:0;font-size:calc(var(--cw)*.34);text-shadow:0 0 3px #fff,0 0 3px #fff}
+.card.ace .art{background-color:#05070a;background-size:80%;background-repeat:no-repeat}
+.card.back{background:url(../solitaire/assets/back.webp) center/cover}
+.passbar{display:flex;justify-content:center;padding:2px}
+.passbar button{min-height:40px;padding:0 18px;border-radius:12px;border:1px solid #ff8cc4;background:linear-gradient(180deg,#ff5aab,#c41f73);color:#fff;font-weight:900}
+.passbar button:disabled{opacity:.45}
+table.sco{width:100%;border-collapse:collapse;font-size:14px;margin:8px 0}
+table.sco td,table.sco th{padding:4px;border-bottom:1px solid rgba(212,175,55,.2)}table.sco th{color:var(--gold2)}
+</style>
+</head>
+<body>
+<header><div class="top">
+  <div class="brand"><a class="back-btn" href="../" aria-label="Back to ANON Arcade">&larr; Arcade</a><img src="../assets/logo.webp" alt=""><h1>ANON HEARTS</h1></div>
+  <div class="top-r"><button class="icon-btn" id="lbBtn" aria-label="Leaderboard">🏆</button><button class="icon-btn" id="menuBtn" aria-label="Menu">↻</button></div>
+</div></header>
+<section class="view on" id="setup">
+  <img class="hero" src="../assets/nft/c-royals.webp" alt="ANON Apes King and Queen">
+  <div class="lbl">Your ANON</div><div class="chars" id="p1Pick"></div>
+  <button class="go" id="goBtn">DEAL</button>
+  <button class="go alt" id="resumeBtn" style="display:none">Resume match</button>
+  <p class="lbl" style="text-transform:none;letter-spacing:0;line-height:1.5">You vs three ANON players. Pass 3 cards (left, right, across, hold), follow suit, and avoid hearts (1 point each) and the Queen of Spades (13). Take all of them to shoot the moon. When someone reaches 100, the lowest score wins.</p>
+  <div class="nick" id="nick"></div>
+</section>
+<section class="view" id="play">
+  <div class="table" id="table">
+    <div class="seat s2" id="seat2"><img alt=""><span class="nm"></span><span class="sc"></span><div class="backs"></div></div>
+    <div class="seat s1" id="seat1"><img alt=""><span class="nm"></span><span class="sc"></span><div class="backs"></div></div>
+    <div class="seat s3" id="seat3"><img alt=""><span class="nm"></span><span class="sc"></span><div class="backs"></div></div>
+    <div class="trick" id="trick"></div>
+    <div class="msg" id="msg"></div>
+  </div>
+  <div class="me"><span id="meName">You</span><span class="sc" id="meScore"></span></div>
+  <div class="passbar" id="passbar" style="display:none"><button id="passBtn" disabled>Pass 3 cards</button></div>
+  <div class="hand" id="hand"></div>
+  <div class="bar"><button id="scoresBtn">Scores</button><button id="setBtn">Menu</button></div>
+</section>
+<script src="../shared/leaderboard.js"></script>
+<script src="../shared/newsletter.js"></script>
+<script src="../assets/nft/kit.js"></script>
+<script src="engine.js"></script>
+<script>
+'use strict';
+const { $, el, ls, toast, modal, post, openLB, gameOver, art } = AK;
+const GAME = 'hearts', TITLE = 'ANON Hearts';
+const FAST = /[?&]fast=1\b/.test(location.search);
+const W = ms => new Promise(r => setTimeout(r, FAST ? 5 : ms));
+const SUITS = ['♣', '♦', '♠', '♥'], RN = { 11: 'J', 12: 'Q', 13: 'K', 14: 'A' };
+const COURT = { 11: ['ghost', 'img8142', 'skulls', 'grumpy'], 12: ['lake', 'eyes', 'venge', 'royals'], 13: ['apes', 'aces', 'anon', 'royals'] }; // court art per [rank][suit ♣ ♦ ♠ ♥]
+const courtImg = id => AK.B + 'p-' + id + '.webp';
+const pref = ls.get('anonHE.pref', { p1: 'anon' });
+const K_SAVE = 'anonHE.match';
+let M = null, sel = new Set(), busy = false, resolveHuman = null;
+AK.picker($('#p1Pick'), pref.p1, id => { pref.p1 = id; ls.set('anonHE.pref', pref); });
+AK.nickLine($('#nick'));
+const show = id => document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === id));
+function cardEl(c) {
+  const s = HE.suit(c), r = HE.rank(c), d = el('div', 'card' + (s % 2 ? ' red' : '')); d.dataset.c = c;
+  const ix = el('div', 'ix'); ix.appendChild(el('b', '', RN[r] || r)); ix.appendChild(el('span', '', SUITS[s])); d.appendChild(ix);
+  if (r >= 11 && r <= 13) { const a = el('div', 'art'); a.style.backgroundImage = 'url(' + courtImg(COURT[r][s]) + ')'; a.dataset.s = SUITS[s]; d.appendChild(a); }
+  else if (r === 14) { d.classList.add('ace'); const a = el('div', 'art'); a.style.backgroundImage = 'url(../assets/logo.webp)'; a.dataset.s = SUITS[s]; d.appendChild(a); }
+  else d.appendChild(el('div', 'pip', SUITS[s]));
+  d.setAttribute('aria-label', (RN[r] ? { J: 'Jack', Q: 'Queen', K: 'King', A: 'Ace' }[RN[r]] : r) + ' of ' + ['clubs', 'diamonds', 'spades', 'hearts'][s]);
+  return d;
+}
+const save = () => { if (M && !M.over) ls.set(K_SAVE, { totals: M.totals, hand: M.hand, opp: M.opp, start: M.start }); else ls.set(K_SAVE, null); };
+function newMatch(resume) {
+  const others = AK.ART.filter(a => a.id !== pref.p1).sort(() => Math.random() - 0.5).slice(0, 3).map(a => a.id);
+  M = resume ? Object.assign({ over: false }, resume) : { totals: [0, 0, 0, 0], hand: 0, opp: others, start: Date.now(), over: false };
+  [1, 2, 3].forEach(p => { const a = art(M.opp[p - 1]); $('#seat' + p + ' img').src = a.img; $('#seat' + p + ' .nm').textContent = a.name.replace(/^ANON /, ''); });
+  $('#meName').textContent = 'You · ' + art(pref.p1).name.replace(/^ANON /, '');
+  show('play'); playHand();
+}
+function paintSeats() {
+  [1, 2, 3].forEach(p => { const s = $('#seat' + p); s.querySelector('.sc').textContent = M.totals[p] + (M.st ? ' (+' + handPts(p) + ')' : '');
+    const bk = s.querySelector('.backs'); bk.innerHTML = ''; for (let i = 0; i < (M.st ? M.st.hands[p].length : 0); i++) bk.appendChild(el('i'));
+    s.classList.toggle('turn', M.turn === p); });
+  $('#meScore').textContent = 'Score ' + M.totals[0] + (M.st ? ' (+' + handPts(0) + ' this hand)' : '');
+}
+const handPts = p => M.st.taken[p].reduce((a, c) => a + HE.pts(c), 0);
+function paintHand(playable) {
+  const h = $('#hand'); h.innerHTML = ''; const cards = M.st.hands[0]; const n = cards.length; if (!n) return;
+  const W0 = h.clientWidth || 380, cw = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--cw')) || 54;
+  const cwpx = $('#hand').appendChild(el('div', 'card')).getBoundingClientRect().width || cw; h.innerHTML = '';
+  const step = Math.min(cwpx * 0.9, (W0 - 12 - cwpx) / Math.max(1, n - 1)), left0 = (W0 - (step * (n - 1) + cwpx)) / 2;
+  cards.forEach((c, i) => { const d = cardEl(c); d.style.left = (left0 + i * step) + 'px'; d.style.zIndex = i;
+    if (playable && !playable.includes(c)) d.classList.add('dim'); if (sel.has(c)) d.classList.add('up'); h.appendChild(d); });
+}
+const say = t => { $('#msg').textContent = t; $('#msg').style.display = t ? '' : 'none'; };
+async function playHand() {
+  const hands = HE.deal(); M.st = { hands, trick: [], broken: false, first: true, taken: [[], [], [], []] }; M.seen = new Set(); M.turn = -1; sel = new Set();
+  $('#trick').innerHTML = ''; paintSeats();
+  const dir = HE.passDir(M.hand);
+  if (dir) {
+    say('Pass 3 cards ' + { 1: 'left', 3: 'right', 2: 'across' }[dir]); M.phase = 'pass'; $('#passbar').style.display = ''; $('#passBtn').disabled = true; paintHand();
+    const mine = await new Promise(r => resolveHuman = r); resolveHuman = null; $('#passbar').style.display = 'none';
+    const ps = [mine, ...[1, 2, 3].map(p => HE.choosePass(hands[p]))];
+    ps.forEach((cs, p) => { hands[p] = hands[p].filter(c => !cs.includes(c)); });
+    ps.forEach((cs, p) => { hands[(p + dir) % 4].push(...cs); });
+    hands.forEach(h => h.sort((a, b) => a - b)); M.got = ps[(4 - dir) % 4];
+    sel = new Set(M.got); paintHand(); say('You received ' + M.got.map(c => (RN[HE.rank(c)] || HE.rank(c)) + SUITS[HE.suit(c)]).join(' ')); await W(1400); sel = new Set();
+  }
+  M.phase = 'play'; let lead = hands.findIndex(h => h.includes(HE.TWO_C));
+  for (let t = 0; t < 13; t++) {
+    M.st.trick = []; $('#trick').innerHTML = '';
+    for (let k = 0; k < 4; k++) {
+      const p = (lead + k) % 4; M.turn = p; paintSeats(); let c;
+      if (p === 0) { const L = HE.legal(M.st, 0); say(t === 0 && k === 0 ? 'Lead the 2♣' : 'Your turn'); paintHand(L); c = await new Promise(r => resolveHuman = r); resolveHuman = null; }
+      else { say(''); await W(420); c = HE.choosePlay(M.st, p, M.seen); }
+      M.st.hands[p].splice(M.st.hands[p].indexOf(c), 1); M.st.trick.push({ p, c });
+      if (HE.suit(c) === 3 && !M.st.broken) { M.st.broken = true; if (t) toast('Hearts are broken 💔'); }
+      const d = cardEl(c); d.classList.add('tp' + p); $('#trick').appendChild(d); paintHand(); paintSeats();
+    }
+    M.turn = -1; const w = HE.winner(M.st.trick); M.st.trick.forEach(x => M.seen.add(x.c));
+    M.st.taken[w].push(...M.st.trick.map(x => x.c)); M.st.first = false; lead = w;
+    const pts = M.st.trick.reduce((a, x) => a + HE.pts(x.c), 0);
+    say((w === 0 ? 'You take' : art(M.opp[w - 1]).name.replace(/^ANON /, '') + ' takes') + ' the trick' + (pts ? ' (+' + pts + ')' : '')); paintSeats(); await W(pts ? 1100 : 750);
+  }
+  $('#trick').innerHTML = ''; return endHand();
+}
+async function endHand() {
+  const r = HE.score(M.st.taken); r.pts.forEach((v, i) => M.totals[i] += v); M.hand++; M.st = null; paintSeats(); save();
+  const nm = p => p === 0 ? 'You' : art(M.opp[p - 1]).name.replace(/^ANON /, '');
+  const max = Math.max(...M.totals), min = Math.min(...M.totals), lows = M.totals.filter(x => x === min).length;
+  const done = max >= 100 && lows === 1;
+  const rows = M.totals.map((t, i) => `<tr><td>${nm(i)}</td><td>+${r.pts[i]}</td><td><b>${t}</b></td></tr>`).join('');
+  const moon = r.moon >= 0 ? `<p>🌙 ${nm(r.moon)} shot the moon!</p>` : '';
+  if (!done) { await new Promise(res => modal({ title: 'Hand ' + M.hand + ' scores', text: moon + `<table class="sco"><tr><th></th><th>Hand</th><th>Total</th></tr>${rows}</table>`, buttons: [['NEXT HAND', res]] })); return playHand(); }
+  M.over = true; save(); const youWin = M.totals[0] === min; const secs = Math.max(M.hand * 20, Math.round((Date.now() - M.start) / 1000));
+  const winner = M.totals.indexOf(min);
+  modal({ art: winner === 0 ? art(pref.p1).img : art(M.opp[winner - 1]).img, title: youWin ? 'You win the match! 👑' : nm(winner) + ' wins the match', text: moon + `<table class="sco"><tr><th></th><th>Hand</th><th>Total</th></tr>${rows}</table>`, lb: true,
+    buttons: [['NEW MATCH', () => newMatch()], ['Leaderboard', () => openLB(GAME, TITLE, null, 'hands'), 1], ['Menu', () => show('setup'), 1]] });
+  const b = $('#lbMsg'); if (youWin) post(GAME, Math.max(10, 1000 - 10 * M.totals[0]), secs, M.hand, null); else if (b) b.textContent = 'Win a match (lowest score) to get on the leaderboard.';
+  gameOver();
+}
+$('#hand').addEventListener('click', e => {
+  const d = e.target.closest('.card'); if (!d || !resolveHuman) return; const c = +d.dataset.c;
+  if (M.phase === 'pass') { if (sel.has(c)) sel.delete(c); else if (sel.size < 3) sel.add(c); $('#passBtn').disabled = sel.size !== 3; paintHand(); return; }
+  const L = HE.legal(M.st, 0); if (!L.includes(c)) { toast(M.st.first && !M.st.trick.length ? 'You must lead the 2♣' : M.st.trick.length ? 'Follow suit if you can' + (M.st.first ? ' (no points on the first trick)' : '') : 'Hearts are not broken yet'); return; }
+  resolveHuman(c);
+});
+$('#passBtn').onclick = () => { if (sel.size === 3 && resolveHuman) { const s = [...sel]; sel = new Set(); resolveHuman(s); } };
+$('#scoresBtn').onclick = () => { if (!M) return; const nm = p => p === 0 ? 'You' : art(M.opp[p - 1]).name; toast(M.totals.map((t, i) => nm(i).replace(/^ANON /, '') + ' ' + t).join(' · '), 3000); };
+const saved = ls.get(K_SAVE, null); if (saved && saved.totals) $('#resumeBtn').style.display = '';
+$('#resumeBtn').onclick = () => { const s = ls.get(K_SAVE, null); if (s) newMatch(s); };
+$('#goBtn').onclick = () => { if (M && !M.over && !confirmNew()) return; newMatch(); };
+const confirmNew = () => true;
+$('#setBtn').onclick = $('#menuBtn').onclick = () => { if (M && !M.over) { save(); $('#resumeBtn').style.display = ''; } show('setup'); };
+$('#lbBtn').onclick = () => openLB(GAME, TITLE, null, 'hands');
+window.ANON_HE = { M: () => M, waiting: () => !!resolveHuman, give: v => resolveHuman && resolveHuman(v), newMatch };
+</script>
+</body>
+</html>

@@ -133,6 +133,31 @@
       "added": "2026-10-19"
     },
     {
+      "id": "hearts",
+      "name": "ANON Hearts",
+      "tagline": "Classic Hearts with ANON court cards",
+      "path": "hearts/",
+      "thumb": "hearts/thumb.webp",
+      "category": "Cards",
+      "tags": [
+        "hearts",
+        "cards",
+        "trick taking",
+        "vs computer"
+      ],
+      "status": "live",
+      "leaderboard": true,
+      "scoreLabel": "Score",
+      "order": "desc",
+      "periods": [
+        "day",
+        "all"
+      ],
+      "movesLabel": "hands",
+      "hideMode": true,
+      "added": "2026-10-19"
+    },
+    {
       "id": "ninja-memory",
       "name": "Ninja Memory",
       "tagline": "Find the hidden ANON pairs",
