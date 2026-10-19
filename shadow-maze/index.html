@@ -6,6 +6,18 @@
 <meta name="theme-color" content="#05070a">
 <title>ANON Shadow Maze · ANON NFTs</title>
 <meta name="description" content="ANON Shadow Maze: guide your ANON ninja through the Shadow Shrine, collect gold coins and turn the tables with pink power gems. Free, no sign-up.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ANON Arcade">
+<meta property="og:title" content="ANON Shadow Maze">
+<meta property="og:description" content="ANON Shadow Maze: guide your ANON ninja through the Shadow Shrine, collect gold coins and turn the tables with pink power gems. Free, no sign-up.">
+<meta property="og:url" content="https://anonnftgroup-cpu.github.io/Anon-games/shadow-maze/">
+<meta property="og:image" content="https://anonnftgroup-cpu.github.io/Anon-games/shadow-maze/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ANON Shadow Maze">
+<meta name="twitter:description" content="ANON Shadow Maze: guide your ANON ninja through the Shadow Shrine, collect gold coins and turn the tables with pink power gems. Free, no sign-up.">
+<meta name="twitter:image" content="https://anonnftgroup-cpu.github.io/Anon-games/shadow-maze/og.jpg">
 <link rel="icon" href="../assets/logo.webp">
 <link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
 <link rel="stylesheet" href="../assets/nft/kit.css">
@@ -27,7 +39,7 @@
     const c = document.createElement('canvas'), k = 2; c.width = S.W * T * k; c.height = S.H * T * k; const x = c.getContext('2d'); x.scale(k, k);
     const g = x.createLinearGradient(0, 0, 0, S.H * T); g.addColorStop(0, '#0b0718'); g.addColorStop(1, '#03100a'); x.fillStyle = g; x.fillRect(0, 0, S.W * T, S.H * T);
     RK.stars(x, S.W * T, S.H * T, 9, 70);
-    RK.cover(x, RK.C.anon, 7.5 * T, 8.5 * T, 4 * T, 3 * T, 0.18);
+    RK.cover(x, RK.C.anon, (G.DOOR.x - 1.5) * T, (G.DOOR.y + 0.5) * T, 4 * T, 3 * T, 0.18);
     for (let y = 0; y < S.H; y++) for (let xx = 0; xx < S.W; xx++) {
       const ch = S.MAZE[y][xx]; if (ch !== '#') continue; const X = xx * T, Y = y * T;
       x.fillStyle = '#0f2a1a'; x.fillRect(X, Y, T, T);
@@ -37,8 +49,8 @@
       if (open(-1, 0)) { x.moveTo(X + 1, Y); x.lineTo(X + 1, Y + T); } if (open(1, 0)) { x.moveTo(X + T - 1, Y); x.lineTo(X + T - 1, Y + T); } x.stroke();
       x.fillStyle = 'rgba(43,255,136,.08)'; x.fillRect(X + 4, Y + 4, T - 8, T - 8);
     }
-    x.fillStyle = 'rgba(255,61,154,.75)'; x.fillRect(9 * T + 2, 8 * T + 8, T - 4, 4); // shrine door
-    x.font = '700 8px Georgia,serif'; x.fillStyle = 'rgba(243,215,122,.7)'; x.textAlign = 'center'; x.fillText('SHADOW SHRINE', 9.5 * T, 11.7 * T);
+    x.fillStyle = 'rgba(255,61,154,.75)'; x.fillRect(G.DOOR.x * T + 2, G.DOOR.y * T + 8, T - 4, 4); // shrine door
+    x.font = '700 8px Georgia,serif'; x.fillStyle = 'rgba(243,215,122,.7)'; x.textAlign = 'center'; x.font = '700 7px Georgia,serif'; x.fillText('SHRINE', (G.DOOR.x + 0.5) * T, (G.DOOR.y + 3.7) * T);
     return c;
   }
   function cloak(x, cx, cy, r, col, im, fr, blink, t) {
@@ -52,7 +64,7 @@
   }
   RK.shell({
     game: 'shadow-maze', title: 'ANON Shadow Maze', h1: 'ANON SHADOW MAZE', W: 19 * T, H: 21 * T, movesLabel: 'level', swipe: true, controls: ['pad'],
-    pickLabel: 'Pick your ninja', startMsg: 'READY!',
+    pickLabel: 'Pick your ninja', startMsg: 'GO!',
     how: '<b>Swipe</b>, use the pad or the arrow keys / WASD to steer your ninja through the Shadow Shrine. Collect every 🪙 gold coin to clear the level. A 💎 pink power gem spooks the shadows for a few seconds, so catch them for 200, 400, 800 and 1,600. Grab the ANON NFT tokens for bonus points. Each level gets faster.',
     create: o => { wallLayer = null; const S = G.create(o); S.shades = SHADES.map(s => s.slice()); S.shades.forEach(s => { if (s[1] === o.art) s[1] = 'grumpy'; }); return S; },
     hud: S => `<span>⭐ ${S.score.toLocaleString()}</span><span>LVL ${S.level}</span><span>${'❤️'.repeat(Math.max(0, Math.min(5, S.lives)))}</span>`,

@@ -1,11 +1,12 @@
-/* ANON Shadow Maze · rules + movement (no DOM). Original maze "Shadow Shrine" by ANON NFTs. */
+/* ANON Shadow Maze · rules + movement (no DOM). Original asymmetric maze "Shadow Shrine" by ANON NFTs: off-centre shrine, no wrap tunnels. */
 (function (root, f) { if (typeof module === 'object' && module.exports) module.exports = f(); else root.SMGame = f(); })(this, function () {
   'use strict';
-  const MAZE = ['###################', '#........#........#', '#o##.###.#.###.##o#', '#.................#', '#.##.#.#####.#.##.#', '#....#...#...#....#',
-    '####.###.#.###.####', 'T......#...#......T', '####.#.##-##.#.####', '#....#.#GGG#.#....#', '#.##...#GGG#...##.#', '#..#.#.#####.#.#..#',
-    '##.#.#.......#.#.##', '#....###.#.###....#', '#.##.....#.....##.#', '#.#..##.###.##..#.#', '#o#.#.........#.#o#', '#...#.###.###.#...#',
-    '#.###...#.#...###.#', '#.................#', '###################'];
-  const W = 19, H = 21, START = { x: 9, y: 12 }, DOOR = { x: 9, y: 8 }, HOME = [{ x: 9, y: 9 }, { x: 8, y: 10 }, { x: 10, y: 10 }, { x: 9, y: 10 }], TOKEN = { x: 9, y: 14 };
+  const MAZE = [
+    '###################', '#.....#.......#...#', '#.###.#.#####.#.#.#', '#.#.......o.....#.#', '#.#.###.#.#.###.#.#', '#o..#.....#...#...#',
+    '###.#.#####.#.###.#', '#...#...#...#...#.#', '#.#####.#.###.#.#.#', '#.......#.....#...#', '#.###.#.###.#.###.#', '#...#.#.....#.....#',
+    '###.....#.#.###.#.#', '###-##.##.#...#.#.#', '##GGG#.#..###.#..o#', '##GGG#...#....#.#.#', '######.#.#.##.#.#.#', '#......#...#....#.#',
+    '#.####.###.#.####.#', '#......o..........#', '###################'];
+  const W = 19, H = 21, START = { x: 9, y: 11 }, DOOR = { x: 3, y: 13 }, HOME = [{ x: 3, y: 14 }, { x: 2, y: 15 }, { x: 4, y: 15 }, { x: 3, y: 15 }], TOKEN = { x: 9, y: 9 };
   const DIRS = { left: [-1, 0], right: [1, 0], up: [0, -1], down: [0, 1] }, OPP = { left: 'right', right: 'left', up: 'down', down: 'up' };
   const PTS = { coin: 10, gem: 50, ghost: 200, level: 500 };
   function rngOf(s) { let a = s >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
@@ -24,7 +25,7 @@
       S.pl = { x: START.x, y: START.y, dir: 'left', next: 'left', prog: 0, moving: true };
       S.gh = [0, 1, 2, 3].map(i => ({ i, x: i === 0 ? DOOR.x : HOME[i].x, y: i === 0 ? DOOR.y - 1 : HOME[i].y, dir: 'left', prog: 0, state: i === 0 ? 'out' : 'home',
         release: [0, 2.5, 5, 7.5][i] * Math.max(0.35, 1 - 0.15 * (S.level - 1)), fr: false, roam: 0 }));
-      S.fright = 0; S.ready = 1.6; S.wave = 0; say('READY!', 1.5);
+      S.fright = 0; S.ready = 1.6; S.wave = 0; say('GO!', 1.5);
     }
     fill(); place();
     // BFS distance field from a target (wraps through the side tunnel)
@@ -110,5 +111,5 @@
     S.walkP = walkP; S.ch = ch; S.DIRS = DIRS;
     return S;
   }
-  return { create, MAZE, W, H, PTS };
+  return { create, MAZE, W, H, PTS, DOOR, HOME, START, TOKEN };
 });
