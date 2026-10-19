@@ -1263,6 +1263,35 @@
         "hard": "Hard"
       },
       "added": "2026-10-19"
+    },
+    {
+      "id": "spider",
+      "name": "ANON Spider Solitaire",
+      "tagline": "Build King-to-Ace runs with 1, 2 or 4 suits",
+      "path": "spider/",
+      "thumb": "spider/thumb.webp",
+      "category": "Cards",
+      "tags": [
+        "spider",
+        "patience",
+        "cards",
+        "solitaire"
+      ],
+      "status": "live",
+      "leaderboard": true,
+      "scoreLabel": "Score",
+      "order": "desc",
+      "periods": [
+        "day",
+        "all"
+      ],
+      "movesLabel": "moves",
+      "modeLabels": {
+        "easy": "1 suit",
+        "medium": "2 suits",
+        "hard": "4 suits"
+      },
+      "added": "2026-10-19"
     }
   ]
 }

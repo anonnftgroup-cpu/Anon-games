@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05070a">
+<title>ANON Spider Solitaire · ANON NFTs</title>
+<meta name="description" content="ANON Spider Solitaire: build 8 runs from King to Ace with ANON NFT court cards. 1, 2 or 4 suits. Free, no sign-up.">
+<link rel="icon" href="../assets/logo.webp">
+<link rel="stylesheet" href="../assets/nft/kit.css">
+<link rel="stylesheet" href="../assets/play/play.css">
+<style>
+.pad{display:flex;gap:6px;justify-content:center;align-items:center;padding:4px 4px 2px;flex:none;user-select:none;-webkit-user-select:none;flex-wrap:wrap}
+.pad button{min-width:52px;min-height:44px;border-radius:12px;border:1px solid rgba(212,175,55,.6);background:rgba(0,0,0,.55);color:var(--gold2);font-size:17px;font-weight:900;touch-action:none;padding:0 8px}
+.pad button.on{background:rgba(255,61,154,.35)}.pad .big{min-width:84px;background:linear-gradient(180deg,#ff5aab,#c41f73);color:#fff;font-size:15px}
+.pad button:disabled{opacity:.35}
+.dpad{display:grid;grid-template-columns:repeat(3,48px);grid-template-rows:repeat(2,40px);gap:4px}.dpad button{min-width:0;min-height:0}
+.dpad [data-k=U]{grid-column:2}.dpad [data-k=L]{grid-column:1;grid-row:2}.dpad [data-k=D]{grid-column:2;grid-row:2}.dpad [data-k=R]{grid-column:3;grid-row:2}
+.seg.wrap{flex-wrap:wrap}.seg.wrap button{flex:1 1 22%}
+@media (max-height:700px){.pad button{min-height:38px}}
+</style>
+</head>
+<body>
+<header><div class="top">
+  <div class="brand"><a class="back-btn" href="../" aria-label="Back to ANON Arcade">&larr; Arcade</a><img src="../assets/logo.webp" alt=""><h1>SPIDER SOLITAIRE</h1></div>
+  <div class="top-r"><button class="icon-btn" id="lbBtn" aria-label="Leaderboard">🏆</button><button class="icon-btn" id="menuBtn" aria-label="Menu">↻</button></div>
+</div></header>
+<section class="view on" id="setup">
+  <img class="hero" id="hero" alt="ANON NFTs artwork">
+  <div class="lbl">Choose your ANON</div>
+  <div class="chars five" id="artPick"></div>
+  <div class="lbl">Suits</div><div class="seg" id="diff"><button data-v="easy">1 suit</button><button data-v="medium">2 suits</button><button data-v="hard">4 suits</button></div>
+  <button class="go" id="goBtn">PLAY</button>
+  <p class="howto">Build runs from King down to Ace. A full run in one suit clears itself. Any card can go on a card one higher, but only same-suit runs move together. Tap a card to pick it up, tap a column to drop it (green = allowed), or tap it again to auto-move. Tap the deck (top right) to deal a new row. Unlimited undo.</p>
+  <div class="nick" id="nick"></div>
+</section>
+<section class="view" id="play">
+  <div class="hud"><span id="tm"></span><span id="mv"></span><span id="fd"></span></div>
+  <div class="stage"><canvas id="cv"></canvas><div class="tap" id="msg"></div></div>
+  <div class="pad"><button data-k="U">↶ Undo</button><button data-k="H">💡 Hint</button><button data-k="D">🂠 Deal</button></div>
+  <div class="bar"><button id="againBtn">New deal</button><button id="setBtn">Change ANON</button></div>
+</section>
+<script src="../shared/leaderboard.js"></script>
+<script src="../shared/newsletter.js"></script>
+<script src="../assets/nft/kit.js"></script>
+<script src="../assets/play/play.js"></script>
+<script>
+const GAME = 'spider', TITLE = 'ANON Spider Solitaire', PK = 'anonB.spider', ASPECT = 0.64, MOVES = 'moves', DEFMODE = 'easy';
+'use strict';
+const { $, ls, modal, post, openLB, gameOver, art, ART } = AK;
+const NAMES = Object.fromEntries(ART.map(a => [a.id, a.name.replace(/^ANON /, '')]));
+const DIFFN = { easy: 'Easy', medium: 'Medium', hard: 'Hard' };
+const pref = ls.get(PK, { art: 'anon', diff: DEFMODE, best: 0 }); if (window.MODELIST && !MODELIST.includes(pref.diff)) pref.diff = DEFMODE;
+const show = id => document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === id));
+const setHero = () => $('#hero').src = art(pref.art).cover;
+AK.picker($('#artPick'), pref.art, id => { pref.art = id; ls.set(PK, pref); setHero(); });
+if ($('#diff') && ![...$('#diff').children].some(b => b.dataset.v === pref.diff)) pref.diff = DEFMODE;
+if ($('#diff')) AK.seg($('#diff'), pref.diff, v => { pref.diff = v; ls.set(PK, pref); });
+setHero(); AK.nickLine($('#nick'));
+// ---- sound: generated in the browser, nothing plays before the first tap/key ----
+let AC = null; window.__sfx = 0;
+const unlock = () => { if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } if (AC && AC.state === 'suspended') AC.resume(); };
+['pointerdown', 'keydown', 'touchstart'].forEach(t => window.addEventListener(t, unlock, { capture: true, passive: true }));
+function tone(f, d, type, vol, f2) { if (!AC || pref.mute) return; window.__sfx++; const t = AC.currentTime, o = AC.createOscillator(), g = AC.createGain();
+  o.type = type || 'square'; o.frequency.setValueAtTime(f, t); if (f2) o.frequency.exponentialRampToValueAtTime(Math.max(20, f2), t + d);
+  g.gain.setValueAtTime(vol || .08, t); g.gain.exponentialRampToValueAtTime(.0001, t + d); o.connect(g).connect(AC.destination); o.start(t); o.stop(t + d + .02); }
+function boom(d, vol) { if (!AC || pref.mute) return; window.__sfx++; const n = Math.floor(AC.sampleRate * d), b = AC.createBuffer(1, n, AC.sampleRate), c = b.getChannelData(0);
+  for (let i = 0; i < n; i++) c[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 2); const s = AC.createBufferSource(), g = AC.createGain(), fl = AC.createBiquadFilter();
+  fl.type = 'lowpass'; fl.frequency.value = 900; s.buffer = b; g.gain.value = vol || .25; s.connect(fl).connect(g).connect(AC.destination); s.start(); }
+// ---- shared loop, pause when hidden, game over ----
+let C = null, S = null;
+const imgs = {}; const IM = id => imgs[id];
+ART.forEach(a => { AP.img(a.img).then(i => { imgs[a.id] = i; dirty = true; }); AP.img(a.cover).then(i => { imgs['c-' + a.id] = i; dirty = true; }); });
+function ring(x, im, cx, cy, r, col) { x.save(); x.beginPath(); x.arc(cx, cy, r, 0, 7); x.closePath(); x.fillStyle = '#111'; x.fill(); x.clip(); if (im) AP.cover(x, im, cx - r, cy - r, r * 2, r * 2); x.restore();
+  x.lineWidth = Math.max(1.5, r * .16); x.strokeStyle = col || '#f3d77a'; x.beginPath(); x.arc(cx, cy, r, 0, 7); x.stroke(); }
+function bgArt(x, id, a) { const im = IM('c-' + id); if (!im) return; x.globalAlpha = a || .22; const k = Math.max(C.w / im.width, C.h / im.height); x.drawImage(im, (C.w - im.width * k) / 2, (C.h - im.height * k) / 2, im.width * k, im.height * k); x.globalAlpha = 1; }
+const L = AP.loop(dt => { if (S && !S.over && !S.paused) step(dt); }, () => draw());
+let paused = false;
+function pause() { if (!S || S.over || S.paused) return; S.paused = true; $('#msg').textContent = 'Paused\nTap to resume'; }
+function resume() { if (S && S.paused) { S.paused = false; $('#msg').textContent = ''; } }
+document.addEventListener('visibilitychange', () => { if (document.hidden) pause(); });
+$('#msg').parentElement.addEventListener('pointerdown', () => { if (S && S.paused) resume(); }, true);
+async function start() { show('play'); if (!C) C = AP.canvas($('#cv'), ASPECT, () => draw()); else C.fit(); $('#msg').textContent = ''; newRun(); L.start(); }
+function end(score, secs, moves, mode, title, text) {
+  if (!S || S.over) return; S.over = true; draw(); setTimeout(() => L.stop(), 50); if (navigator.vibrate) navigator.vibrate([40, 30, 70]);
+  const a = art(S.art || pref.art), pb = score > (pref.best || 0); if (pb) { pref.best = score; ls.set(PK, pref); }
+  S.final = { score, secs, moves, mode };
+  setTimeout(() => { modal({ art: a.img, title: pb && score > 0 ? 'New best! 🏆' : title, text, lb: score > 0,
+    buttons: [['PLAY AGAIN', () => start()], ['Leaderboard', () => lb(), 1], ['Change ANON', () => show('setup'), 1]] });
+    if (score > 0) post(GAME, score, Math.max(1, Math.round(secs)), moves, mode); }, 500);
+  gameOver();
+}
+const lb = () => openLB(GAME, TITLE, MODES, MOVES);
+$('#goBtn').onclick = () => start(); $('#againBtn').onclick = () => { if (S) S.over = true; start(); };
+$('#setBtn').onclick = $('#menuBtn').onclick = () => { if (S) S.over = true; L.stop(); show('setup'); };
+$('#lbBtn').onclick = lb;
+// hold-buttons for on-screen pads: data-k = key name
+const held = new Set(); window.__held = held;
+document.querySelectorAll('.pad [data-k]').forEach(b => { const k = b.dataset.k;
+  b.addEventListener('pointerdown', e => { e.preventDefault(); held.add(k); b.classList.add('on'); if (window.onPad) onPad(k); });
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach(t => b.addEventListener(t, () => { held.delete(k); b.classList.remove('on'); })); });
+const KM = { ArrowLeft: 'L', a: 'L', A: 'L', ArrowRight: 'R', d: 'R', D: 'R', ArrowUp: 'U', w: 'U', W: 'U', ArrowDown: 'D', s: 'D', S: 'D', ' ': 'B', Enter: 'B', x: 'B', z: 'B' };
+const playing = () => $('#play').classList.contains('on') && !document.querySelector('.modal.show,.alb-ov,.anw-ov');
+window.addEventListener('keydown', e => { const k = KM[e.key]; if (!k || !playing()) return; e.preventDefault(); if (S && S.paused) resume(); if (!held.has(k) && window.onPad) onPad(k); held.add(k); });
+window.addEventListener('keyup', e => { const k = KM[e.key]; if (k) held.delete(k); });
+
+// pointer -> canvas CSS coords (canvas has a 2px border)
+function P(e) { const r = $('#cv').getBoundingClientRect(); return { x: (e.clientX - r.left - 2) * C.w / (r.width - 4), y: (e.clientY - r.top - 2) * C.h / (r.height - 4) }; }
+const ukDay = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/London' }).format(new Date());
+function hashStr(s) { let h = 2166136261; for (const c of s) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
+function txt(x, s, X, Y, size, col, align, weight, font) { x.font = `${weight || 800} ${size}px ${font || 'system-ui,sans-serif'}`; x.fillStyle = col || '#f3d77a'; x.textAlign = align || 'center'; x.textBaseline = 'middle'; x.fillText(s, X, Y); }
+var dirty = true; window.addEventListener('resize', () => dirty = true); window.addEventListener('pointerup', () => dirty = true);
+const fmt = s => Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
+
+const MODES = {"easy": "1 suit", "medium": "2 suits", "hard": "4 suits"};
+// ---- batch B card helper: faces with ANON art on courts, ANON art backs ----
+const SUITS = ['♠', '♥', '♦', '♣'], RANKS = ['', 'A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+const red = s => s === 1 || s === 2;
+const COURT = { 11: 'apes', 12: 'royals', 13: 'royals' };
+function deck(n) { const d = []; for (let k = 0; k < (n || 1); k++) for (let s = 0; s < 4; s++) for (let r = 1; r <= 13; r++) d.push({ r, s, up: false, id: k * 52 + s * 13 + r }); return d; }
+function cardBack(x, X, Y, W, H, id) {
+  const rad = Math.max(3, W * .1); AP.rr(x, X, Y, W, H, rad); x.fillStyle = '#16110a'; x.fill();
+  x.save(); AP.rr(x, X + 2, Y + 2, W - 4, H - 4, rad * .8); x.clip(); const im = IM('c-' + (id || pref.art)) || IM(id || pref.art);
+  if (im) { const k = Math.max((W - 4) / im.width, (H - 4) / im.height); x.drawImage(im, X + W / 2 - im.width * k / 2, Y + H / 2 - im.height * k / 2, im.width * k, im.height * k); }
+  x.fillStyle = 'rgba(0,0,0,.18)'; x.fillRect(X, Y, W, H); x.restore();
+  AP.rr(x, X, Y, W, H, rad); x.lineWidth = Math.max(1, W * .04); x.strokeStyle = '#d4af37'; x.stroke();
+}
+function cardFace(x, c, X, Y, W, H, hi, dim) {
+  const rad = Math.max(3, W * .1); AP.rr(x, X, Y, W, H, rad); x.fillStyle = dim ? '#cfc8b4' : '#fbf6e8'; x.fill();
+  x.lineWidth = hi ? Math.max(2, W * .07) : 1; x.strokeStyle = hi ? '#ff3d9a' : '#8a7a4a'; x.stroke();
+  const col = red(c.s) ? '#d0105e' : '#111', fs = Math.max(9, W * .32);
+  txt(x, RANKS[c.r], X + W * .06, Y + fs * .62, fs, col, 'left', 900); txt(x, SUITS[c.s], X + W * .94, Y + fs * .62, fs * .95, col, 'right', 700);
+  const cy = Y + H * .62;
+  if (c.r > 10 && H > W * 1.1) { const r = Math.min(W * .34, H * .22); ring(x, IM(COURT[c.r] === 'royals' && c.r === 12 ? 'royals' : COURT[c.r]), X + W / 2, cy, r, red(c.s) ? '#ff3d9a' : '#d4af37');
+    txt(x, ['J', 'Q', 'K'][c.r - 11], X + W / 2, cy + r * 1.05, Math.max(8, W * .2), '#8a6414', 'center', 900); }
+  else if (H > W * 1.1) txt(x, SUITS[c.s], X + W / 2, cy, Math.min(W * .62, H * .38), col, 'center', 700);
+  if (hi) { x.fillStyle = 'rgba(255,61,154,.12)'; AP.rr(x, X, Y, W, H, rad); x.fill(); }
+}
+function slot(x, X, Y, W, H, label) { AP.rr(x, X, Y, W, H, Math.max(3, W * .1)); x.fillStyle = 'rgba(0,0,0,.35)'; x.fill(); x.lineWidth = 1.2; x.strokeStyle = 'rgba(212,175,55,.5)'; x.stroke(); if (label) txt(x, label, X + W / 2, Y + H / 2, W * .42, 'rgba(243,215,122,.45)'); }
+
+// ANON Spider Solitaire: easy 1 suit, medium 2 suits, hard 4 suits
+const BASE = { easy: 200, medium: 600, hard: 1200 }, NS = { easy: 1, medium: 2, hard: 4 };
+function newRun() {
+  const m = pref.diff, ns = NS[m], d = []; for (let k = 0; k < 8; k++) for (let r = 1; r <= 13; r++) d.push({ r, s: [0, 1, 3, 2][(k % ns)], up: false });
+  AP.shuffle(d); S = { art: pref.art, mode: m, cols: Array.from({ length: 10 }, () => []), stock: [], done: [], sel: null, moves: 0, t: 0, hist: [] };
+  for (let i = 0; i < 54; i++) S.cols[i % 10].push(d[i]); S.stock = d.slice(54); S.cols.forEach(c => c[c.length - 1].up = true); hud(); dirty = true;
+}
+const hud = () => { $('#tm').textContent = '⏱ ' + fmt(S.t); $('#mv').textContent = 'Moves ' + S.moves; $('#fd').textContent = '🕸 ' + S.done.length + '/8'; };
+const seqOk = (col, k) => { if (!col[k] || !col[k].up) return false; for (let i = k; i < col.length - 1; i++) if (col[i + 1].s !== col[i].s || col[i + 1].r !== col[i].r - 1) return false; return true; };
+function canMove(sel, i) { if (sel.i === i) return false; const c = S.cols[sel.i][sel.k], col = S.cols[i]; return !col.length || col[col.length - 1].r === c.r + 1; }
+const snap = () => JSON.stringify({ cols: S.cols, stock: S.stock, done: S.done });
+function settle() { S.cols.forEach((col, i) => { if (col.length >= 13) { const k = col.length - 13; if (col[k].r === 13 && seqOk(col, k)) { S.done.push(col.splice(k, 13)[0].s); tone(990, .3, 'triangle', .1); } }
+  if (col.length && !col[col.length - 1].up) col[col.length - 1].up = true; }); }
+function move(sel, i) { S.hist.push(snap()); S.cols[i].push(...S.cols[sel.i].splice(sel.k)); S.moves++; tone(440, .05, 'triangle', .06); settle(); after(); }
+function deal() { if (!S.stock.length) return AK.toast('No more deals'); if (S.cols.some(c => !c.length)) return AK.toast('Fill every empty column before dealing');
+  S.hist.push(snap()); S.cols.forEach(c => { const x = S.stock.pop(); x.up = true; c.push(x); }); S.moves++; tone(300, .08, 'square', .05); settle(); after(); }
+function after() { S.sel = null; hud(); dirty = true;
+  if (S.done.length === 8) { const sc = Math.max(0, 1300 - S.moves) + BASE[S.mode] + Math.max(0, 900 - Math.round(S.t)); tone(880, .5, 'triangle', .1);
+    end(sc, S.t, S.moves, S.mode, 'All 8 runs! 🕸', `<b>${art(S.art).name}</b> cleared ${MODES[S.mode]} Spider in <b>${fmt(S.t)}</b> and ${S.moves} moves.<br>Score <b>${sc}</b>`); } }
+function smart(sel) { const c = S.cols[sel.i][sel.k]; let best = -1, bs = -1;
+  for (let i = 0; i < 10; i++) { if (!canMove(sel, i)) continue; const col = S.cols[i], sc = !col.length ? (sel.k === 0 ? -1 : 1) : col[col.length - 1].s === c.s ? 3 : 2; if (sc > bs) { bs = sc; best = i; } } return bs >= 0 ? best : -1; }
+function lay() { const W = C.w, H = C.h, g = W * .008, cw = (W - g * 11) / 10, ch = cw * 1.45, ty = g * 2 + ch * .8 + g * 4;
+  const len = c => c.reduce((a, x, k) => a + (k === c.length - 1 ? 0 : x.up ? 1 : .45), 0); const n = Math.max(1, ...S.cols.map(len));
+  const fy = Math.min(ch * .3, (H - ty - ch - g) / n); return { W, H, g, cw, ch, ty, fy }; }
+function yOf(col, k, L) { let y = L.ty; for (let i = 0; i < k; i++) y += col[i].up ? L.fy : L.fy * .45; return y; }
+function tap(p) { if (!S || S.over) return; const L = lay(); dirty = true;
+  if (p.y < L.ty - L.g * 2) { if (p.x > L.W - (L.cw + L.g) * 3) deal(); else S.sel = null; return; }
+  const i = Math.floor((p.x - L.g / 2) / (L.cw + L.g)); if (i < 0 || i > 9) return; const col = S.cols[i]; let k = -1;
+  for (let j = col.length - 1; j >= 0; j--) { const y = yOf(col, j, L); if (p.y >= y && p.y <= y + L.ch) { k = j; break; } }
+  if (S.sel) { const s = S.sel; if (s.i === i && (k === s.k || k < 0)) { const d = smart(s); if (d >= 0) move(s, d); else { S.sel = null; tone(150, .1, 'square', .04); } return; }
+    if (canMove(s, i)) return move(s, i); S.sel = null; }
+  if (k >= 0 && seqOk(col, k)) S.sel = { i, k }; else if (k >= 0 && col[k].up) AK.toast('Only a same-suit run can move together');
+}
+$('#cv').addEventListener('pointerdown', e => { if (S && S.paused) return; tap(P(e)); });
+function onPad(k) { if (!S || S.over) return; if (k === 'U' && S.hist.length) { Object.assign(S, JSON.parse(S.hist.pop())); S.moves++; S.sel = null; hud(); dirty = true; }
+  if (k === 'D') deal();
+  if (k === 'H') { for (let i = 0; i < 10; i++) { const col = S.cols[i]; for (let j = 0; j < col.length; j++) if (seqOk(col, j)) { const d = smart({ i, k: j }); if (d >= 0 && S.cols[d].length && !(j > 0 && col[j - 1].up && col[j - 1].r === col[j].r + 1 && col[j - 1].s === col[j].s)) { S.sel = { i, k: j }; dirty = true; return AK.toast('Try this run'); } break; } }
+    AK.toast(S.stock.length ? 'No simple move: deal a new row' : 'No simple move: try undo'); } }
+let lastSec = -1; function step(dt) { S.t += dt; if (Math.floor(S.t) !== lastSec) { lastSec = Math.floor(S.t); hud(); } }
+function draw() { if (!C || !dirty) return; dirty = false; const x = C.x; x.fillStyle = '#071410'; x.fillRect(0, 0, C.w, C.h); if (!S) return; bgArt(x, S.art, .12); const L = lay(), { g, cw, ch, ty } = L;
+  for (let i = 0; i < 8; i++) { const X = g + i * (cw * .55); if (i < S.done.length) cardFace(x, { r: 13, s: S.done[i] }, X, g * 2, cw, ch * .8); }
+  const nd = Math.ceil(S.stock.length / 10); for (let i = 0; i < nd; i++) cardBack(x, L.W - g - cw - i * cw * .3, g * 2, cw, ch * .8, S.art);
+  if (nd) txt(x, '+' + nd, L.W - g - cw / 2, g * 2 + ch * .8 + 9, 11, '#f3d77a'); else slot(x, L.W - g - cw, g * 2, cw, ch * .8, '·');
+  for (let i = 0; i < 10; i++) { const X = g + i * (cw + g), col = S.cols[i]; if (!col.length) slot(x, X, ty, cw, ch);
+    col.forEach((c, k) => { const y = yOf(col, k, L); if (c.up) cardFace(x, c, X, y, cw, ch, S.sel && S.sel.i === i && k >= S.sel.k); else cardBack(x, X, y, cw, ch, S.art); });
+    if (S.sel && canMove(S.sel, i)) { const y = col.length ? yOf(col, col.length - 1, L) : ty; AP.rr(x, X - 1, y - 1, cw + 2, ch + 2, 5); x.strokeStyle = '#2bff88'; x.lineWidth = 2.5; x.stroke(); } } }
+window.G = { state: () => S, tap, move, deal, after, settle, C: () => C, L };
+
+</script>
+</body>
+</html>
