@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05070a">
+<title>ANON Paddle Duel · ANON NFTs</title>
+<meta name="description" content="ANON Paddle Duel: a retro paddle tennis duel against an ANON NFT rival on Easy, Medium or Hard. First to 7 wins. Free, no sign-up.">
+<link rel="icon" href="../assets/logo.webp">
+<link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
+<link rel="stylesheet" href="../assets/nft/kit.css">
+<link rel="stylesheet" href="../assets/retro-c1/rk.css">
+</head>
+<body>
+<script src="../shared/leaderboard.js"></script>
+<script src="../shared/newsletter.js"></script>
+<script src="../assets/nft/kit.js"></script>
+<script src="../assets/retro-c1/rk.js"></script>
+<script src="game.js"></script>
+<script>
+'use strict';
+(function () {
+  const G = PDGame, IDS = RK.ART.map(a => a.id), W = G.W, H = G.H; let bg = null, bgFor = null;
+  function backdrop(S) { const c = document.createElement('canvas'), k = 2; c.width = W * k; c.height = H * k; const x = c.getContext('2d'); x.scale(k, k);
+    x.fillStyle = '#05060a'; x.fillRect(0, 0, W, H); RK.cover(x, RK.C[S.rival], 0, 0, W, H / 2, 0.2); RK.cover(x, RK.C[S.art], 0, H / 2, W, H / 2, 0.2);
+    x.strokeStyle = 'rgba(212,175,55,.7)'; x.lineWidth = 2; x.strokeRect(3, 3, W - 6, H - 6); x.setLineDash([12, 10]); x.beginPath(); x.moveTo(6, H / 2); x.lineTo(W - 6, H / 2); x.stroke(); x.setLineDash([]);
+    x.beginPath(); x.arc(W / 2, H / 2, 46, 0, 7); x.stroke(); x.globalAlpha = 0.18; RK.portrait(x, RK.P.anon, W / 2, H / 2, 40); x.globalAlpha = 1; return c; }
+  function paddle(x, cx, y, w, h, im, col) { RK.rr(x, cx - w / 2, y - h / 2, w, h, h / 2); const g = x.createLinearGradient(0, y - h / 2, 0, y + h / 2); g.addColorStop(0, col); g.addColorStop(1, '#3a2a06'); x.fillStyle = g; x.shadowColor = col; x.shadowBlur = 12; x.fill(); x.shadowBlur = 0; RK.portrait(x, im, cx, y, h * 0.95, '#fff'); }
+  RK.shell({
+    game: 'paddle-duel', title: 'ANON Paddle Duel', h1: 'ANON PADDLE DUEL', W, H, movesLabel: 'rallies', pickLabel: 'Pick your player', startMsg: 'FIRST TO 7!',
+    modes: { easy: 'Easy', medium: 'Medium', hard: 'Hard' }, defaultMode: 'medium', modeLabel: 'Difficulty',
+    controls: [{ k: 'left', label: '◀', aria: 'move left' }, { k: 'right', label: '▶', aria: 'move right' }],
+    how: '<b>Drag</b> anywhere on the court to slide your paddle (or hold ◀ ▶ / arrow keys). Hit the ANON coin with the edge of your paddle for a sharper angle. The coin speeds up every hit. First to 7 wins. Points are worth ×1 / ×2 / ×4 on Easy / Medium / Hard, plus a win bonus of 100 / 300 / 800.',
+    create: o => { const r = o.seed || 1; const others = IDS.filter(i => i !== o.art); const S = G.create(Object.assign({}, o, { rival: others[r % others.length] })); bg = null; return S; },
+    hud: S => `<span>YOU ${S.me}</span><span>${S.mode.toUpperCase()}</span><span>RIVAL ${S.ai}</span><span>⭐ ${S.score}</span>`,
+    result: S => ({ score: S.score, time: S.t, moves: S.points, mode: S.mode, title: S.won ? 'YOU WIN!' : 'RIVAL WINS', text: `${S.won ? 'Won' : 'Lost'} ${S.me}–${S.ai} on ${S.mode} · longest rally ${S.longest} · ${Math.round(S.t)} s` }),
+    draw(x, S, t) {
+      if (!bg || bgFor !== S) { bg = backdrop(S); bgFor = S; } x.drawImage(bg, 0, 0, W, H);
+      x.font = '900 64px Georgia,serif'; x.textAlign = 'center'; x.fillStyle = 'rgba(243,215,122,.16)'; x.fillText(S.ai, W / 2, H / 2 - 40); x.fillText(S.me, W / 2, H / 2 + 92);
+      paddle(x, S.ax, S.AY, S.M.aiW, S.PH, RK.P[S.rival], '#2bff88'); paddle(x, S.px, S.PY, S.M.pw, S.PH, RK.P[S.art], '#f3d77a');
+      const b = S.ball; if (b) { S.trail.push([b.x, b.y]); if (S.trail.length > 8) S.trail.shift(); S.trail.forEach(([tx, ty], i) => { x.fillStyle = `rgba(255,61,154,${i / 24})`; x.beginPath(); x.arc(tx, ty, S.BR * (i / 8), 0, 7); x.fill(); });
+        const g = x.createRadialGradient(b.x - 2, b.y - 2, 1, b.x, b.y, S.BR); g.addColorStop(0, '#fff6c8'); g.addColorStop(1, '#d4af37'); x.fillStyle = g; x.shadowColor = '#f3d77a'; x.shadowBlur = 10; x.beginPath(); x.arc(b.x, b.y, S.BR, 0, 7); x.fill(); x.shadowBlur = 0;
+        x.fillStyle = '#5a3d00'; x.font = '900 8px Georgia,serif'; x.fillText('A', b.x, b.y + 3); }
+      else { S.trail.length = 0; if (!S.over) RK.text(x, S.server > 0 ? 'YOUR SERVE IS COMING…' : 'RIVAL SERVES…', W / 2, H / 2 + 5, 13); }
+    }
+  });
+})();
+</script>
+</body>
+</html>

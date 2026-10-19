@@ -1022,6 +1022,35 @@
       "movesLabel": "facts",
       "hideMode": true,
       "added": "2026-10-19"
+    },
+    {
+      "id": "paddle-duel",
+      "name": "ANON Paddle Duel",
+      "tagline": "Classic paddle tennis against ANON rivals",
+      "path": "paddle-duel/",
+      "thumb": "paddle-duel/thumb.webp",
+      "category": "Arcade",
+      "tags": [
+        "paddle",
+        "tennis",
+        "retro",
+        "vs computer"
+      ],
+      "status": "live",
+      "leaderboard": true,
+      "scoreLabel": "Score",
+      "order": "desc",
+      "periods": [
+        "day",
+        "all"
+      ],
+      "movesLabel": "rallies",
+      "modeLabels": {
+        "easy": "Easy",
+        "medium": "Medium",
+        "hard": "Hard"
+      },
+      "added": "2026-10-19"
     }
   ]
 }
