@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05070a">
+<title>ANON Barrel Climb · ANON NFTs</title>
+<meta name="description" content="ANON Barrel Climb: climb the girders, jump the rolling barrels and reach the giant shadow boss at the top. Free, no sign-up.">
+<link rel="icon" href="../assets/logo.webp">
+<link rel="stylesheet" href="../assets/nft/kit.css">
+<link rel="stylesheet" href="../assets/play/play.css">
+<style>
+.pad{display:flex;gap:6px;justify-content:center;align-items:center;padding:4px 4px 2px;flex:none;user-select:none;-webkit-user-select:none}
+.pad button{min-width:52px;min-height:48px;border-radius:12px;border:1px solid rgba(212,175,55,.6);background:rgba(0,0,0,.55);color:var(--gold2);font-size:20px;font-weight:900;touch-action:none}
+.pad button.on{background:rgba(255,61,154,.35)}.pad .big{min-width:84px;background:linear-gradient(180deg,#ff5aab,#c41f73);color:#fff;font-size:15px}
+.dpad{display:grid;grid-template-columns:repeat(3,48px);grid-template-rows:repeat(2,40px);gap:4px}.dpad button{min-width:0;min-height:0}
+.dpad [data-k=U]{grid-column:2}.dpad [data-k=L]{grid-column:1;grid-row:2}.dpad [data-k=D]{grid-column:2;grid-row:2}.dpad [data-k=R]{grid-column:3;grid-row:2}
+@media (max-height:700px){.pad button{min-height:40px}.dpad{grid-template-rows:repeat(2,34px)}}
+</style>
+</head>
+<body>
+<header><div class="top">
+  <div class="brand"><a class="back-btn" href="../" aria-label="Back to ANON Arcade">&larr; Arcade</a><img src="../assets/logo.webp" alt=""><h1>BARREL CLIMB</h1></div>
+  <div class="top-r"><button class="icon-btn" id="lbBtn" aria-label="Leaderboard">🏆</button><button class="icon-btn" id="menuBtn" aria-label="Menu">↻</button></div>
+</div></header>
+<section class="view on" id="setup">
+  <img class="hero" id="hero" alt="ANON NFTs artwork">
+  <div class="lbl">Choose your ANON</div>
+  <div class="chars five" id="artPick"></div>
+  <div class="lbl">Difficulty</div><div class="seg" id="diff"><button data-v="easy">Easy</button><button data-v="medium">Medium</button><button data-v="hard">Hard</button></div>
+  <button class="go" id="goBtn">PLAY</button>
+  <p class="howto">◀ ▶ to run, ▲ ▼ to climb ladders, JUMP (or Space) to leap. Keys: arrows / WASD. The giant shadow at the top hurls barrels down the girders. Jump them for points, grab NFT coins, and reach the top girder to beat the level. Hard mode sends faster barrels that love ladders.</p>
+  <div class="nick" id="nick"></div>
+</section>
+<section class="view" id="play">
+  <div class="hud"><span id="sc"></span><span id="lv"></span><span id="lf"></span><span id="bn"></span></div>
+  <div class="stage"><canvas id="cv"></canvas><div class="tap" id="msg"></div></div>
+  <div class="pad"><div class="dpad"><button data-k="U" aria-label="Climb up">▲</button><button data-k="L" aria-label="Left">◀</button><button data-k="D" aria-label="Climb down">▼</button><button data-k="R" aria-label="Right">▶</button></div><button class="big" data-k="B">JUMP</button></div>
+  <div class="bar"><button id="againBtn">Restart</button><button id="setBtn">Change ANON</button></div>
+</section>
+<script src="../shared/leaderboard.js"></script>
+<script src="../shared/newsletter.js"></script>
+<script src="../assets/nft/kit.js"></script>
+<script src="../assets/play/play.js"></script>
+<script>
+const GAME = 'barrel-climb', TITLE = 'ANON Barrel Climb', PK = 'anonC2.barrel-climb', ASPECT = 3/4, MOVES = 'jumps';
+'use strict';
+const { $, ls, modal, post, openLB, gameOver, art, ART } = AK;
+const NAMES = Object.fromEntries(ART.map(a => [a.id, a.name.replace(/^ANON /, '')]));
+const DIFFN = { easy: 'Easy', medium: 'Medium', hard: 'Hard' };
+const pref = ls.get(PK, { art: 'anon', diff: 'medium', best: 0 });
+const show = id => document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === id));
+const setHero = () => $('#hero').src = art(pref.art).cover;
+AK.picker($('#artPick'), pref.art, id => { pref.art = id; ls.set(PK, pref); setHero(); });
+if ($('#diff')) AK.seg($('#diff'), pref.diff, v => { pref.diff = v; ls.set(PK, pref); });
+setHero(); AK.nickLine($('#nick'));
+// ---- sound: generated in the browser, nothing plays before the first tap/key ----
+let AC = null; window.__sfx = 0;
+const unlock = () => { if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } if (AC && AC.state === 'suspended') AC.resume(); };
+['pointerdown', 'keydown', 'touchstart'].forEach(t => window.addEventListener(t, unlock, { capture: true, passive: true }));
+function tone(f, d, type, vol, f2) { if (!AC || pref.mute) return; window.__sfx++; const t = AC.currentTime, o = AC.createOscillator(), g = AC.createGain();
+  o.type = type || 'square'; o.frequency.setValueAtTime(f, t); if (f2) o.frequency.exponentialRampToValueAtTime(Math.max(20, f2), t + d);
+  g.gain.setValueAtTime(vol || .08, t); g.gain.exponentialRampToValueAtTime(.0001, t + d); o.connect(g).connect(AC.destination); o.start(t); o.stop(t + d + .02); }
+function boom(d, vol) { if (!AC || pref.mute) return; window.__sfx++; const n = Math.floor(AC.sampleRate * d), b = AC.createBuffer(1, n, AC.sampleRate), c = b.getChannelData(0);
+  for (let i = 0; i < n; i++) c[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 2); const s = AC.createBufferSource(), g = AC.createGain(), fl = AC.createBiquadFilter();
+  fl.type = 'lowpass'; fl.frequency.value = 900; s.buffer = b; g.gain.value = vol || .25; s.connect(fl).connect(g).connect(AC.destination); s.start(); }
+// ---- shared loop, pause when hidden, game over ----
+let C = null, S = null;
+const imgs = {}; const IM = id => imgs[id];
+ART.forEach(a => { AP.img(a.img).then(i => imgs[a.id] = i); AP.img(a.cover).then(i => imgs['c-' + a.id] = i); });
+function ring(x, im, cx, cy, r, col) { x.save(); x.beginPath(); x.arc(cx, cy, r, 0, 7); x.closePath(); x.fillStyle = '#111'; x.fill(); x.clip(); if (im) AP.cover(x, im, cx - r, cy - r, r * 2, r * 2); x.restore();
+  x.lineWidth = Math.max(1.5, r * .16); x.strokeStyle = col || '#f3d77a'; x.beginPath(); x.arc(cx, cy, r, 0, 7); x.stroke(); }
+function bgArt(x, id, a) { const im = IM('c-' + id); if (!im) return; x.globalAlpha = a || .22; const k = Math.max(C.w / im.width, C.h / im.height); x.drawImage(im, (C.w - im.width * k) / 2, (C.h - im.height * k) / 2, im.width * k, im.height * k); x.globalAlpha = 1; }
+const L = AP.loop(dt => { if (S && !S.over && !S.paused) step(dt); }, () => draw());
+let paused = false;
+function pause() { if (!S || S.over || S.paused) return; S.paused = true; $('#msg').textContent = 'Paused\nTap to resume'; }
+function resume() { if (S && S.paused) { S.paused = false; $('#msg').textContent = ''; } }
+document.addEventListener('visibilitychange', () => { if (document.hidden) pause(); });
+$('#msg').parentElement.addEventListener('pointerdown', () => { if (S && S.paused) resume(); }, true);
+async function start() { show('play'); if (!C) C = AP.canvas($('#cv'), ASPECT, () => draw()); else C.fit(); $('#msg').textContent = ''; newRun(); L.start(); }
+function end(score, secs, moves, mode, title, text) {
+  if (!S || S.over) return; S.over = true; draw(); setTimeout(() => L.stop(), 50); if (navigator.vibrate) navigator.vibrate([40, 30, 70]);
+  const a = art(S.art || pref.art), pb = score > (pref.best || 0); if (pb) { pref.best = score; ls.set(PK, pref); }
+  S.final = { score, secs, moves, mode };
+  setTimeout(() => { modal({ art: a.img, title: pb && score > 0 ? 'New best! 🏆' : title, text, lb: score > 0,
+    buttons: [['PLAY AGAIN', () => start()], ['Leaderboard', () => lb(), 1], ['Change ANON', () => show('setup'), 1]] });
+    if (score > 0) post(GAME, score, Math.max(1, Math.round(secs)), moves, mode); }, 500);
+  gameOver();
+}
+const lb = () => openLB(GAME, TITLE, MODES, MOVES);
+$('#goBtn').onclick = () => start(); $('#againBtn').onclick = () => { if (S) S.over = true; start(); };
+$('#setBtn').onclick = $('#menuBtn').onclick = () => { if (S) S.over = true; L.stop(); show('setup'); };
+$('#lbBtn').onclick = lb;
+// hold-buttons for on-screen pads: data-k = key name
+const held = new Set(); window.__held = held;
+document.querySelectorAll('.pad [data-k]').forEach(b => { const k = b.dataset.k;
+  b.addEventListener('pointerdown', e => { e.preventDefault(); held.add(k); b.classList.add('on'); if (window.onPad) onPad(k); });
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach(t => b.addEventListener(t, () => { held.delete(k); b.classList.remove('on'); })); });
+const KM = { ArrowLeft: 'L', a: 'L', A: 'L', ArrowRight: 'R', d: 'R', D: 'R', ArrowUp: 'U', w: 'U', W: 'U', ArrowDown: 'D', s: 'D', S: 'D', ' ': 'B', Enter: 'B', x: 'B', z: 'B' };
+const playing = () => $('#play').classList.contains('on') && !document.querySelector('.modal.show,.alb-ov,.anw-ov');
+window.addEventListener('keydown', e => { const k = KM[e.key]; if (!k || !playing()) return; e.preventDefault(); if (S && S.paused) resume(); if (!held.has(k) && window.onPad) onPad(k); held.add(k); });
+window.addEventListener('keyup', e => { const k = KM[e.key]; if (k) held.delete(k); });
+
+const MODES = {"easy": "Easy", "medium": "Medium", "hard": "Hard"};
+// world units: x 0..100, floors 0..5 (0 = bottom). Barrels roll along floors and drop off the ends.
+const NF = 6, DIFF = { easy: { bs: 15, every: 3.4, lad: .15 }, medium: { bs: 20, every: 2.6, lad: .28 }, hard: { bs: 25, every: 1.95, lad: .42 } };
+const LAD = [[[82, 0]], [[18, 1], [55, 1]], [[78, 2], [40, 2]], [[35, 3], [68, 3]], [[85, 4], [45, 4]]].flat().map(([x, f]) => ({ x, f })); // ladder from floor f to f+1
+const fy = f => .95 - f * .142; // floor screen y as fraction
+function newRun() { S = { art: pref.art, diff: pref.diff, score: 0, level: 1, lives: 3, t: 0, jumps: 0 }; level(); }
+function level() {
+  const d = DIFF[S.diff];
+  Object.assign(S, { p: { x: 8, f: 0, h: 0, vh: 0, lad: null, ly: 0, face: 1, inv: 1.5, dead: 0 }, br: [], coins: [], next: 1.2, bonus: 3000, won: 0, d });
+  for (let f = 1; f < 5; f++) S.coins.push({ x: AP.ri(15, 85), f, id: AP.pick(['aces', 'royals', 'eyes', 'grumpy', 'apes']) });
+  $('#msg').textContent = 'Level ' + S.level; setTimeout(() => { if (S && /^Level/.test($('#msg').textContent)) $('#msg').textContent = ''; }, 1100); hud();
+}
+const hud = () => { $('#sc').textContent = '⭐ ' + S.score; $('#lv').textContent = 'Lv ' + S.level; $('#lf').textContent = '❤️ ' + S.lives; $('#bn').textContent = '⏳ ' + Math.max(0, Math.floor(S.bonus / 100) * 100); };
+const dir = f => (f % 2 === 1 ? -1 : 1) * ((NF - 1) % 2 ? 1 : -1); // barrels on top floor roll right, then alternate
+function onPad(k) { if (k === 'B') jump(); }
+function jump() { const p = S && S.p; if (!p || S.over || S.paused || p.dead || p.lad || p.h > 0) return; p.vh = 40; tone(520, .1, 'square', .05, 900); }
+function step(dt) {
+  const p = S.p, d = S.d, sp = 1 + (S.level - 1) * .08; S.t += dt; if (S.won) { S.won -= dt; if (S.won <= 0) { S.level++; level(); } return; }
+  S.bonus = Math.max(0, S.bonus - dt * 40);
+  if (p.dead) { p.dead -= dt; if (p.dead <= 0) { if (S.lives <= 0) return finish(); const l = S.lives; level(); S.lives = l; hud(); } return; }
+  p.inv = Math.max(0, p.inv - dt);
+  const L_ = held.has('L'), R_ = held.has('R'), U = held.has('U'), D = held.has('D');
+  if (p.lad) { // climbing
+    if (U) p.ly += dt * 1.1; if (D) p.ly -= dt * 1.1;
+    if (p.ly >= 1) { p.f = p.lad.f + 1; p.lad = null; p.h = 0; } else if (p.ly <= 0) { p.f = p.lad.f; p.lad = null; p.h = 0; }
+  } else {
+    if (p.h === 0 && (U || D)) { const l = LAD.find(l => Math.abs(l.x - p.x) < 3.5 && ((U && l.f === p.f) || (D && l.f === p.f - 1))); if (l) { p.lad = l; p.x = l.x; p.ly = U ? .02 : .98; } }
+    if (!p.lad) { const v = (R_ ? 1 : 0) - (L_ ? 1 : 0); if (v) p.face = v; p.x = Math.max(3, Math.min(97, p.x + v * 30 * dt * (p.h > 0 ? .9 : 1)));
+      if (p.h > 0 || p.vh > 0) { p.h += p.vh * dt; p.vh -= 120 * dt; if (p.h <= 0) { p.h = 0; p.vh = 0; } } }
+  }
+  if (!p.lad && p.f === NF - 1) { S.won = 2; const b = Math.floor(S.bonus / 100) * 100; S.score += 1000 + b; tone(523, .15, 'square', .07); setTimeout(() => tone(659, .15, 'square', .07), 140); setTimeout(() => tone(784, .3, 'square', .07), 280); $('#msg').textContent = 'You reached the shadow! +' + (1000 + b); hud(); return; }
+  // boss throws barrels
+  S.next -= dt; if (S.next <= 0) { S.next = d.every / sp * (.75 + AP.rnd() * .5); S.br.push({ x: 14, f: NF - 2, vx: dir(NF - 2), fall: 0, rot: 0, dn: null, jumped: false }); tone(140, .15, 'triangle', .07, 70); }
+  for (const b of S.br) {
+    const v = d.bs * sp; b.rot += dt * 8 * Math.sign(b.vx || 1);
+    if (b.dn) { b.dn.y -= dt * 1.4; if (b.dn.y <= 0) { b.f = b.dn.f; b.dn = null; b.vx = dir(b.f); } continue; }
+    if (b.fall > 0) { b.fall -= dt * 3; if (b.fall <= 0) { b.fall = 0; b.f--; b.vx = dir(b.f); } continue; }
+    const nx = b.x + b.vx * v * dt;
+    const l = LAD.find(l => l.f === b.f - 1 && Math.abs(l.x - b.x) > .01 && (l.x - b.x) * (l.x - nx) <= 0);
+    b.age = (b.age || 0) + dt; if (l && b.age > 1.2 && AP.rnd() < d.lad + (S.diff === 'hard' && Math.abs(l.x - p.x) < 25 && p.f < b.f ? .15 : 0)) { b.x = l.x; b.dn = { y: 1, f: b.f - 1 }; continue; }
+    b.x = nx; if (b.x > 97 || b.x < 3) { if (b.f === 0) b.gone = true; else { b.fall = 1; b.x = Math.max(3, Math.min(97, b.x)); } }
+  }
+  S.br = S.br.filter(b => !b.gone);
+  // collisions + jump-over points
+  for (const b of S.br) {
+    const by = b.dn ? b.f - 1 + b.dn.y : b.fall ? b.f - 1 + b.fall : b.f, py = p.lad ? p.lad.f + p.ly : p.f;
+    if (Math.abs(by - py) < .3 && Math.abs(b.x - p.x) < 3.1 && !p.inv && p.h < 1.2) { die(); return; }
+    if (!b.dn && !b.fall && b.f === p.f && !p.lad && p.h >= 2 && Math.abs(b.x - p.x) < 4.5 && !b.jumped) { b.jumped = true; S.score += 100; S.jumps++; tone(880, .08, 'square', .05); hud(); }
+  }
+  for (const c of [...S.coins]) if (c.f === p.f && !p.lad && Math.abs(c.x - p.x) < 4) { S.coins = S.coins.filter(o => o !== c); S.score += 300; tone(990, .15, 'triangle', .07, 1500); hud(); }
+  hud();
+}
+function die() { const p = S.p; S.lives--; p.dead = 1.4; boom(.5, .3); tone(330, .6, 'sawtooth', .07, 50); hud(); }
+function finish() { end(S.score, S.t, S.jumps, S.diff, 'Flattened! 🛢️', `<b>${art(S.art).name}</b> reached <b>level ${S.level}</b> and jumped ${S.jumps} barrels.<br>Score <b>${S.score}</b>`); }
+function draw() {
+  if (!C) return; const x = C.x, W = C.w, H = C.h; x.fillStyle = '#060a08'; x.fillRect(0, 0, W, H); if (!S) return; bgArt(x, 'venge', .2);
+  const X = v => v / 100 * W, Y = f => fy(f) * H, th = Math.max(6, H * .018), U = W / 100;
+  // boss
+  const bx = X(12), byy = Y(NF - 1) - th; const bs = H * .11; x.save(); x.fillStyle = '#000'; x.shadowColor = '#ff3d9a'; x.shadowBlur = 20; x.beginPath(); x.ellipse(bx, byy - bs * .9, bs * .75, bs, 0, 0, 7); x.fill(); x.restore();
+  x.save(); x.beginPath(); x.arc(bx, byy - bs * 1.3, bs * .45, 0, 7); x.clip(); if (IM('venge')) AP.cover(x, IM('venge'), bx - bs * .45, byy - bs * 1.75, bs * .9, bs * .9); x.restore();
+  x.fillStyle = '#ff3d3d'; const blink = Math.sin(S.t * 3) > .9 ? .2 : 1; x.fillRect(bx - bs * .25, byy - bs * 1.38, bs * .14, bs * .07 * blink); x.fillRect(bx + bs * .11, byy - bs * 1.38, bs * .14, bs * .07 * blink);
+  AP.crown && AP.crown(x, bx, byy - bs * 1.85, bs * .4);
+  // girders
+  for (let f = 0; f < NF; f++) { const y = Y(f); x.fillStyle = '#7a1940'; x.fillRect(X(1), y, X(98), th); x.strokeStyle = '#f3d77a'; x.lineWidth = 1.5; x.strokeRect(X(1), y, X(98), th);
+    x.strokeStyle = 'rgba(243,215,122,.45)'; x.beginPath(); for (let k = X(1); k < X(99); k += th * 1.6) { x.moveTo(k, y); x.lineTo(k + th * .8, y + th); x.lineTo(k + th * 1.6, y); } x.stroke(); }
+  for (const l of LAD) { const x0 = X(l.x), y0 = Y(l.f), y1 = Y(l.f + 1) + th; x.strokeStyle = '#d4af37'; x.lineWidth = 2.5; x.beginPath(); x.moveTo(x0 - U * 2.2, y0); x.lineTo(x0 - U * 2.2, y1); x.moveTo(x0 + U * 2.2, y0); x.lineTo(x0 + U * 2.2, y1);
+    for (let y = y0 - 6; y > y1; y -= Math.max(7, H * .015)) { x.moveTo(x0 - U * 2.2, y); x.lineTo(x0 + U * 2.2, y); } x.stroke(); }
+  for (const c of S.coins) ring(x, IM(c.id), X(c.x), Y(c.f) - U * 3.2, U * 2.6, '#ff3d9a');
+  const R = U * 3; for (const b of S.br) { const by = b.dn ? b.f - 1 + b.dn.y : b.fall ? b.f - 1 + b.fall : b.f; const cy = (b.dn || b.fall) ? Y(Math.floor(by)) + (Y(Math.ceil(by)) - Y(Math.floor(by))) * (by % 1) : Y(b.f);
+    x.save(); x.translate(X(b.x), cy - R); x.rotate(b.rot); x.fillStyle = '#6b3d14'; x.beginPath(); x.arc(0, 0, R, 0, 7); x.fill(); x.strokeStyle = '#f3d77a'; x.lineWidth = 2; x.stroke(); x.beginPath(); x.moveTo(-R, 0); x.lineTo(R, 0); x.moveTo(0, -R); x.lineTo(0, R); x.strokeStyle = '#2a1405'; x.stroke(); AP.gem(x, 0, 0, R * .35); x.restore(); }
+  const p = S.p; if (!(p.inv && Math.floor(p.inv * 10) % 2)) { const py = p.lad ? Y(p.lad.f) + (Y(p.lad.f + 1) - Y(p.lad.f)) * p.ly : Y(p.f); const r = U * 3.6;
+    x.save(); x.shadowColor = p.dead ? '#ff3d3d' : '#2bff88'; x.shadowBlur = 12; ring(x, IM(S.art), X(p.x), py - r - p.h / 100 * H * .5, r); x.restore(); }
+}
+window.G = { state: () => S, step, jump, level, C: () => C, L, LAD };
+
+</script>
+</body>
+</html>

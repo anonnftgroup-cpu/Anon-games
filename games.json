@@ -650,6 +650,36 @@
         "hard": "Hard"
       },
       "added": "2026-10-19"
+    },
+    {
+      "id": "barrel-climb",
+      "name": "ANON Barrel Climb",
+      "tagline": "Jump the barrels, climb to the giant shadow",
+      "path": "barrel-climb/",
+      "thumb": "barrel-climb/thumb.webp",
+      "category": "Arcade",
+      "tags": [
+        "platformer",
+        "ladders",
+        "barrels",
+        "retro",
+        "action"
+      ],
+      "status": "live",
+      "leaderboard": true,
+      "scoreLabel": "Score",
+      "order": "desc",
+      "periods": [
+        "day",
+        "all"
+      ],
+      "movesLabel": "jumps",
+      "modeLabels": {
+        "easy": "Easy",
+        "medium": "Medium",
+        "hard": "Hard"
+      },
+      "added": "2026-10-19"
     }
   ]
 }
