@@ -38,6 +38,9 @@ h1{margin:0;font-family:Georgia,"Times New Roman",serif;font-weight:700;font-siz
 .chip{flex:none;min-height:34px;padding:0 14px;border-radius:17px;border:1px solid rgba(212,175,55,.45);background:rgba(0,0,0,.35);color:#b9a35c;font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap}
 .chip.on{background:rgba(212,175,55,.18);color:var(--gold2);border-color:var(--gold);box-shadow:0 0 10px rgba(43,255,136,.15)}
 .chip .n{opacity:.6;font-weight:600;margin-left:5px}
+.sorts{padding-top:8px;padding-bottom:0}
+.sorts .chip{min-height:30px;font-size:12.5px;padding:0 12px}
+.badge.hot{background:linear-gradient(180deg,#e9c858,#a47c1f);color:#120e02;border-color:#f3d77a}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-top:12px}
 .tile{position:relative;display:flex;flex-direction:column;text-align:left;padding:0;border-radius:14px;overflow:hidden;cursor:pointer;color:inherit;
   border:1px solid rgba(212,175,55,.55);background:linear-gradient(180deg,#0f1114,#07080a);box-shadow:0 4px 14px rgba(0,0,0,.5),0 0 0 rgba(43,255,136,0);transition:transform .15s,box-shadow .2s}
@@ -99,6 +102,7 @@ footer a{color:#b9a35c;text-decoration:none}
         <input id="q" type="search" placeholder="Search games…" autocomplete="off" enterkeyhint="search">
         <button class="clear" id="qClear" type="button" aria-label="Clear search">✕</button>
       </label>
+      <div class="chips sorts" id="sorts" role="toolbar" aria-label="Sort games"></div>
       <div class="chips" id="cats" role="toolbar" aria-label="Categories"></div>
     </div>
     <div class="grid" id="grid"></div>
@@ -123,7 +127,8 @@ const SHOW_TOOLS_AFTER = 6;              // search + category chips appear when 
 const NEW_DAYS = 14;                     // "NEW" badge for games added in the last N days
 const $ = s => document.querySelector(s);
 const params = new URLSearchParams(location.search);
-let GAMES = [], cat = 'All', query = '', lbGame = null;
+let GAMES = [], cat = 'All', query = '', lbGame = null, sort = 'popular', TOP = new Set();
+const SORTS = [['popular', '🔥 Most played'], ['new', '✨ Newest'], ['az', 'A–Z']];
 
 const toast = (m => { let t; return msg => { const e = $('#toast'); e.textContent = msg; e.classList.add('show'); clearTimeout(t); t = setTimeout(() => e.classList.remove('show'), 1800); }; })();
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
@@ -144,6 +149,7 @@ function tile(g) {
   b.appendChild(img);
   const badges = el('div', 'badges');
   if (!isLive(g)) badges.appendChild(el('span', 'badge soonb', 'Coming soon'));
+  else if (TOP.has(g.id) && sort === 'popular') badges.appendChild(el('span', 'badge hot', '🔥 Hot'));
   else if (isNew(g)) badges.appendChild(el('span', 'badge new', 'New'));
   if (isLive(g) && g.leaderboard) badges.appendChild(el('span', 'badge lb', '🏆'));
   b.appendChild(badges);
@@ -156,7 +162,10 @@ function tile(g) {
 
 function visible() {
   const q = query.trim().toLowerCase();
-  return GAMES.filter(g => (cat === 'All' || g.category === cat) &&
+  // GAMES is already in popularity order; other sorts are stable re-sorts of it.
+  const base = sort === 'az' ? GAMES.slice().sort((a, b) => a.name.replace(/^ANON\s+/i, '').localeCompare(b.name.replace(/^ANON\s+/i, '')))
+    : sort === 'new' ? GAMES.slice().sort((a, b) => (Date.parse(b.added) || 0) - (Date.parse(a.added) || 0)) : GAMES;
+  return base.filter(g => (cat === 'All' || g.category === cat) &&
     (!q || [g.name, g.tagline, g.category, ...(g.tags || [])].join(' ').toLowerCase().includes(q)));
 }
 
@@ -172,6 +181,13 @@ function renderTools() {
   $('#tools').classList.toggle('show', show);
   if (!show) { cat = 'All'; query = ''; return; }
   const cats = ['All', ...[...new Set(GAMES.map(g => g.category).filter(Boolean))].sort()];
+  const sb = $('#sorts'); sb.innerHTML = '';
+  SORTS.forEach(([k, label]) => {
+    const b = el('button', 'chip' + (k === sort ? ' on' : ''), label); b.type = 'button'; b.dataset.sort = k;
+    b.setAttribute('aria-pressed', String(k === sort));
+    b.onclick = () => { sort = k; renderTools(); renderGrid(); };
+    sb.appendChild(b);
+  });
   const box = $('#cats'); box.innerHTML = '';
   cats.forEach(c => {
     const n = c === 'All' ? GAMES.length : GAMES.filter(g => g.category === c).length;
@@ -228,12 +244,24 @@ $('#tabLb').onclick = () => setTab('leaderboards', true);
 $('#q').addEventListener('input', e => { query = e.target.value; $('#qClear').classList.toggle('show', !!query); renderGrid(); });
 $('#qClear').onclick = () => { query = ''; $('#q').value = ''; $('#qClear').classList.remove('show'); renderGrid(); $('#q').focus(); };
 
+// popularity.json = the "Most played" order (updated daily from play counts). Optional: if it fails, games.json order is used.
+// Games missing from it keep their games.json order at the end, never hidden. Coming-soon tiles always go after live games.
+async function loadOrder() {
+  try { const r = await fetch('popularity.json', { cache: 'no-cache' }); if (!r.ok) return []; const p = await r.json(); return Array.isArray(p.order) ? p.order : []; }
+  catch (e) { return []; }
+}
+function applyOrder(list, order) {
+  const rank = new Map(); order.forEach((id, i) => { if (!rank.has(id)) rank.set(id, i); });
+  const r = (g, i) => (isLive(g) ? 0 : 1e6) + (rank.has(g.id) ? rank.get(g.id) : 1e5 + i);
+  return list.map((g, i) => [r(g, i), g]).sort((a, b) => a[0] - b[0]).map(x => x[1]);
+}
 async function load() {
   try {
-    const r = await fetch('games.json', { cache: 'no-cache' });
+    const [r, order] = await Promise.all([fetch('games.json', { cache: 'no-cache' }), loadOrder()]);
     if (!r.ok) throw new Error(r.status);
     const data = await r.json();
-    GAMES = (data.games || []).filter(g => g && g.id && g.name && g.status !== 'hidden');
+    GAMES = applyOrder((data.games || []).filter(g => g && g.id && g.name && g.status !== 'hidden'), order);
+    TOP = new Set(order.length ? GAMES.filter(isLive).slice(0, 3).map(g => g.id) : []);
   } catch (e) {
     const grid = $('#grid'); grid.innerHTML = '';
     const d = el('div', 'err', 'Could not load the games list.'); const b = el('button', '', 'Try again'); b.onclick = load;

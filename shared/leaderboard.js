@@ -1,6 +1,6 @@
 /* =====================================================================
    ANON Arcade · shared leaderboard (leaderboard.js)
-   Used by every game and by the Arcade hub. No SDK, no tracking.
+   Used by every game and by the Arcade hub. No SDK, no cookies. Only an anonymous per-game play counter (see bottom).
 
    ----------------------- CONFIG: EDIT THESE TWO -----------------------
    From your Supabase project: Project Settings → API (or the "Connect" button)
@@ -379,5 +379,32 @@ const SUPABASE_ANON_KEY = 'sb_publishable_-f0lT5SuVJ-TbFzlfMd7kA_hH6ZXp-N';
     if (window.ANONChallenge || document.querySelector('script[src*="shared/challenge.js"]')) return;
     const me = document.currentScript && document.currentScript.src; if (!me) return;
     const s = document.createElement('script'); s.src = me.replace(/leaderboard\.js(\?.*)?$/, 'challenge.js?v=1'); s.defer = true; document.head.appendChild(s);
+  } catch (e) {}
+})();
+
+/* Play counter: one anonymous "play started" ping per game per browser session, used only to sort the Arcade
+   by "Most played". Sends just the game folder name (no nickname, no score, no ID, no cookies). Fails silently,
+   e.g. before supabase-plays.sql has been run. Skipped on the hub itself and when ?noplay=1. */
+(function () {
+  try {
+    const me = document.currentScript && document.currentScript.src; if (!me) return;
+    const root = me.replace(/shared\/leaderboard\.js(\?.*)?$/, '');
+    const here = location.href.split(/[?#]/)[0];
+    if (here.indexOf(root) !== 0) return;
+    const slug = here.slice(root.length).split('/')[0];
+    if (!/^[a-z0-9][a-z0-9-]{1,39}$/.test(slug) || /noplay=1/.test(location.search)) return;
+    const cfg = (window.ANONLB && window.ANONLB._cfg) || {};
+    if (!/^https:\/\//.test(cfg.url || '') || !cfg.key || /PASTE_/.test(cfg.key)) return;
+    const k = 'anonPlay.' + slug;
+    try { if (sessionStorage.getItem(k)) return; sessionStorage.setItem(k, '1'); } catch (e) { return; }
+    const send = () => {
+      try {
+        const h = { apikey: cfg.key, 'Content-Type': 'application/json', Prefer: 'return=minimal' };
+        if (/^eyJ/.test(cfg.key)) h.Authorization = 'Bearer ' + cfg.key;
+        fetch(String(cfg.url).replace(/\/+$/, '') + '/rest/v1/plays', { method: 'POST', mode: 'cors', credentials: 'omit', keepalive: true,
+          headers: h, body: JSON.stringify({ game: slug }) }).catch(() => {});
+      } catch (e) {}
+    };
+    setTimeout(send, 1500);
   } catch (e) {}
 })();
