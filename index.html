@@ -5,9 +5,22 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#05070a">
 <title>ANON Arcade · Free ANON games · ANON NFTs</title>
-<meta name="description" content="ANON Arcade: free ANON-themed games from ANON NFTs. No sign-up, no wallet. Play ANON Solitaire and climb the leaderboard.">
+<meta name="description" content="ANON Arcade: 53 free ANON-themed games from ANON NFTs. Cards, puzzles, retro arcade, word games and Learn games. No sign-up, no wallet.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ANON Arcade">
+<meta property="og:title" content="ANON Arcade · 53 free games">
+<meta property="og:description" content="ANON Arcade: 53 free ANON-themed games from ANON NFTs. Cards, puzzles, retro arcade, word games and Learn games. No sign-up, no wallet.">
+<meta property="og:url" content="https://anonnftgroup-cpu.github.io/Anon-games/">
+<meta property="og:image" content="https://anonnftgroup-cpu.github.io/Anon-games/assets/og-arcade.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ANON Arcade · 53 free games">
+<meta name="twitter:description" content="ANON Arcade: 53 free ANON-themed games from ANON NFTs. Cards, puzzles, retro arcade, word games and Learn games. No sign-up, no wallet.">
+<meta name="twitter:image" content="https://anonnftgroup-cpu.github.io/Anon-games/assets/og-arcade.jpg">
 <link rel="icon" href="assets/logo.webp">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<script>window.ANON_GAMES_P = fetch('games.json', { cache: 'no-cache' }).then(r => r.ok ? r.json() : Promise.reject(new Error(r.status)));</script>
 <style>
 :root{--gold:#d4af37;--gold2:#f3d77a;--gold3:#8a6d1f;--green:#2bff88;--ink:#05070a;--txt:#e9e3cf;--mut:#9d9580}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -80,6 +93,18 @@ footer a{color:#b9a35c;text-decoration:none}
 #toast.show{opacity:1}
 .err{text-align:center;color:var(--mut);padding:30px 10px}
 .err button{margin-top:10px;min-height:40px;padding:0 18px;border-radius:11px;border:1px solid var(--gold);background:#111;color:var(--gold2);font-weight:700}
+.strip{margin-top:14px}
+.strip h2{margin:0 2px 6px;font-family:Georgia,serif;font-size:15px;color:var(--gold2);letter-spacing:.06em;display:flex;justify-content:space-between;align-items:baseline}
+.strip h2 small{font-family:system-ui,sans-serif;font-size:11.5px;color:var(--mut);letter-spacing:.02em;font-weight:500}
+.srow{display:flex;gap:9px;overflow-x:auto;padding:2px 1px 6px;scrollbar-width:none;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity}
+.srow::-webkit-scrollbar{display:none}
+.stile{flex:none;width:118px;scroll-snap-align:start;display:flex;flex-direction:column;padding:0;border-radius:12px;overflow:hidden;border:1px solid rgba(212,175,55,.5);background:linear-gradient(180deg,#0f1114,#07080a);color:inherit;cursor:pointer;text-align:left}
+.stile img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block;background:#0a0d10}
+.stile span{padding:5px 7px 7px;font-family:Georgia,serif;font-weight:700;font-size:12.5px;line-height:1.2;color:var(--gold2)}
+.strip.learn .stile{border-color:rgba(43,255,136,.55)}
+.lbpick{margin:12px 0 2px;display:grid;grid-template-columns:1fr;gap:6px}
+.lbpick input,.lbpick select{width:100%;min-height:44px;padding:8px 12px;border-radius:12px;border:1px solid rgba(212,175,55,.55);background:#0b0d10;color:var(--gold2);font-size:16px;outline:none}
+.lbpick select{appearance:auto}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 @media (prefers-reduced-motion:reduce){.logo{animation:none}.tile{transition:none}}
 </style>
@@ -105,17 +130,21 @@ footer a{color:#b9a35c;text-decoration:none}
       <div class="chips sorts" id="sorts" role="toolbar" aria-label="Sort games"></div>
       <div class="chips" id="cats" role="toolbar" aria-label="Categories"></div>
     </div>
+    <div id="strips"></div>
     <div class="grid" id="grid"></div>
     <div class="empty" id="empty">No games match. Try another word, ninja.</div>
   </section>
 
   <section class="view" id="viewLb" aria-label="Leaderboards">
-    <div class="chips lbhead" id="lbGames"></div>
+    <div class="lbpick">
+      <label><span class="sr">Find a game</span><input id="lbFind" type="search" placeholder="Find a game…" autocomplete="off"></label>
+      <label><span class="sr">Choose a leaderboard</span><select id="lbGames"></select></label>
+    </div>
     <div class="lbplay" id="lbPlay" hidden></div>
     <div class="lbbox" id="lbBox"></div>
   </section>
 
-  <footer>ANON NFTs · <a href="https://anonnfts.com" target="_blank" rel="noopener">anonnfts.com</a> · Art CC0</footer>
+  <footer>ANON NFTs · <a href="https://anonnfts.com" target="_blank" rel="noopener">anonnfts.com</a> · <a href="https://anonnfts.com/privacy-notice" target="_blank" rel="noopener">Privacy</a> · Art CC0</footer>
 </div>
 <div id="toast" role="status" aria-live="polite"></div>
 <script src="shared/leaderboard.js"></script>
@@ -124,7 +153,7 @@ footer a{color:#b9a35c;text-decoration:none}
 'use strict';
 /* ANON Arcade hub. Everything is driven by games.json: add a folder + one entry. */
 const SHOW_TOOLS_AFTER = 6;              // search + category chips appear when there are more games than this
-const NEW_DAYS = 14;                     // "NEW" badge for games added in the last N days
+const NEW_DAYS = 7, NEW_MAX = 10;        // "New" badge: added (git date) in the last 7 days, newest 10 at most
 const $ = s => document.querySelector(s);
 const params = new URLSearchParams(location.search);
 let GAMES = [], cat = 'All', query = '', lbGame = null, sort = 'popular', TOP = new Set();
@@ -134,7 +163,33 @@ const toast = (m => { let t; return msg => { const e = $('#toast'); e.textConten
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
 const isLive = g => g.status !== 'soon' && g.status !== 'hidden' && !!g.path;
 const gameUrl = g => g.path + (g.path.includes('?') ? '&' : '?') + 'hub=1';
-const isNew = g => g.added && isLive(g) && (Date.now() - Date.parse(g.added)) < NEW_DAYS * 864e5;
+let NEWSET = new Set();
+const addedAt = g => Date.parse(g.added) || 0;
+const isNew = g => NEWSET.has(g.id);
+function computeNew() {
+  NEWSET = new Set(GAMES.filter(g => isLive(g) && addedAt(g) && Date.now() - addedAt(g) < NEW_DAYS * 864e5)
+    .sort((a, b) => addedAt(b) - addedAt(a)).slice(0, NEW_MAX).map(g => g.id));
+}
+const LEARN_STRIP_N = 8, TOP_PICKS_N = 6;
+function stile(g) {
+  const b = el('button', 'stile'); b.type = 'button'; b.dataset.id = g.id; b.setAttribute('aria-label', g.name + '. Play');
+  const img = el('img'); img.loading = 'lazy'; img.alt = ''; img.width = 240; img.height = 180; img.src = g.thumb || 'assets/coming-soon.webp';
+  img.onerror = () => { img.onerror = null; img.src = 'assets/coming-soon.webp'; };
+  b.appendChild(img); b.appendChild(el('span', '', g.name.replace(/^ANON\s+/, ''))); b.onclick = () => open(g); return b;
+}
+function strip(cls, title, note, list) {
+  const s = el('section', 'strip ' + cls); const h = el('h2', '', title); if (note) h.appendChild(el('small', '', note)); s.appendChild(h);
+  const r = el('div', 'srow'); list.forEach(g => r.appendChild(stile(g))); s.appendChild(r); return s;
+}
+function renderStrips() {
+  const box = $('#strips'); box.innerHTML = '';
+  if (query.trim() || cat !== 'All') return;
+  const live = GAMES.filter(isLive);
+  const learn = live.filter(g => g.category === 'Learn').slice(0, LEARN_STRIP_N);
+  if (learn.length) { const s = strip('learn', '📚 Learn', 'check the backing yourself', learn); s.id = 'learnStrip'; box.appendChild(s); }
+  const top = live.filter(g => g.category !== 'Learn').slice(0, TOP_PICKS_N);
+  if (top.length) { const s = strip('top', '⭐ Top picks', 'most played this week', top); s.id = 'topStrip'; box.appendChild(s); }
+}
 
 function open(g) {
   if (!isLive(g)) { toast('🥷 ' + g.name + ' is coming soon'); return; }
@@ -164,7 +219,7 @@ function visible() {
   const q = query.trim().toLowerCase();
   // GAMES is already in popularity order; other sorts are stable re-sorts of it.
   const base = sort === 'az' ? GAMES.slice().sort((a, b) => a.name.replace(/^ANON\s+/i, '').localeCompare(b.name.replace(/^ANON\s+/i, '')))
-    : sort === 'new' ? GAMES.slice().sort((a, b) => (Date.parse(b.added) || 0) - (Date.parse(a.added) || 0)) : GAMES;
+    : sort === 'new' ? GAMES.slice().sort((a, b) => addedAt(b) - addedAt(a)) : GAMES;
   return base.filter(g => (cat === 'All' || g.category === cat) &&
     (!q || [g.name, g.tagline, g.category, ...(g.tags || [])].join(' ').toLowerCase().includes(q)));
 }
@@ -172,6 +227,7 @@ function visible() {
 function renderGrid() {
   const grid = $('#grid'); grid.innerHTML = '';
   const list = visible();
+  renderStrips();
   list.forEach(g => grid.appendChild(tile(g)));
   $('#empty').classList.toggle('show', !list.length);
 }
@@ -199,24 +255,28 @@ function renderTools() {
 }
 
 function renderLb() {
-  const lbs = GAMES.filter(g => isLive(g) && g.leaderboard);
-  const chips = $('#lbGames'), keepX = chips.scrollLeft; chips.innerHTML = '';
+  const lbs = GAMES.filter(g => isLive(g) && g.leaderboard).slice().sort((a, b) => a.name.replace(/^ANON\s+/i, '').localeCompare(b.name.replace(/^ANON\s+/i, '')));
+  const sel = $('#lbGames');
   if (!lbs.length) { $('#lbBox').textContent = 'No leaderboards yet.'; return; }
-  if (!lbGame || !lbs.find(g => g.id === lbGame)) lbGame = lbs[0].id;
-  lbs.forEach(g => {
-    const b = el('button', 'chip' + (g.id === lbGame ? ' on' : ''), g.name); b.type = 'button'; b.dataset.game = g.id;
-    b.onclick = () => { lbGame = g.id; renderLb(); };
-    chips.appendChild(b);
-  });
+  if (!lbGame || !lbs.find(g => g.id === lbGame)) lbGame = (GAMES.find(g => isLive(g) && g.leaderboard) || lbs[0]).id;
+  const q = ($('#lbFind').value || '').trim().toLowerCase();
+  const shown = lbs.filter(g => !q || g.id === lbGame || [g.name, g.category, ...(g.tags || [])].join(' ').toLowerCase().includes(q));
+  sel.innerHTML = '';
+  shown.forEach(g => { const o = el('option', '', g.name + ' · ' + g.category); o.value = g.id; if (g.id === lbGame) o.selected = true; sel.appendChild(o); });
   const g = lbs.find(x => x.id === lbGame);
   renderLbPlay(g);
-  chips.scrollLeft = keepX;
-  const on = chips.querySelector('.chip.on'); // keep the selected chip visible without scrolling the parent page
-  if (on && (on.offsetLeft < chips.scrollLeft || on.offsetLeft + on.offsetWidth > chips.scrollLeft + chips.clientWidth)) chips.scrollLeft = on.offsetLeft - 12;
   const box = $('#lbBox');
+  if (box.dataset.game === g.id && box.dataset.drawn) return;
+  box.dataset.game = g.id; box.dataset.drawn = '1';
   if (window.ANONLB) window.ANONLB.renderBoard(box, { game: g.id, order: g.order || 'desc', scoreLabel: g.scoreLabel || 'Score', periods: g.periods, movesLabel: g.movesLabel, hideMode: g.hideMode, modeLabels: g.modeLabels });
   else box.textContent = 'Leaderboard unavailable.';
 }
+$('#lbGames').addEventListener('change', e => { lbGame = e.target.value; renderLb(); });
+$('#lbFind').addEventListener('input', () => {
+  renderLb(); const sel = $('#lbGames'), q = $('#lbFind').value.trim().toLowerCase();
+  const first = [...sel.options].find(o => o.value !== lbGame); // jump to the best match while typing
+  if (q && first && ![...sel.options].some(o => o.value === lbGame && o.textContent.toLowerCase().includes(q))) { lbGame = first.value; renderLb(); }
+});
 
 // Big "▶ Play <game>" button above the board being viewed. Same-frame link (like the tiles), so it stays inside the anonnfts.com iframe.
 function renderLbPlay(g) {
@@ -257,11 +317,12 @@ function applyOrder(list, order) {
 }
 async function load() {
   try {
-    const [r, order] = await Promise.all([fetch('games.json', { cache: 'no-cache' }), loadOrder()]);
-    if (!r.ok) throw new Error(r.status);
-    const data = await r.json();
+    // games.json is fetched once (started in <head>, shared with challenge.js); a retry fetches again
+    const gp = window.ANON_GAMES_P || (window.ANON_GAMES_P = fetch('games.json', { cache: 'no-cache' }).then(r => r.ok ? r.json() : Promise.reject(new Error(r.status))));
+    const [data, order] = await Promise.all([gp.catch(e => { window.ANON_GAMES_P = null; throw e; }), loadOrder()]);
     GAMES = applyOrder((data.games || []).filter(g => g && g.id && g.name && g.status !== 'hidden'), order);
     TOP = new Set(order.length ? GAMES.filter(isLive).slice(0, 3).map(g => g.id) : []);
+    computeNew();
   } catch (e) {
     const grid = $('#grid'); grid.innerHTML = '';
     const d = el('div', 'err', 'Could not load the games list.'); const b = el('button', '', 'Try again'); b.onclick = load;

@@ -16,11 +16,11 @@
       "leaderboard": true,
       "scoreLabel": "Score",
       "order": "desc",
-      "added": "2026-10-19"
+      "added": "2026-10-19T07:39:25+01:00"
     },
     {
       "id": "daily-word",
-      "name": "Daily ANON Word",
+      "name": "ANON Daily Word",
       "tagline": "One new 5-letter word a day. 6 guesses.",
       "path": "word/",
       "thumb": "word/thumb.webp",
@@ -42,7 +42,7 @@
       ],
       "movesLabel": "guesses",
       "hideMode": true,
-      "added": "2026-10-19"
+      "added": "2026-10-19T09:18:16+01:00"
     },
     {
       "id": "word-unlimited",
@@ -68,7 +68,7 @@
       ],
       "movesLabel": "guesses",
       "hideMode": true,
-      "added": "2026-10-19"
+      "added": "2026-10-19T10:53:13+01:00"
     },
     {
       "id": "connect4",
@@ -98,7 +98,7 @@
         "medium": "Medium",
         "hard": "Hard"
       },
-      "added": "2026-10-19"
+      "added": "2026-10-19T10:53:13+01:00"
     },
     {
       "id": "tictactoe",
@@ -124,7 +124,7 @@
       ],
       "movesLabel": "moves",
       "hideMode": true,
-      "added": "2026-10-19"
+      "added": "2026-10-19T10:53:28+01:00"
     },
     {
       "id": "minesweeper",
@@ -153,7 +153,7 @@
         "intermediate": "Intermediate",
         "expert": "Expert"
       },
-      "added": "2026-10-19"
+      "added": "2026-10-19T10:30:01+01:00"
     },
     {
       "id": "checkers",
@@ -183,7 +183,7 @@
         "medium": "Medium",
         "hard": "Hard"
       },
-      "added": "2026-10-19"
+      "added": "2026-10-19T10:33:22+01:00"
     },
     {
       "id": "chess",
@@ -212,7 +212,7 @@
         "medium": "Medium",
         "hard": "Hard"
       },
-      "added": "2026-10-19"
+      "added": "2026-10-19T10:39:38+01:00"
     },
     {
       "id": "hearts",
@@ -237,7 +237,7 @@
       ],
       "movesLabel": "hands",
       "hideMode": true,
-      "added": "2026-10-19"
+      "added": "2026-10-19T10:40:45+01:00"
     },
     {
       "id": "jigsaw",
@@ -266,7 +266,7 @@
         "p24": "24 pieces",
         "p48": "48 pieces"
       },
-      "added": "2026-10-19"
+      "added": "2026-10-19T11:34:13+01:00"
     },
     {
       "id": "slide-puzzle",
@@ -295,11 +295,11 @@
         "s4": "4 × 4",
         "s5": "5 × 5"
       },
-      "added": "2026-10-19"
+      "added": "2026-10-19T11:34:13+01:00"
     },
     {
       "id": "whack-an-anon",
-      "name": "Whack-an-ANON",
+      "name": "ANON Whack-an-ANON",
       "tagline": "Tap the ANONs in 60 seconds. Dodge the skulls!",
       "path": "whack-an-anon/",
       "thumb": "whack-an-anon/thumb.webp",
@@ -320,11 +320,11 @@
       ],
       "movesLabel": "hits",
       "hideMode": true,
-      "added": "2026-10-19"
+      "added": "2026-10-19T11:39:21+01:00"
     },
     {
       "id": "shadow-dodge",
-      "name": "Shadow Dodge",
+      "name": "ANON Shadow Dodge",
       "tagline": "Pick your ANON and dodge the blocks",
       "path": "shadow-dodge/",
       "thumb": "shadow-dodge/thumb.webp",
@@ -345,7 +345,7 @@
       ],
       "movesLabel": "dodges",
       "modeLabels": {
-        "anon": "Revenue Share",
+        "anon": "ANON Originals",
         "apes": "Apes",
         "royals": "King & Queen",
         "aces": "Aces",
@@ -356,11 +356,11 @@
         "venge": "Vengeance",
         "grumpy": "Grumpy Cat"
       },
-      "added": "2026-10-19"
+      "added": "2026-10-19T11:39:21+01:00"
     },
     {
       "id": "ninja-memory",
-      "name": "Ninja Memory",
+      "name": "ANON Ninja Memory",
       "tagline": "Find the hidden ANON pairs",
       "path": "ninja-memory/",
       "thumb": "ninja-memory/thumb.webp",
@@ -385,11 +385,11 @@
         "medium": "Medium",
         "hard": "Hard"
       },
-      "added": "2026-10-19"
+      "added": "2026-10-19T11:39:21+01:00"
     },
     {
       "id": "shadow-runner",
-      "name": "Shadow Runner",
+      "name": "ANON Shadow Runner",
       "tagline": "Dash through the forest, grab the gems",
       "path": "shadow-runner/",
       "thumb": "shadow-runner/thumb.webp",
@@ -410,7 +410,7 @@
       ],
       "movesLabel": "gems",
       "hideMode": true,
-      "added": "2026-10-19"
+      "added": "2026-10-19T11:45:23+01:00"
     },
     {
       "id": "anon-flutter",
@@ -435,7 +435,7 @@
       ],
       "movesLabel": "taps",
       "hideMode": true,
-      "added": "2026-10-19"
+      "added": "2026-10-19T11:45:23+01:00"
     },
     {
       "id": "brick-breaker",
@@ -445,7 +445,6 @@
       "thumb": "brick-breaker/thumb.webp",
       "category": "Arcade",
       "tags": [
-        "breakout",
         "bricks",
         "paddle",
         "levels"
@@ -491,7 +490,7 @@
         "l29": "Level 29",
         "l30": "Level 30"
       },
-      "added": "2026-10-19"
+      "added": "2026-10-19T11:50:54+01:00"
     },
     {
       "id": "anon-snake",
@@ -519,7 +518,7 @@
         "normal": "Normal",
         "fast": "Fast"
       },
-      "added": "2026-10-19"
+      "added": "2026-10-19T11:50:54+01:00"
     },
     {
       "id": "pinball",
@@ -545,7 +544,7 @@
       ],
       "movesLabel": "missions",
       "hideMode": true,
-      "added": "2026-10-19"
+      "added": "2026-10-19T11:53:13+01:00"
     },
     {
       "id": "anon-2048",
@@ -570,7 +569,7 @@
       ],
       "movesLabel": "swipes",
       "hideMode": true,
-      "added": "2026-10-19"
+      "added": "2026-10-19T11:58:36+01:00"
     },
     {
       "id": "block-drop",
@@ -594,11 +593,11 @@
       ],
       "movesLabel": "rows",
       "hideMode": true,
-      "added": "2026-10-19"
+      "added": "2026-10-19T11:58:36+01:00"
     },
     {
       "id": "gem-match",
-      "name": "Gem Match",
+      "name": "ANON Gem Match",
       "tagline": "Match 3 gems and crowns in 90 seconds",
       "path": "gem-match/",
       "thumb": "gem-match/thumb.webp",
@@ -619,7 +618,7 @@
       ],
       "movesLabel": "swaps",
       "hideMode": true,
-      "added": "2026-10-19"
+      "added": "2026-10-19T11:58:36+01:00"
     },
     {
       "id": "bomb-maze",
@@ -649,7 +648,7 @@
         "medium": "Medium",
         "hard": "Hard"
       },
-      "added": "2026-10-19"
+      "added": "2026-10-19T12:10:18+01:00"
     },
     {
       "id": "barrel-climb",
@@ -679,7 +678,7 @@
         "medium": "Medium",
         "hard": "Hard"
       },
-      "added": "2026-10-19"
+      "added": "2026-10-19T12:12:38+01:00"
     },
     {
       "id": "sky-defence",
@@ -709,7 +708,7 @@
         "medium": "Medium",
         "hard": "Hard"
       },
-      "added": "2026-10-19"
+      "added": "2026-10-19T12:13:56+01:00"
     },
     {
       "id": "shadow-echo",
@@ -735,7 +734,7 @@
       ],
       "movesLabel": "rounds",
       "modeLabels": {
-        "anon": "Revenue Share",
+        "anon": "ANON Originals",
         "apes": "Apes",
         "royals": "King & Queen",
         "aces": "Aces",
@@ -746,7 +745,7 @@
         "venge": "Vengeance",
         "grumpy": "Grumpy Cat"
       },
-      "added": "2026-10-19"
+      "added": "2026-10-19T12:22:18+01:00"
     },
     {
       "id": "pyramid-hop",
@@ -776,7 +775,7 @@
         "medium": "Medium",
         "hard": "Hard"
       },
-      "added": "2026-10-19"
+      "added": "2026-10-19T12:16:44+01:00"
     },
     {
       "id": "bug-blaster",
@@ -805,7 +804,7 @@
         "medium": "Medium",
         "hard": "Hard"
       },
-      "added": "2026-10-19"
+      "added": "2026-10-19T12:18:39+01:00"
     },
     {
       "id": "shadow-maze",
@@ -830,7 +829,7 @@
       ],
       "movesLabel": "level",
       "hideMode": true,
-      "added": "2026-10-19"
+      "added": "2026-10-19T12:18:46+01:00"
     },
     {
       "id": "paper-toss",
@@ -838,7 +837,7 @@
       "tagline": "Flick unbacked doodles into the bin, beat the wind",
       "path": "paper-toss/",
       "thumb": "paper-toss/thumb.webp",
-      "category": "Casual",
+      "category": "Arcade",
       "tags": [
         "flick",
         "casual",
@@ -855,7 +854,7 @@
       ],
       "movesLabel": "binned",
       "modeLabels": {
-        "anon": "Revenue Share",
+        "anon": "ANON Originals",
         "apes": "Apes",
         "royals": "King & Queen",
         "aces": "Aces",
@@ -866,11 +865,11 @@
         "venge": "Vengeance",
         "grumpy": "Grumpy Cat"
       },
-      "added": "2026-10-19"
+      "added": "2026-10-19T12:20:35+01:00"
     },
     {
       "id": "flag-swipe",
-      "name": "Red Flag or Green Flag",
+      "name": "ANON Red Flag or Green Flag",
       "tagline": "Swipe NFT claims: red flag or green flag? 60 seconds",
       "path": "flag-swipe/",
       "thumb": "flag-swipe/thumb.webp",
@@ -892,7 +891,7 @@
       ],
       "movesLabel": "cards",
       "hideMode": true,
-      "added": "2026-10-19"
+      "added": "2026-10-19T12:22:11+01:00"
     },
     {
       "id": "crossing",
@@ -917,7 +916,7 @@
       ],
       "movesLabel": "level",
       "hideMode": true,
-      "added": "2026-10-19"
+      "added": "2026-10-19T12:24:09+01:00"
     },
     {
       "id": "backing-quiz",
@@ -946,7 +945,7 @@
         "daily": "Daily",
         "endless": "Endless"
       },
-      "added": "2026-10-19"
+      "added": "2026-10-19T12:25:31+01:00"
     },
     {
       "id": "space-rocks",
@@ -971,11 +970,11 @@
       ],
       "movesLabel": "wave",
       "hideMode": true,
-      "added": "2026-10-19"
+      "added": "2026-10-19T12:28:59+01:00"
     },
     {
       "id": "rug-runner",
-      "name": "Rug Pull Runner",
+      "name": "ANON Rug Pull Runner",
       "tagline": "Run across rugs before they get yanked. Check it on-chain!",
       "path": "rug-runner/",
       "thumb": "rug-runner/thumb.webp",
@@ -996,11 +995,11 @@
       ],
       "movesLabel": "checks",
       "hideMode": true,
-      "added": "2026-10-19"
+      "added": "2026-10-19T12:30:59+01:00"
     },
     {
       "id": "hype-pop",
-      "name": "Hype Balloon Pop",
+      "name": "ANON Hype Balloon Pop",
       "tagline": "Pop the hype, catch the facts",
       "path": "hype-pop/",
       "thumb": "hype-pop/thumb.webp",
@@ -1021,7 +1020,7 @@
       ],
       "movesLabel": "facts",
       "hideMode": true,
-      "added": "2026-10-19"
+      "added": "2026-10-19T12:33:56+01:00"
     },
     {
       "id": "paddle-duel",
@@ -1050,11 +1049,11 @@
         "medium": "Medium",
         "hard": "Hard"
       },
-      "added": "2026-10-19"
+      "added": "2026-10-19T12:34:45+01:00"
     },
     {
       "id": "pool-plumber",
-      "name": "Pool Plumber",
+      "name": "ANON Pool Plumber",
       "tagline": "Rotate pipes so at least half the mint reaches the pool",
       "path": "pool-plumber/",
       "thumb": "pool-plumber/thumb.webp",
@@ -1076,11 +1075,11 @@
       ],
       "movesLabel": "levels",
       "hideMode": true,
-      "added": "2026-10-19"
+      "added": "2026-10-19T12:38:13+01:00"
     },
     {
       "id": "chain-detective",
-      "name": "On-Chain Detective",
+      "name": "ANON On-Chain Detective",
       "tagline": "Inspect the records: backed or unbacked?",
       "path": "chain-detective/",
       "thumb": "chain-detective/thumb.webp",
@@ -1101,11 +1100,11 @@
       ],
       "movesLabel": "cases",
       "hideMode": true,
-      "added": "2026-10-19"
+      "added": "2026-10-19T12:41:58+01:00"
     },
     {
       "id": "backing-builder",
-      "name": "Backing Builder",
+      "name": "ANON Backing Builder",
       "tagline": "Stack FUSD blocks under your NFT",
       "path": "backing-builder/",
       "thumb": "backing-builder/thumb.webp",
@@ -1126,7 +1125,7 @@
       ],
       "movesLabel": "blocks",
       "hideMode": true,
-      "added": "2026-10-19"
+      "added": "2026-10-19T12:44:32+01:00"
     },
     {
       "id": "moon-lander",
@@ -1151,7 +1150,7 @@
       ],
       "movesLabel": "landings",
       "hideMode": true,
-      "added": "2026-10-19"
+      "added": "2026-10-19T12:44:46+01:00"
     },
     {
       "id": "light-trails",
@@ -1176,7 +1175,7 @@
       ],
       "movesLabel": "rounds",
       "hideMode": true,
-      "added": "2026-10-19"
+      "added": "2026-10-19T12:49:28+01:00"
     },
     {
       "id": "nft-tycoon",
@@ -1202,7 +1201,7 @@
       ],
       "movesLabel": "trades",
       "hideMode": true,
-      "added": "2026-10-19"
+      "added": "2026-10-19T12:56:03+01:00"
     },
     {
       "id": "sudoku",
@@ -1233,7 +1232,7 @@
         "medium": "Medium",
         "hard": "Hard"
       },
-      "added": "2026-10-19"
+      "added": "2026-10-19T13:18:37+01:00"
     },
     {
       "id": "freecell",
@@ -1262,7 +1261,7 @@
         "medium": "Medium",
         "hard": "Hard"
       },
-      "added": "2026-10-19"
+      "added": "2026-10-19T13:18:37+01:00"
     },
     {
       "id": "spider",
@@ -1291,7 +1290,7 @@
         "medium": "2 suits",
         "hard": "4 suits"
       },
-      "added": "2026-10-19"
+      "added": "2026-10-19T13:18:37+01:00"
     },
     {
       "id": "reversi",
@@ -1320,7 +1319,7 @@
         "medium": "Medium",
         "hard": "Hard"
       },
-      "added": "2026-10-19"
+      "added": "2026-10-19T13:18:37+01:00"
     },
     {
       "id": "sea-battle",
@@ -1349,7 +1348,7 @@
         "medium": "Medium",
         "hard": "Hard"
       },
-      "added": "2026-10-19"
+      "added": "2026-10-19T13:18:37+01:00"
     },
     {
       "id": "crazy-eights",
@@ -1378,7 +1377,7 @@
         "medium": "Medium · 2",
         "hard": "Hard · 3"
       },
-      "added": "2026-10-19"
+      "added": "2026-10-19T13:18:37+01:00"
     },
     {
       "id": "mahjong",
@@ -1408,7 +1407,7 @@
         "medium": "Medium · 96",
         "hard": "Hard · 120"
       },
-      "added": "2026-10-19"
+      "added": "2026-10-19T13:18:37+01:00"
     },
     {
       "id": "hangman",
@@ -1437,7 +1436,7 @@
         "medium": "Medium",
         "hard": "Hard"
       },
-      "added": "2026-10-19"
+      "added": "2026-10-19T13:18:38+01:00"
     },
     {
       "id": "word-search",
@@ -1467,7 +1466,7 @@
         "medium": "Medium",
         "hard": "Hard"
       },
-      "added": "2026-10-19"
+      "added": "2026-10-19T13:18:38+01:00"
     },
     {
       "id": "galaxy-shooter",
@@ -1496,7 +1495,7 @@
         "medium": "Medium",
         "hard": "Hard"
       },
-      "added": "2026-10-19"
+      "added": "2026-10-19T13:18:38+01:00"
     }
   ]
 }
