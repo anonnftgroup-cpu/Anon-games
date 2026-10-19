@@ -52,7 +52,7 @@ h1 .u{margin-left:5px}
 <div id="toast" role="status" aria-live="polite"></div>
 <div class="overlay" id="modal"><div class="panel" id="panel" role="dialog" aria-modal="true"></div></div>
 
-<script src="../shared/leaderboard.js"></script>
+<script src="../shared/leaderboard.js?v=1.7.0"></script>
 <script src="../shared/newsletter.js"></script>
 <script src="../word/words.js?v=2"></script>
 <script src="../word/fx.js?v=2"></script>
@@ -117,7 +117,8 @@ async function probe() {
   const r = await rpc('wu_start', { p_nickname: '' });      // an empty name is always refused: tells us the SQL is there without starting a round
   SRV = r.missing ? 'missing' : r.net ? 'offline' : 'on';   // "nickname not allowed" (or ok) = the SQL is there
 }
-const nick = () => (window.ANONLB && window.ANONLB.getNickname()) || '';
+// No name yet? Play under the device's guest name (e.g. Ninja-4821) so no streak is missed; it can be changed any time.
+const nick = () => { const LB = window.ANONLB; if (!LB) return ''; let n = LB.getNickname(); if (!n && LB.guestName) { const r = LB.setNickname(LB.guestName()); n = r.ok ? r.value : ''; } return n || ''; };
 const online = () => SRV === 'on' && !!nick();
 
 /* ---------- state ---------- */
@@ -184,7 +185,7 @@ function paintHeader() {
   $('#pNum').textContent = String(Math.max(1, st.round));
   $('#pStreak').textContent = String(sv ? sv.cur : st.cur); $('#pBest').textContent = String(sv ? sv.best : st.max);
   const m = $('#modeNote'); m.innerHTML = '';
-  if (SRV === 'on' && nick()) m.textContent = '🏆 Playing for the leaderboard as ' + nick();
+  if (SRV === 'on' && nick()) { m.appendChild(document.createTextNode('🏆 Playing for the leaderboard as ' + nick() + ' · ')); const b = el('button', '', 'Change name'); b.type = 'button'; b.onclick = joinLB; m.appendChild(b); }
   else if (SRV === 'on') { m.appendChild(document.createTextNode('Practice mode · ')); const b = el('button', '', 'Join the leaderboard'); b.type = 'button'; b.onclick = joinLB; m.appendChild(b); }
   else if (SRV === 'missing') m.textContent = '🏆 Leaderboard coming online soon · practice words for now';
   else if (SRV === 'offline') m.textContent = 'Offline · practice words on this device';
@@ -230,7 +231,7 @@ function showRetry() { const n = $('#lockNote'); n.classList.add('on'); n.innerH
 function nextWord() { closeModal(); newRound(); }
 async function joinLB() {
   if (!window.ANONLB) return;
-  const v = await window.ANONLB.promptNickname({ title: '🥷 Play for the leaderboard', text: 'Pick a ninja name and your win streak goes on the ANON Word Unlimited leaderboard. No sign-up, no email.', skipLabel: 'Not now, just practise', markOptOut: false });
+  const v = await window.ANONLB.promptNickname({ title: '🥷 Your leaderboard name', text: 'Your win streak goes on the ANON Word Unlimited leaderboard under this name. No sign-up, no email.', skipLabel: 'Cancel', markOptOut: false });
   paintHeader();
   if (v && R && R.mode === 'local' && R.guesses.length === 0) { R = null; newRound(); }
   else if (v) toast('Your next word counts for the leaderboard 🏆', 2400);
@@ -401,10 +402,6 @@ async function init() {
   if (R && R.status === 'playing' && R.mode === 'local' && R.guesses.length === 0 && online()) R = null;   // untouched practice word: swap for a real one
   paintAll();
   if (!ls.get(K_SEEN, 0)) showHelp();
-  if (SRV === 'on' && !nick() && !(window.ANONLB && localStorage.getItem('anonLB.optout'))) {
-    const wait = () => new Promise(res => { const t = setInterval(() => { if (!$('#modal').classList.contains('show')) { clearInterval(t); res(); } }, 200); });
-    await wait(); await joinLB();
-  }
   if (!R || R.status !== 'playing') { if (!R) newRound(); }
   paintAll();
 }

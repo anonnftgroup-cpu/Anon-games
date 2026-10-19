@@ -231,46 +231,138 @@ const SUPABASE_ANON_KEY = 'sb_publishable_-f0lT5SuVJ-TbFzlfMd7kA_hH6ZXp-N';
     const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return d;
   }
 
-  /* ---------- submit ---------- */
-  let busy = false;
+  /* ---------- submit ----------
+     Every game over gets a small post box (not a modal) with the name already filled in: the saved nickname, or a
+     guest name like Ninja-4821 ("ANON-…" is reserved by the name filter) that is kept for next time. The player can edit it and tap Post. If they don't, it posts
+     by itself, exactly once, when they tap anything else (Play again, ← Arcade, Back…), press a key, leave the page,
+     or after 20 seconds. Scores go through an on-device outbox, so the server's 30-second-per-game rate limit queues a
+     score instead of losing it. A server rejection (anti-cheat, bad name) is never shown to the player as an error. */
+  const K_GUEST = 'anonLB.guest', K_OUT = 'anonLB.outbox', COOLDOWN = 31000, IDLE_MS = 20000;
+  function guestName() {
+    let g = ls.get(K_GUEST, '');
+    if (validateNickname(g).ok) return g;
+    for (let i = 0; i < 20; i++) { g = 'Ninja-' + (1000 + (Math.random() * 9000 | 0)); if (validateNickname(g).ok) break; }
+    ls.set(K_GUEST, g); return g;
+  }
+  const postName = () => getNickname() || guestName();
+
+  /* outbox */
+  const outGet = () => { const o = ls.get(K_OUT, []); return Array.isArray(o) ? o : []; };
+  const outSet = o => ls.set(K_OUT, o.slice(-40));
+  const inflight = new Set(); let drainT = 0;
+  function queue(row) { const o = outGet(); o.push(row); outSet(o); }
+  async function sendOne(it, keepalive) {
+    inflight.add(it.id);
+    outSet(outGet().filter(x => x.id !== it.id)); // taken out before sending: a page closing mid-request can't post it twice
+    const putBack = (later) => { it.tries = (it.tries || 0) + 1; it.nb = Date.now() + later; if (it.tries <= 8) queue(it); };
+    try {
+      const r = await req('/' + CFG.table, { method: 'POST', keepalive: !!keepalive, headers: headers({ Prefer: 'return=minimal' }),
+        body: JSON.stringify({ game: it.game, nickname: it.nick, score: it.score, time_seconds: it.time, moves: it.moves, mode: it.mode }) });
+      if (r.ok) { ls.set(K_LAST(it.game), Date.now()); return 'online'; }
+      const msg = (r.body && r.body.message) || '';
+      if (/rate/i.test(msg)) { ls.set(K_LAST(it.game), Date.now()); putBack(COOLDOWN); return 'queued'; }
+      if (/nickname not allowed/i.test(msg)) { if (getNickname().toLowerCase() === String(it.nick).toLowerCase()) ls.set(K_NICK, ''); ls.set(K_GUEST, '');
+        it.nick = guestName(); putBack(0); return 'queued'; }
+      if (r.status >= 500) { putBack(COOLDOWN); return 'queued'; }
+      return 'rejected'; // 400 / 409 / check constraint: anti-cheat said no. Stays on this device, no error shown.
+    } catch (e) { putBack(COOLDOWN); return 'queued'; }
+    finally { inflight.delete(it.id); }
+  }
+  async function drain(keepalive) {
+    clearTimeout(drainT);
+    if (!configured()) return;
+    const now = Date.now(), seen = new Set(); let next = Infinity;
+    for (const it of outGet()) {
+      if (inflight.has(it.id)) continue;
+      const ready = Math.max(it.nb || 0, ls.get(K_LAST(it.game), 0) + COOLDOWN);
+      if (ready > now || seen.has(it.game)) { next = Math.min(next, ready > now ? ready : now + COOLDOWN); continue; }
+      seen.add(it.game); sendOne(it, keepalive).then(() => scheduleDrain());
+    }
+    if (next < Infinity && !keepalive) drainT = setTimeout(drain, Math.max(1000, next - Date.now() + 200));
+  }
+  const scheduleDrain = () => { clearTimeout(drainT); drainT = setTimeout(drain, 400); };
+
+  /* the pre-filled post box */
+  let PB = null; // the one open post box: { commit }
+  function boxCSS() {
+    if (document.getElementById('alb-pb-css')) return;
+    const s = el('style'); s.id = 'alb-pb-css';
+    s.textContent = `.alb-pb{box-sizing:border-box;margin:10px auto 2px;width:100%;max-width:420px;padding:9px 10px;border:1px solid rgba(212,175,55,.6);border-radius:13px;background:linear-gradient(180deg,#121417,#07080a);color:#e9e3cf;font:14px system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;text-align:left;box-shadow:0 0 14px rgba(43,255,136,.14)}
+.alb-pb.alb-float{position:fixed;left:50%;top:calc(8px + env(safe-area-inset-top));transform:translateX(-50%);z-index:4900;width:min(420px,calc(100% - 16px));margin:0}
+.alb-pb-h{font-size:12.5px;font-weight:800;color:#f3d77a;letter-spacing:.03em;margin:0 0 6px}
+.alb-pb-r{display:flex;gap:7px}
+.alb-pb input{flex:1;min-width:0;min-height:40px;padding:6px 10px;border-radius:10px;border:1px solid rgba(212,175,55,.55);background:#0b0d10;color:#f3d77a;font-size:16px;outline:none}
+.alb-pb button{flex:none;min-height:40px;padding:0 16px;border-radius:10px;border:1px solid #f3d77a;background:linear-gradient(180deg,#e9c858,#a47c1f);color:#120e02;font-weight:900;font-size:14px;cursor:pointer}
+.alb-pb-n{font-size:11.5px;color:#9d9580;margin-top:5px;min-height:14px}
+.alb-pb-n.err{color:#ff8a7a}.alb-pb.done .alb-pb-n{color:#2bff88;font-size:12.5px;font-weight:700}`;
+    document.head.appendChild(s);
+  }
+  function showPostBox(row) {
+    injectCSS(); boxCSS();
+    const prefill = postName();
+    const box = el('div', 'alb-pb'); box.setAttribute('role', 'group'); box.setAttribute('aria-label', 'Post your score');
+    box.appendChild(el('div', 'alb-pb-h', '🏆 Score ' + row.score + ' · your leaderboard name'));
+    const r = el('div', 'alb-pb-r'), inp = el('input'); inp.maxLength = 16; inp.autocomplete = 'off'; inp.spellcheck = false; inp.value = prefill;
+    inp.setAttribute('aria-label', 'Leaderboard name'); inp.setAttribute('enterkeyhint', 'send');
+    const btn = el('button', '', 'Post'); btn.type = 'button';
+    r.appendChild(inp); r.appendChild(btn); box.appendChild(r);
+    const note = el('div', 'alb-pb-n', 'Posts automatically in 20s, or tap Post.'); box.appendChild(note);
+    // inside the game-over card when there is one (under the score message), otherwise a small card at the top
+    const host = document.getElementById('lbMsg') || document.getElementById('wLB');
+    if (host && host.offsetParent !== null && host.parentNode) host.parentNode.insertBefore(box, host.nextSibling);
+    else { box.classList.add('alb-float'); document.body.appendChild(box); }
+    const shownAt = Date.now(); let done = false, idle = 0;
+    const arm = () => { clearTimeout(idle); idle = setTimeout(() => commit(false, 'idle'), IDLE_MS); };
+    const off = () => { clearTimeout(idle); document.removeEventListener('pointerdown', onDown, true); document.removeEventListener('keydown', onKey, true);
+      window.removeEventListener('pagehide', onHide); document.removeEventListener('visibilitychange', onVis); };
+    function commit(explicit, why) {
+      if (done) return true;
+      const v = validateNickname(inp.value);
+      if (explicit && !v.ok) { note.textContent = v.error; note.className = 'alb-pb-n err'; inp.focus(); return false; }
+      done = true; off(); if (PB && PB.box === box) PB = null;
+      const name = v.ok ? v.value : prefill;
+      setNickname(name); row.nick = name;
+      queue(row); drain(why === 'hide');
+      box.classList.add('done'); inp.disabled = true; btn.disabled = true; btn.textContent = '✓';
+      note.className = 'alb-pb-n'; note.textContent = '✓ Posted as ' + name + ' · change it any time in Leaderboards';
+      box.dataset.state = 'posted'; box.dataset.via = why || 'post';
+      if (box.classList.contains('alb-float')) setTimeout(() => box.remove(), 4000);
+      return true;
+    }
+    const inBox = t => t && box.contains(t);
+    const onDown = e => { if (inBox(e.target) || Date.now() - shownAt < 350) return; commit(false, 'tap'); };
+    const onKey = e => { if (inBox(e.target)) return; if (/^(Shift|Control|Alt|Meta|Tab)$/.test(e.key)) return; commit(false, 'key'); };
+    const onHide = () => commit(false, 'hide');
+    const onVis = () => { if (document.visibilityState === 'hidden') commit(false, 'hide'); };
+    btn.onclick = () => commit(true, 'post');
+    inp.onkeydown = e => { e.stopPropagation(); if (e.key === 'Enter') { e.preventDefault(); commit(true, 'post'); } };
+    inp.oninput = () => { note.className = 'alb-pb-n'; note.textContent = 'Posts automatically in 20s, or tap Post.'; arm(); };
+    inp.onfocus = arm;
+    document.addEventListener('pointerdown', onDown, true); document.addEventListener('keydown', onKey, true);
+    window.addEventListener('pagehide', onHide); document.addEventListener('visibilitychange', onVis);
+    arm();
+    PB = { box, commit };
+    return PB;
+  }
+  const flush = () => { if (PB) PB.commit(false, 'next'); };
+
   async function submit(s) {
     const game = String(s.game || ''), score = Math.round(Number(s.score)), time = Math.round(Number(s.time)), moves = Math.round(Number(s.moves));
     const mode = s.mode ? String(s.mode).slice(0, 16) : null;
     const now = new Date().toISOString();
     const why = sane(game, score, time, moves, mode);
     if (why) return { status: 'rejected', message: 'Score not posted (' + why + ').' };
-    // local copy always
-    localAdd(game, { nickname: getNickname() || 'You', score, time_seconds: time, moves, mode, created_at: now });
+    flush(); // a box still open from the last game posts now, never twice
+    localAdd(game, { nickname: getNickname() || guestName(), score, time_seconds: time, moves, mode, created_at: now });
     if (!configured()) return { status: 'local', message: 'Saved on this device. Global leaderboard coming soon.' };
-    if (busy) return { status: 'skipped', message: 'Already posting a score…' };
-    const last = ls.get(K_LAST(game), 0);
-    if (Date.now() - last < 20000) return { status: 'skipped', message: 'Saved on this device (too many scores too fast).' };
-    let nick = getNickname();
-    if (!nick) {
-      if (ls.get(K_OPTOUT, false)) return { status: 'local', message: 'Saved on this device. Set a nickname in Leaderboards to go global.' };
-      // No name prompt on a device's first scored game: it stays local and the "Post score" button can still post it.
-      const n = ls.get(K_GAMES, 0) + 1; ls.set(K_GAMES, n);
-      if (n < 2 && !s.manual) return { status: 'local', message: 'Saved on this device. Play again to join the global leaderboard.' };
-      window.__anonNickPromptAt = Date.now();
-      nick = await promptNickname({ saveLabel: 'Save & post score' });
-      if (!nick) return { status: 'local', message: 'Saved on this device only.' };
-    }
-    busy = true;
-    try {
-      const r = await req('/' + CFG.table, { method: 'POST', headers: headers({ Prefer: 'return=minimal' }),
-        body: JSON.stringify({ game, nickname: nick, score, time_seconds: time, moves, mode }) });
-      if (r.ok) { ls.set(K_LAST(game), Date.now()); return { status: 'online', nickname: nick, message: 'Posted to the global leaderboard as ' + nick + '.' }; }
-      const code = r.body && r.body.code, msg = (r.body && r.body.message) || '';
-      if (/nickname not allowed/i.test(msg)) { ls.set(K_NICK, ''); return { status: 'rejected', message: NAME_ERR }; }
-      if (r.status === 409 || code === '23505') { ls.set(K_LAST(game), Date.now()); return { status: 'rejected', message: 'This name already has a score on today\'s board.' }; }
-      if (/not today/i.test(msg)) return { status: 'rejected', message: 'That puzzle has ended, so the score stays on this device.' };
-      if (/rate/i.test(msg)) return { status: 'rejected', message: 'Slow down, ninja. Try again in a minute.' };
-      if (code === '23514' || r.status === 400) return { status: 'rejected', message: 'The server did not accept this score.' };
-      return { status: 'error', message: 'Could not reach the leaderboard. Saved on this device.' };
-    } catch (e) {
-      return { status: 'error', message: 'Offline? Saved on this device.' };
-    } finally { busy = false; }
+    const row = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 8), game, score, time, moves, mode, at: Date.now() };
+    let where = 'below';
+    try { const pb = showPostBox(row); if (pb.box.classList.contains('alb-float')) where = 'at the top'; }
+    catch (e) { row.nick = postName(); queue(row); drain(); return { status: 'pending', message: 'Posting to the leaderboard…' }; }
+    return { status: 'pending', message: '🏆 Leaderboard name ' + where + ' (posts by itself).' };
   }
+  // anything left in the outbox (rate limit, offline, page closed) goes out on the next page load
+  setTimeout(() => { try { drain(); } catch (e) {} }, 2000);
 
   /* ---------- fetch top ---------- */
   function dedupe(rows, asc) {
@@ -372,7 +464,7 @@ const SUPABASE_ANON_KEY = 'sb_publishable_-f0lT5SuVJ-TbFzlfMd7kA_hH6ZXp-N';
   }
 
   window.ANONLB = {
-    version: '1.6.0', isConfigured: configured, submit, fetchTop, renderBoard, openBoard, promptNickname,
+    version: '1.7.0', isConfigured: configured, submit, guestName, postName, flushPost: flush, _drain: drain, _outbox: outGet, fetchTop, renderBoard, openBoard, promptNickname,
     getNickname, setNickname, validateNickname, isCleanName, randomNickname, seedLocal, sane, weekStart, ukDayStart, _cfg: CFG
   };
 })();
