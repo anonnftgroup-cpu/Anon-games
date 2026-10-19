@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05070a">
+<title>ANON Mahjong · ANON NFTs</title>
+<meta name="description" content="ANON Mahjong: solitaire tile matching with ANON NFT art tiles, gems and crowns. Every deal can be cleared. Free, no sign-up.">
+<link rel="icon" href="../assets/logo.webp">
+<link rel="stylesheet" href="../assets/nft/kit.css">
+<link rel="stylesheet" href="../assets/play/play.css">
+<style>
+.pad{display:flex;gap:6px;justify-content:center;align-items:center;padding:4px 4px 2px;flex:none;user-select:none;-webkit-user-select:none;flex-wrap:wrap}
+.pad button{min-width:52px;min-height:44px;border-radius:12px;border:1px solid rgba(212,175,55,.6);background:rgba(0,0,0,.55);color:var(--gold2);font-size:17px;font-weight:900;touch-action:none;padding:0 8px}
+.pad button.on{background:rgba(255,61,154,.35)}.pad .big{min-width:84px;background:linear-gradient(180deg,#ff5aab,#c41f73);color:#fff;font-size:15px}
+.pad button:disabled{opacity:.35}
+.dpad{display:grid;grid-template-columns:repeat(3,48px);grid-template-rows:repeat(2,40px);gap:4px}.dpad button{min-width:0;min-height:0}
+.dpad [data-k=U]{grid-column:2}.dpad [data-k=L]{grid-column:1;grid-row:2}.dpad [data-k=D]{grid-column:2;grid-row:2}.dpad [data-k=R]{grid-column:3;grid-row:2}
+.seg.wrap{flex-wrap:wrap}.seg.wrap button{flex:1 1 22%}
+@media (max-height:700px){.pad button{min-height:38px}}
+</style>
+</head>
+<body>
+<header><div class="top">
+  <div class="brand"><a class="back-btn" href="../" aria-label="Back to ANON Arcade">&larr; Arcade</a><img src="../assets/logo.webp" alt=""><h1>MAHJONG</h1></div>
+  <div class="top-r"><button class="icon-btn" id="lbBtn" aria-label="Leaderboard">🏆</button><button class="icon-btn" id="menuBtn" aria-label="Menu">↻</button></div>
+</div></header>
+<section class="view on" id="setup">
+  <img class="hero" id="hero" alt="ANON NFTs artwork">
+  <div class="lbl">Choose your ANON</div>
+  <div class="chars five" id="artPick"></div>
+  <div class="lbl">Difficulty</div><div class="seg" id="diff"><button data-v="easy">Easy · 72</button><button data-v="medium">Medium · 96</button><button data-v="hard">Hard · 120</button></div>
+  <button class="go" id="goBtn">PLAY</button>
+  <p class="howto">Match pairs of identical tiles to clear the board. A tile is free when nothing sits on top of it and its left or right side is open (free tiles are brighter). Tap two matching free tiles to remove them. Stuck? Use 🔀 Shuffle (Easy 5, Medium 2, Hard 1) or 💡 Hint (Easy unlimited, Medium 3, Hard none). Every deal can be cleared.</p>
+  <div class="nick" id="nick"></div>
+</section>
+<section class="view" id="play">
+  <div class="hud"><span id="pr"></span><span id="mv"></span><span id="tm"></span></div>
+  <div class="stage"><canvas id="cv"></canvas><div class="tap" id="msg"></div></div>
+  <div class="pad"><button data-k="H">💡 Hint</button><button data-k="S">🔀 Shuffle</button></div>
+  <div class="bar"><button id="againBtn">New deal</button><button id="setBtn">Change ANON</button></div>
+</section>
+<script src="../shared/leaderboard.js"></script>
+<script src="../shared/newsletter.js"></script>
+<script src="../assets/nft/kit.js"></script>
+<script src="../assets/play/play.js"></script>
+<script>
+const GAME = 'mahjong', TITLE = 'ANON Mahjong', PK = 'anonB.mahjong', ASPECT = 0.64, MOVES = 'pairs', DEFMODE = 'easy';
+'use strict';
+const { $, ls, modal, post, openLB, gameOver, art, ART } = AK;
+const NAMES = Object.fromEntries(ART.map(a => [a.id, a.name.replace(/^ANON /, '')]));
+const DIFFN = { easy: 'Easy', medium: 'Medium', hard: 'Hard' };
+const pref = ls.get(PK, { art: 'anon', diff: DEFMODE, best: 0 }); if (window.MODELIST && !MODELIST.includes(pref.diff)) pref.diff = DEFMODE;
+const show = id => document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === id));
+const setHero = () => $('#hero').src = art(pref.art).cover;
+AK.picker($('#artPick'), pref.art, id => { pref.art = id; ls.set(PK, pref); setHero(); });
+if ($('#diff') && ![...$('#diff').children].some(b => b.dataset.v === pref.diff)) pref.diff = DEFMODE;
+if ($('#diff')) AK.seg($('#diff'), pref.diff, v => { pref.diff = v; ls.set(PK, pref); });
+setHero(); AK.nickLine($('#nick'));
+// ---- sound: generated in the browser, nothing plays before the first tap/key ----
+let AC = null; window.__sfx = 0;
+const unlock = () => { if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } if (AC && AC.state === 'suspended') AC.resume(); };
+['pointerdown', 'keydown', 'touchstart'].forEach(t => window.addEventListener(t, unlock, { capture: true, passive: true }));
+function tone(f, d, type, vol, f2) { if (!AC || pref.mute) return; window.__sfx++; const t = AC.currentTime, o = AC.createOscillator(), g = AC.createGain();
+  o.type = type || 'square'; o.frequency.setValueAtTime(f, t); if (f2) o.frequency.exponentialRampToValueAtTime(Math.max(20, f2), t + d);
+  g.gain.setValueAtTime(vol || .08, t); g.gain.exponentialRampToValueAtTime(.0001, t + d); o.connect(g).connect(AC.destination); o.start(t); o.stop(t + d + .02); }
+function boom(d, vol) { if (!AC || pref.mute) return; window.__sfx++; const n = Math.floor(AC.sampleRate * d), b = AC.createBuffer(1, n, AC.sampleRate), c = b.getChannelData(0);
+  for (let i = 0; i < n; i++) c[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 2); const s = AC.createBufferSource(), g = AC.createGain(), fl = AC.createBiquadFilter();
+  fl.type = 'lowpass'; fl.frequency.value = 900; s.buffer = b; g.gain.value = vol || .25; s.connect(fl).connect(g).connect(AC.destination); s.start(); }
+// ---- shared loop, pause when hidden, game over ----
+let C = null, S = null;
+const imgs = {}; const IM = id => imgs[id];
+ART.forEach(a => { AP.img(a.img).then(i => { imgs[a.id] = i; dirty = true; }); AP.img(a.cover).then(i => { imgs['c-' + a.id] = i; dirty = true; }); });
+function ring(x, im, cx, cy, r, col) { x.save(); x.beginPath(); x.arc(cx, cy, r, 0, 7); x.closePath(); x.fillStyle = '#111'; x.fill(); x.clip(); if (im) AP.cover(x, im, cx - r, cy - r, r * 2, r * 2); x.restore();
+  x.lineWidth = Math.max(1.5, r * .16); x.strokeStyle = col || '#f3d77a'; x.beginPath(); x.arc(cx, cy, r, 0, 7); x.stroke(); }
+function bgArt(x, id, a) { const im = IM('c-' + id); if (!im) return; x.globalAlpha = a || .22; const k = Math.max(C.w / im.width, C.h / im.height); x.drawImage(im, (C.w - im.width * k) / 2, (C.h - im.height * k) / 2, im.width * k, im.height * k); x.globalAlpha = 1; }
+const L = AP.loop(dt => { if (S && !S.over && !S.paused) step(dt); }, () => draw());
+let paused = false;
+function pause() { if (!S || S.over || S.paused) return; S.paused = true; $('#msg').textContent = 'Paused\nTap to resume'; }
+function resume() { if (S && S.paused) { S.paused = false; $('#msg').textContent = ''; } }
+document.addEventListener('visibilitychange', () => { if (document.hidden) pause(); });
+$('#msg').parentElement.addEventListener('pointerdown', () => { if (S && S.paused) resume(); }, true);
+async function start() { show('play'); if (!C) C = AP.canvas($('#cv'), ASPECT, () => draw()); else C.fit(); $('#msg').textContent = ''; newRun(); L.start(); }
+function end(score, secs, moves, mode, title, text) {
+  if (!S || S.over) return; S.over = true; draw(); setTimeout(() => L.stop(), 50); if (navigator.vibrate) navigator.vibrate([40, 30, 70]);
+  const a = art(S.art || pref.art), pb = score > (pref.best || 0); if (pb) { pref.best = score; ls.set(PK, pref); }
+  S.final = { score, secs, moves, mode };
+  setTimeout(() => { modal({ art: a.img, title: pb && score > 0 ? 'New best! 🏆' : title, text, lb: score > 0,
+    buttons: [['PLAY AGAIN', () => start()], ['Leaderboard', () => lb(), 1], ['Change ANON', () => show('setup'), 1]] });
+    if (score > 0) post(GAME, score, Math.max(1, Math.round(secs)), moves, mode); }, 500);
+  gameOver();
+}
+const lb = () => openLB(GAME, TITLE, MODES, MOVES);
+$('#goBtn').onclick = () => start(); $('#againBtn').onclick = () => { if (S) S.over = true; start(); };
+$('#setBtn').onclick = $('#menuBtn').onclick = () => { if (S) S.over = true; L.stop(); show('setup'); };
+$('#lbBtn').onclick = lb;
+// hold-buttons for on-screen pads: data-k = key name
+const held = new Set(); window.__held = held;
+document.querySelectorAll('.pad [data-k]').forEach(b => { const k = b.dataset.k;
+  b.addEventListener('pointerdown', e => { e.preventDefault(); held.add(k); b.classList.add('on'); if (window.onPad) onPad(k); });
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach(t => b.addEventListener(t, () => { held.delete(k); b.classList.remove('on'); })); });
+const KM = { ArrowLeft: 'L', a: 'L', A: 'L', ArrowRight: 'R', d: 'R', D: 'R', ArrowUp: 'U', w: 'U', W: 'U', ArrowDown: 'D', s: 'D', S: 'D', ' ': 'B', Enter: 'B', x: 'B', z: 'B' };
+const playing = () => $('#play').classList.contains('on') && !document.querySelector('.modal.show,.alb-ov,.anw-ov');
+window.addEventListener('keydown', e => { const k = KM[e.key]; if (!k || !playing()) return; e.preventDefault(); if (S && S.paused) resume(); if (!held.has(k) && window.onPad) onPad(k); held.add(k); });
+window.addEventListener('keyup', e => { const k = KM[e.key]; if (k) held.delete(k); });
+
+// pointer -> canvas CSS coords (canvas has a 2px border)
+function P(e) { const r = $('#cv').getBoundingClientRect(); return { x: (e.clientX - r.left - 2) * C.w / (r.width - 4), y: (e.clientY - r.top - 2) * C.h / (r.height - 4) }; }
+const ukDay = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/London' }).format(new Date());
+function hashStr(s) { let h = 2166136261; for (const c of s) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
+function txt(x, s, X, Y, size, col, align, weight, font) { x.font = `${weight || 800} ${size}px ${font || 'system-ui,sans-serif'}`; x.fillStyle = col || '#f3d77a'; x.textAlign = align || 'center'; x.textBaseline = 'middle'; x.fillText(s, X, Y); }
+var dirty = true; window.addEventListener('resize', () => dirty = true); window.addEventListener('pointerup', () => dirty = true);
+const fmt = s => Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
+
+const MODES = {"easy": "Easy \u00b7 72", "medium": "Medium \u00b7 96", "hard": "Hard \u00b7 120"};
+// ANON Mahjong: solitaire tile matching. Deals are built backwards so every deal can be cleared.
+const BASE = { easy: 200, medium: 400, hard: 600 }, SHUF = { easy: 5, medium: 2, hard: 1 }, HINTS = { easy: 99, medium: 3, hard: 0 };
+const rect = (z, x0, y0, w, h) => { const o = []; for (let y = y0; y < y0 + h; y++) for (let x = x0; x < x0 + w; x++) o.push({ x, y, z }); return o; };
+const LAYOUT = { easy: { cols: 6, rows: 8, pos: [...rect(0, 0, 0, 6, 8), ...rect(1, 1, 1, 4, 6)] },
+  medium: { cols: 6, rows: 10, pos: [...rect(0, 0, 0, 6, 10), ...rect(1, 1, 2, 4, 6), ...rect(2, 2, 3, 2, 4), ...rect(3, 2, 4, 2, 2)] },
+  hard: { cols: 7, rows: 10, pos: [...rect(0, 0, 0, 7, 10), ...rect(1, 1, 2, 5, 6), ...rect(2, 2, 3, 3, 4), ...rect(3, 2, 3, 2, 4)] } };
+const GEMC = [['#ffb3da', '#ff3d9a'], ['#b3ffd6', '#16c46a'], ['#b3d9ff', '#2a7bff'], ['#fff0a8', '#e0a800'], ['#e0c4ff', '#8a3dff']];
+const KINDS = []; ['anon', 'apes', 'royals', 'aces', 'ghost', 'skulls', 'eyes', 'lake', 'venge', 'grumpy'].forEach(a => KINDS.push({ t: 'art', a }));
+for (let i = 1; i <= 9; i++) KINDS.push({ t: 'num', n: i }); GEMC.forEach((c, i) => KINDS.push({ t: 'gem', c })); GEMC.forEach((c, i) => KINDS.push({ t: 'crown', c: c[1] })); KINDS.push({ t: 'skull' });
+const key = p => p.x + ',' + p.y + ',' + p.z;
+function freeIn(set, p) { if (set.has(p.x + ',' + p.y + ',' + (p.z + 1))) return false; return !set.has((p.x - 1) + ',' + p.y + ',' + p.z) || !set.has((p.x + 1) + ',' + p.y + ',' + p.z); }
+function build(pos, kinds) { // kinds: array of kind ids, each id appearing an even number of times
+  for (let tries = 0; tries < 400; tries++) { const set = new Set(pos.map(key)), left = pos.slice(), pairs = AP.shuffle(kinds.slice().sort((a, b) => a - b).filter((k, i) => i % 2 === 0)), out = new Map(); let okk = true;
+    for (const k of pairs) { const fr = left.filter(p => freeIn(set, p)); if (fr.length < 2) { okk = false; break; } const a = AP.pick(fr); let b; do b = AP.pick(fr); while (b === a);
+      [a, b].forEach(p => { set.delete(key(p)); left.splice(left.indexOf(p), 1); out.set(key(p), k); }); }
+    if (okk) return pos.map(p => ({ x: p.x, y: p.y, z: p.z, k: out.get(key(p)), gone: false })); } return null; }
+function newRun() { const m = pref.diff, Lt = LAYOUT[m], nk = Lt.pos.length / 4, ks = AP.shuffle([...KINDS.keys()]).slice(0, nk); const kinds = []; ks.forEach(k => kinds.push(k, k, k, k));
+  S = { art: pref.art, mode: m, cols: Lt.cols, rows: Lt.rows, tiles: build(Lt.pos, kinds), sel: null, moves: 0, t: 0, shuf: SHUF[m], hints: HINTS[m], hint: null, fx: [] }; S.total = S.tiles.length / 2; hud(); dirty = true; }
+const live = () => S.tiles.filter(t => !t.gone), setOf = () => new Set(live().map(key));
+const isFree = t => freeIn(setOf(), t);
+function pairsAvail() { const st = setOf(), fr = live().filter(t => freeIn(st, t)), by = {}; fr.forEach(t => (by[t.k] = by[t.k] || []).push(t)); return Object.values(by).filter(a => a.length >= 2); }
+const hud = () => { $('#pr').textContent = '🀄 ' + S.moves + '/' + S.total; $('#tm').textContent = '⏱ ' + fmt(S.t); const sb = $('[data-k=S]'), hb = $('[data-k=H]');
+  if (sb) { sb.textContent = '🔀 Shuffle (' + S.shuf + ')'; sb.disabled = S.shuf <= 0; } if (hb) { hb.textContent = '💡 Hint' + (S.hints < 99 ? ' (' + S.hints + ')' : ''); hb.disabled = S.hints <= 0; } $('#mv').textContent = 'Moves left ' + pairsAvail().length; };
+function lay() { const W = C.w, H = C.h, d0 = Math.min(W / S.cols, H / S.rows / 1.22) * .1, d = Math.max(3, d0), tw = Math.min((W - 10 - d * 3) / S.cols, (H - 10 - d * 3) / (S.rows * 1.22)), th = tw * 1.22; return { tw, th, d, ox: (W - tw * S.cols) / 2 + d * 1.5, oy: (H - th * S.rows) / 2 + d * 1.5 }; }
+const tpos = (t, L) => ({ X: L.ox + t.x * L.tw - t.z * L.d, Y: L.oy + t.y * L.th - t.z * L.d });
+function pick(p) { const L = lay(), ts = live().sort((a, b) => b.z - a.z); for (const t of ts) { const { X, Y } = tpos(t, L); if (p.x >= X && p.x < X + L.tw && p.y >= Y && p.y < Y + L.th) return t; } return null; }
+function tapTile(t) { if (!S || S.over || !t) return; dirty = true; S.hint = null;
+  if (!isFree(t)) { tone(150, .07, 'square', .04); AK.toast('That tile is blocked'); return; }
+  if (S.sel === t) { S.sel = null; return; }
+  if (S.sel && S.sel.k === t.k) { S.sel.gone = t.gone = true; S.fx.push({ a: S.sel, b: t, t: .3 }); S.sel = null; S.moves++; tone(660 + S.moves * 4, .08, 'triangle', .07); hud(); return check(); }
+  S.sel = t; tone(420, .04, 'triangle', .04); }
+function check() { if (!live().length) { const sc = S.moves * 10 + BASE[S.mode] + Math.max(0, 900 - Math.round(S.t)); tone(990, .5, 'triangle', .1);
+    return end(sc, S.t, S.moves, S.mode, 'Board cleared! 🀄🏆', `<b>${art(S.art).name}</b> cleared ${MODES[S.mode]} in <b>${fmt(S.t)}</b>.<br>Score <b>${sc}</b>`); }
+  if (!pairsAvail().length) { if (S.shuf > 0) AK.toast('No moves left: tap 🔀 Shuffle', 2600); else { const sc = S.moves * 10; end(sc, S.t, S.moves, S.mode, 'No moves left 🀄', `You matched <b>${S.moves}</b> of ${S.total} pairs.<br>Score <b>${sc}</b>`); } } }
+function shuffle() { if (!S || S.over || S.shuf <= 0) return; const L = live(), kinds = L.map(t => t.k), nt = build(L.map(t => ({ x: t.x, y: t.y, z: t.z })), kinds); if (!nt) return AK.toast('Could not shuffle');
+  nt.forEach(n => { const t = L.find(q => q.x === n.x && q.y === n.y && q.z === n.z); t.k = n.k; }); S.shuf--; S.sel = null; tone(300, .15, 'triangle', .06); hud(); dirty = true; }
+function onPad(k) { if (!S || S.over) return; if (k === 'S') shuffle(); if (k === 'H' && S.hints > 0) { const pa = pairsAvail(); if (pa.length) { S.hint = pa[0].slice(0, 2); S.hints--; hud(); dirty = true; } else AK.toast('No pairs: shuffle'); } }
+$('#cv').addEventListener('pointerdown', e => { if (S && !S.paused) tapTile(pick(P(e))); });
+let lastSec = -1; function step(dt) { S.t += dt; if (Math.floor(S.t) !== lastSec) { lastSec = Math.floor(S.t); hud(); } if (S.fx.length) { S.fx.forEach(f => f.t -= dt); S.fx = S.fx.filter(f => f.t > 0); dirty = true; } }
+function face(x, k, X, Y, w, h) { const K = KINDS[k], cx = X + w / 2, cy = Y + h / 2, r = Math.min(w, h) * .36;
+  if (K.t === 'art') ring(x, IM(K.a), cx, cy, r, '#d4af37'); else if (K.t === 'num') { txt(x, String(K.n), cx, cy + 1, h * .5, '#c41f73', 'center', 900, 'Georgia,serif'); x.fillStyle = '#d4af37'; [[-1, -1], [1, 1]].forEach(([a, b]) => { x.beginPath(); x.arc(cx + a * w * .3, cy + b * h * .32, 2, 0, 7); x.fill(); }); }
+  else if (K.t === 'gem') AP.gem(x, cx, cy, r, K.c[0], K.c[1]); else if (K.t === 'crown') AP.crown(x, cx, cy, r, K.c); else AP.skull(x, cx, cy, r * .9); }
+function draw() { if (!C || !dirty) return; dirty = false; const x = C.x; x.fillStyle = '#071410'; x.fillRect(0, 0, C.w, C.h); if (!S) return; bgArt(x, S.art, .14); const L = lay(), st = setOf();
+  const ts = live().sort((a, b) => a.z - b.z || a.y - b.y || b.x - a.x);
+  for (const t of ts) { const { X, Y } = tpos(t, L), fr = freeIn(st, t), sel = S.sel === t, hi = S.hint && S.hint.includes(t);
+    if (t.z) { x.fillStyle = 'rgba(0,0,0,.45)'; AP.rr(x, X + L.d * 1.6, Y + L.d * 1.6, L.tw, L.th, 6); x.fill(); } x.fillStyle = ['#6b5418', '#7a3b5c', '#2f5a6b', '#5a2f6b'][t.z] || '#6b5418'; AP.rr(x, X + L.d * .8, Y + L.d * .8, L.tw - 1, L.th - 1, 5); x.fill();
+    AP.rr(x, X, Y, L.tw - 1, L.th - 1, 5); x.fillStyle = sel ? '#ffd1e8' : hi ? '#c9ffe0' : fr ? '#fbf6e8' : '#cdc4ab'; x.fill(); x.lineWidth = sel || hi ? 2.5 : 1; x.strokeStyle = sel ? '#ff3d9a' : hi ? '#16c46a' : '#8a7a4a'; x.stroke();
+    face(x, t.k, X, Y, L.tw - 1, L.th - 1); if (!fr) { x.fillStyle = 'rgba(0,0,0,.16)'; AP.rr(x, X, Y, L.tw - 1, L.th - 1, 5); x.fill(); } }
+  S.fx.forEach(f => [f.a, f.b].forEach(t => { const { X, Y } = tpos(t, L); x.globalAlpha = f.t / .3; x.strokeStyle = '#2bff88'; x.lineWidth = 3; AP.rr(x, X - 2, Y - 2, L.tw + 3, L.th + 3, 6); x.stroke(); x.globalAlpha = 1; })); }
+window.G = { state: () => S, tapTile, pairsAvail, shuffle, build, C: () => C, L };
+
+</script>
+</body>
+</html>

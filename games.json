@@ -1379,6 +1379,36 @@
         "hard": "Hard · 3"
       },
       "added": "2026-10-19"
+    },
+    {
+      "id": "mahjong",
+      "name": "ANON Mahjong",
+      "tagline": "Match ANON art tiles, gems and crowns",
+      "path": "mahjong/",
+      "thumb": "mahjong/thumb.webp",
+      "category": "Puzzle",
+      "tags": [
+        "mahjong",
+        "tiles",
+        "matching",
+        "solitaire",
+        "puzzle"
+      ],
+      "status": "live",
+      "leaderboard": true,
+      "scoreLabel": "Score",
+      "order": "desc",
+      "periods": [
+        "day",
+        "all"
+      ],
+      "movesLabel": "pairs",
+      "modeLabels": {
+        "easy": "Easy · 72",
+        "medium": "Medium · 96",
+        "hard": "Hard · 120"
+      },
+      "added": "2026-10-19"
     }
   ]
 }
