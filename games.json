@@ -298,12 +298,94 @@
       "added": "2026-10-19"
     },
     {
+      "id": "whack-an-anon",
+      "name": "Whack-an-ANON",
+      "tagline": "Tap the ANONs in 60 seconds. Dodge the skulls!",
+      "path": "whack-an-anon/",
+      "thumb": "whack-an-anon/thumb.webp",
+      "category": "Arcade",
+      "tags": [
+        "tap",
+        "reflex",
+        "60 seconds",
+        "whack"
+      ],
+      "status": "live",
+      "leaderboard": true,
+      "scoreLabel": "Score",
+      "order": "desc",
+      "periods": [
+        "day",
+        "all"
+      ],
+      "movesLabel": "hits",
+      "hideMode": true,
+      "added": "2026-10-19"
+    },
+    {
+      "id": "shadow-dodge",
+      "name": "Shadow Dodge",
+      "tagline": "Pick your ANON and dodge the blocks",
+      "path": "shadow-dodge/",
+      "thumb": "shadow-dodge/thumb.webp",
+      "category": "Arcade",
+      "tags": [
+        "dodge",
+        "survival",
+        "reflex",
+        "character"
+      ],
+      "status": "live",
+      "leaderboard": true,
+      "scoreLabel": "Survived",
+      "order": "desc",
+      "periods": [
+        "day",
+        "all"
+      ],
+      "movesLabel": "dodges",
+      "modeLabels": {
+        "anon": "Revenue Share",
+        "apes": "Apes",
+        "royals": "King & Queen",
+        "aces": "Aces",
+        "ghost": "Ghost",
+        "skulls": "Skulls",
+        "eyes": "Eyes",
+        "lake": "Lake District",
+        "venge": "Vengeance",
+        "grumpy": "Grumpy Cat"
+      },
+      "added": "2026-10-19"
+    },
+    {
       "id": "ninja-memory",
       "name": "Ninja Memory",
       "tagline": "Find the hidden ANON pairs",
-      "thumb": "assets/coming-soon.webp",
+      "path": "ninja-memory/",
+      "thumb": "ninja-memory/thumb.webp",
       "category": "Puzzle",
-      "status": "soon"
+      "tags": [
+        "memory",
+        "pairs",
+        "cards",
+        "match"
+      ],
+      "status": "live",
+      "leaderboard": true,
+      "scoreLabel": "Score",
+      "order": "desc",
+      "periods": [
+        "day",
+        "all"
+      ],
+      "movesLabel": "turns",
+      "modeLabels": {
+        "easy": "Easy",
+        "medium": "Medium",
+        "hard": "Hard"
+      },
+      "added": "2026-10-19"
     },
     {
       "id": "shadow-runner",

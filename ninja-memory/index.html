@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05070a">
+<title>Ninja Memory · ANON NFTs</title>
+<meta name="description" content="Ninja Memory: flip the cards and match the ANON NFT pairs. Free, no sign-up.">
+<link rel="icon" href="../assets/logo.webp">
+<link rel="stylesheet" href="../assets/nft/kit.css">
+<link rel="stylesheet" href="../assets/play/play.css">
+<style>
+.grid{display:grid;gap:var(--g);margin:auto;touch-action:manipulation}
+.card{width:var(--cw);height:var(--ch);perspective:600px;cursor:pointer;border:0;padding:0;background:none}
+.card .in{position:relative;width:100%;height:100%;transition:transform .32s;transform-style:preserve-3d}
+.card.up .in,.card.done .in{transform:rotateY(180deg)}
+.card .f,.card .b{position:absolute;inset:0;border-radius:9px;backface-visibility:hidden;-webkit-backface-visibility:hidden;overflow:hidden}
+.card .b{background:url(../solitaire/assets/back.webp) center/cover,#120e04;box-shadow:0 0 0 1.5px rgba(212,175,55,.8),0 3px 8px rgba(0,0,0,.5)}
+.card .f{transform:rotateY(180deg);background:#0b0d0c center/cover no-repeat;box-shadow:0 0 0 2px #f3d77a}
+.card.done .f{box-shadow:0 0 0 2px #ff3d9a,0 0 14px rgba(255,61,154,.6)}
+.card.done{animation:pop .35s}
+@keyframes pop{50%{transform:scale(1.08)}}
+</style>
+</head>
+<body>
+<header><div class="top">
+  <div class="brand"><a class="back-btn" href="../" aria-label="Back to ANON Arcade">&larr; Arcade</a><img src="../assets/logo.webp" alt=""><h1>NINJA MEMORY</h1></div>
+  <div class="top-r"><button class="icon-btn" id="lbBtn" aria-label="Leaderboard">🏆</button><button class="icon-btn" id="menuBtn" aria-label="New game">↻</button></div>
+</div></header>
+<section class="view on" id="setup">
+  <img class="hero" src="../assets/nft/c-ghost.webp" alt="ANON NFTs artwork" style="object-position:50% 40%">
+  <div class="lbl">Difficulty</div>
+  <div class="seg" id="diffSeg"><button data-v="easy">Easy · 6 pairs</button><button data-v="medium">Medium · 10</button><button data-v="hard">Hard · 15</button></div>
+  <button class="go" id="goBtn">PLAY</button>
+  <p class="howto">Flip two ANON cards at a time. Find every matching NFT pair. Fewer turns and a faster time score higher. Arrow keys + Enter work on a keyboard.</p>
+  <div class="nick" id="nick"></div>
+</section>
+<section class="view" id="play">
+  <div class="hud"><span id="pairs">🃏 0/6</span><span id="mv">↻ 0</span><span id="clock">⏱ 0</span></div>
+  <div class="stage" id="stage"><div class="grid" id="grid"></div></div>
+  <div class="bar"><button id="newBtn">New game</button><button id="setBtn">Settings</button></div>
+</section>
+<script src="../shared/leaderboard.js"></script>
+<script src="../shared/newsletter.js"></script>
+<script src="../assets/nft/kit.js"></script>
+<script src="../assets/play/play.js"></script>
+<script>
+'use strict';
+const { $, el, ls, modal, post, openLB, gameOver, art, ART, B } = AK;
+const GAME = 'ninja-memory', TITLE = 'Ninja Memory';
+const LV = { easy: { p: 6, c: 3, base: 1000 }, medium: { p: 10, c: 4, base: 2000 }, hard: { p: 15, c: 5, base: 3500 } };
+const NAMES = { easy: 'Easy', medium: 'Medium', hard: 'Hard' };
+const FACES = ART.map(a => ({ id: 'p-' + a.id, src: a.img, name: a.name })).concat(ART.slice(0, 5).map(a => ({ id: 'c-' + a.id, src: a.cover, name: a.name })));
+const score = (d, moves, t) => Math.max(50, LV[d].base - 10 * moves - t);
+const minTime = d => Math.ceil(LV[d].p * 1.5);
+const pref = ls.get('anonMem.pref', { diff: 'easy' });
+let S = null, tick = 0, cur = 0;
+const show = id => document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === id));
+AK.seg($('#diffSeg'), pref.diff, v => { pref.diff = v; ls.set('anonMem.pref', pref); });
+AK.nickLine($('#nick'));
+FACES.forEach(f => AP.img(f.src));
+function newGame(order) {
+  const d = pref.diff, l = LV[d]; const faces = AP.shuffle(FACES.slice(0, 10)).slice(0, Math.min(10, l.p)).concat(l.p > 10 ? FACES.slice(10, 10 + l.p - 10) : []);
+  const deck = order || AP.shuffle(faces.concat(faces).map(f => f.id));
+  S = { diff: d, deck, up: [], done: new Set(), moves: 0, start: 0, end: 0, over: false, lock: false, cols: l.c };
+  show('play'); layout(); clearInterval(tick); tick = setInterval(hud, 300); hud(); cur = 0;
+}
+function layout() {
+  const g = $('#grid'), st = $('#stage'), n = S.deck.length, cols = S.cols, rows = Math.ceil(n / cols), gap = 7;
+  const aw = st.clientWidth - 16, ah = st.clientHeight - 16; let cw = Math.floor(Math.min((aw - gap * (cols - 1)) / cols, ((ah - gap * (rows - 1)) / rows) / 1.32)); cw = Math.min(cw, 110);
+  g.style.setProperty('--cw', cw + 'px'); g.style.setProperty('--ch', Math.floor(cw * 1.32) + 'px'); g.style.setProperty('--g', gap + 'px'); g.style.gridTemplateColumns = `repeat(${cols}, ${cw}px)`;
+  g.innerHTML = '';
+  S.deck.forEach((id, i) => { const f = FACES.find(x => x.id === id); const b = el('button', 'card'); b.type = 'button'; b.dataset.i = i; b.setAttribute('aria-label', 'Card ' + (i + 1));
+    const inn = el('div', 'in'), fr = el('div', 'f'), bk = el('div', 'b'); fr.style.backgroundImage = `url(${f.src})`; inn.appendChild(bk); inn.appendChild(fr); b.appendChild(inn);
+    if (S.done.has(i)) b.classList.add('done'); else if (S.up.includes(i)) b.classList.add('up'); g.appendChild(b); });
+}
+const card = i => $('#grid').children[i];
+const secs = () => S.start ? Math.ceil(((S.end || Date.now()) - S.start) / 1000) : 0;
+function hud() { if (!S) return; $('#pairs').textContent = '🃏 ' + S.done.size / 2 + '/' + S.deck.length / 2; $('#mv').textContent = '↻ ' + S.moves; $('#clock').textContent = '⏱ ' + secs(); }
+function flip(i) {
+  if (!S || S.over || S.lock || S.done.has(i) || S.up.includes(i) || i < 0 || i >= S.deck.length) return false;
+  if (!S.start) S.start = Date.now();
+  S.up.push(i); card(i).classList.add('up');
+  if (S.up.length === 2) { S.moves++; const [a, b] = S.up;
+    if (S.deck[a] === S.deck[b]) { S.done.add(a); S.done.add(b); S.up = []; card(a).classList.add('done'); card(b).classList.add('done'); if (navigator.vibrate) navigator.vibrate(15); check(); }
+    else { S.lock = true; setTimeout(() => { if (!S || !S.up.length) return; card(a).classList.remove('up'); card(b).classList.remove('up'); S.up = []; S.lock = false; }, 750); } }
+  hud(); return true;
+}
+function check() {
+  if (S.done.size !== S.deck.length) return;
+  S.over = true; S.end = Date.now(); clearInterval(tick); hud();
+  const t = Math.max(1, secs()), sc = score(S.diff, S.moves, t), ok = t >= minTime(S.diff), last = FACES.find(f => f.id === S.deck[[...S.done].pop()]);
+  setTimeout(() => { modal({ art: last.src, title: 'All pairs found! 🥷', text: `${NAMES[S.diff]}: <b>${S.moves}</b> turns in <b>${t}s</b>.`, lb: true,
+    buttons: [['PLAY AGAIN', () => newGame()], ['Leaderboard', () => openLB(GAME, TITLE, NAMES, 'turns'), 1], ['Settings', () => show('setup'), 1]] });
+    if (ok) post(GAME, sc, t, S.moves, S.diff); else { const m = $('#lbMsg'); if (m) m.textContent = 'Too quick to verify, so this one is not posted.'; } }, 700);
+  gameOver();
+}
+$('#grid').addEventListener('click', e => { const b = e.target.closest('.card'); if (b) { cur = +b.dataset.i; flip(cur); } });
+const mv = d => { if (!S) return; const n = S.deck.length; cur = Math.max(0, Math.min(n - 1, cur + d)); card(cur).focus(); };
+AP.keys({ ArrowLeft: () => mv(-1), ArrowRight: () => mv(1), ArrowUp: () => mv(-S.cols), ArrowDown: () => mv(S.cols) });
+$('#goBtn').onclick = () => newGame(); $('#newBtn').onclick = () => newGame();
+$('#setBtn').onclick = $('#menuBtn').onclick = () => { clearInterval(tick); show('setup'); };
+$('#lbBtn').onclick = () => openLB(GAME, TITLE, NAMES, 'turns');
+window.addEventListener('resize', () => { if (S && $('#play').classList.contains('on')) layout(); });
+window.G = { state: () => S, newGame, flip, score, minTime, LV, setDiff: d => { pref.diff = d; } };
+</script>
+</body>
+</html>

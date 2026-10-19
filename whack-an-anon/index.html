@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05070a">
+<title>Whack-an-ANON · ANON NFTs</title>
+<meta name="description" content="Whack-an-ANON: tap the ANON NFTs before they vanish, dodge the skulls. Free, no sign-up.">
+<link rel="icon" href="../assets/logo.webp">
+<link rel="stylesheet" href="../assets/nft/kit.css">
+<link rel="stylesheet" href="../assets/play/play.css">
+</head>
+<body>
+<header><div class="top">
+  <div class="brand"><a class="back-btn" href="../" aria-label="Back to ANON Arcade">&larr; Arcade</a><img src="../assets/logo.webp" alt=""><h1>WHACK-AN-ANON</h1></div>
+  <div class="top-r"><button class="icon-btn" id="lbBtn" aria-label="Leaderboard">🏆</button><button class="icon-btn" id="menuBtn" aria-label="Menu">↻</button></div>
+</div></header>
+<section class="view on" id="setup">
+  <img class="hero" src="../assets/nft/c-anon.webp" alt="ANON NFTs artwork" style="object-position:50% 30%">
+  <div class="lbl">Tap these (+10)</div>
+  <div class="chars five" id="who"></div>
+  <p class="howto">You have <b>60 seconds</b>. ANON NFTs pop up and move around. Tap each one before it vanishes. A 👑 <b>golden ANON</b> is worth +30. Never tap a 💀 <b>skull bomb</b>: it costs 30 points.</p>
+  <button class="go" id="goBtn">START</button>
+  <div class="nick" id="nick"></div>
+</section>
+<section class="view" id="play">
+  <div class="hud"><span id="sc">⭐ 0</span><span id="clock">⏱ 60</span><span id="hits">🎯 0</span></div>
+  <div class="stage"><canvas id="cv"></canvas><div class="tap" id="msg"></div></div>
+  <div class="bar"><button id="againBtn">Restart</button><button id="setBtn">Menu</button></div>
+</section>
+<script src="../shared/leaderboard.js"></script>
+<script src="../shared/newsletter.js"></script>
+<script src="../assets/nft/kit.js"></script>
+<script src="../assets/play/play.js"></script>
+<script>
+'use strict';
+const { $, el, toast, modal, post, openLB, gameOver, art, ART } = AK;
+const GAME = 'whack-an-anon', TITLE = 'Whack-an-ANON', ROUND = 60, PTS = 10, GOLD = 30, BOMB = 30;
+ART.forEach(a => { const d = el('div', 'ch'); const i = el('img'); i.src = a.img; i.alt = a.name; d.appendChild(i); d.appendChild(el('span', '', a.name.replace(/^ANON /, ''))); $('#who').appendChild(d); });
+AK.nickLine($('#nick'));
+const show = id => document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === id));
+let C = null, S = null, IM = {}, BG = null;
+const SPR = {}; // pre-rendered circular sprites
+function sprite(key, im, ring) {
+  const d = 2, R = 64, c = document.createElement('canvas'); c.width = c.height = R * 2 * d; const x = c.getContext('2d'); x.scale(d, d);
+  x.save(); x.beginPath(); x.arc(R, R, R - 5, 0, 7); x.clip(); if (im) AP.cover(x, im, 5, 5, R * 2 - 10, R * 2 - 10); x.restore();
+  x.lineWidth = 6; x.strokeStyle = ring; x.beginPath(); x.arc(R, R, R - 4, 0, 7); x.stroke(); x.lineWidth = 2; x.strokeStyle = 'rgba(0,0,0,.6)'; x.beginPath(); x.arc(R, R, R - 7.5, 0, 7); x.stroke();
+  SPR[key] = c;
+}
+const ready = AP.load(ART.map(a => a.img).concat(['../assets/logo.webp', '../assets/nft/c-lake.webp'])).then(ims => {
+  ART.forEach((a, k) => { IM[a.id] = ims[k]; sprite(a.id, ims[k], '#d4af37'); });
+  sprite('gold', ims[ART.length], '#fff3c4'); BG = ims[ART.length + 1];
+  const b = document.createElement('canvas'); b.width = b.height = 256; const x = b.getContext('2d'); const g = x.createRadialGradient(128, 128, 10, 128, 128, 124); g.addColorStop(0, '#ff8cc4'); g.addColorStop(.6, '#c41f73'); g.addColorStop(1, '#3a0620');
+  x.fillStyle = g; x.beginPath(); x.arc(128, 128, 120, 0, 7); x.fill(); x.lineWidth = 10; x.strokeStyle = '#2a0a18'; x.stroke(); AP.skull(x, 128, 136, 72); SPR.bomb = b;
+});
+const R0 = () => Math.max(30, Math.min(46, C.w / 9));
+function spawn() {
+  const t = ROUND - S.left, r = R0(), k = AP.rnd(), lvl = Math.min(1, t / ROUND);
+  const type = k < .07 ? 'gold' : k < .07 + .16 + .1 * lvl ? 'bomb' : 'anon';
+  const id = type === 'anon' ? AP.pick(ART).id : type;
+  const sp = (40 + 110 * lvl) * (C.w / 390), a = AP.rnd() * Math.PI * 2;
+  let x = 0, y = 0; for (let tries = 0; tries < 20; tries++) { x = r + AP.rnd() * (C.w - 2 * r); y = r + AP.rnd() * (C.h - 2 * r); if (S.t.every(o => Math.hypot(o.x - x, o.y - y) > r * 2.2)) break; }
+  S.t.push({ type, id, x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, r, age: 0, life: (type === 'bomb' ? 2.6 : 2.1 - .8 * lvl) + AP.rnd() * .5, out: 0 });
+}
+function newRound() {
+  S = { left: ROUND, score: 0, hits: 0, bombs: 0, golds: 0, miss: 0, taps: 0, t: [], fx: [], pend: [], over: false, run: false, shake: 0, count: 3.2, best: {} };
+  show('play'); if (!C) C = AP.canvas($('#cv'), 0, () => draw()); else C.fit();
+  $('#msg').textContent = ''; hud(); L.start();
+}
+function hud() { $('#sc').textContent = '⭐ ' + S.score; $('#clock').textContent = '⏱ ' + Math.ceil(S.left); $('#hits').textContent = '🎯 ' + S.hits; }
+function step(dt) {
+  if (!S || S.over) return;
+  if (S.count > 0) { S.count -= dt; $('#msg').textContent = S.count > .2 ? Math.ceil(S.count - .2) : 'GO!'; if (S.count <= 0) { $('#msg').textContent = ''; S.run = true; for (let i = 0; i < 3; i++) spawn(); } return; }
+  S.left = Math.max(0, S.left - dt);
+  const want = 3 + (S.left < 30 ? 1 : 0);
+  S.pend = S.pend.map(v => v - dt); while (S.pend.length && S.pend[0] <= 0) { S.pend.shift(); spawn(); }
+  for (const o of S.t) { o.age += dt; o.x += o.vx * dt; o.y += o.vy * dt;
+    if (o.x < o.r) { o.x = o.r; o.vx = Math.abs(o.vx); } if (o.x > C.w - o.r) { o.x = C.w - o.r; o.vx = -Math.abs(o.vx); }
+    if (o.y < o.r) { o.y = o.r; o.vy = Math.abs(o.vy); } if (o.y > C.h - o.r) { o.y = C.h - o.r; o.vy = -Math.abs(o.vy); } }
+  const gone = S.t.filter(o => o.age >= o.life); S.t = S.t.filter(o => o.age < o.life);
+  gone.forEach(o => { if (o.type !== 'bomb') S.miss++; });
+  while (S.t.length + S.pend.length < want) S.pend.push(.15 + AP.rnd() * .3);
+  S.fx = S.fx.filter(f => (f.a += dt) < .6); S.shake = Math.max(0, S.shake - dt);
+  if (S.left <= 0) end();
+  hud();
+}
+function tapAt(X, Y) {
+  if (!S || !S.run || S.over) return null; S.taps++;
+  for (let k = S.t.length - 1; k >= 0; k--) { const o = S.t[k], sc = scale(o); if (Math.hypot(o.x - X, o.y - Y) > o.r * sc + 8) continue;
+    S.t.splice(k, 1); S.pend.push(.12);
+    if (o.type === 'bomb') { S.score = Math.max(0, S.score - BOMB); S.bombs++; S.shake = .35; S.fx.push({ x: o.x, y: o.y, a: 0, txt: '-' + BOMB, c: '#ff5a5a' }); if (navigator.vibrate) navigator.vibrate([40, 30, 60]); }
+    else { const p = o.type === 'gold' ? GOLD : PTS; S.score += p; S.hits++; if (o.type === 'gold') S.golds++; else S.best[o.id] = (S.best[o.id] || 0) + 1;
+      S.fx.push({ x: o.x, y: o.y, a: 0, txt: '+' + p, c: o.type === 'gold' ? '#fff3c4' : '#2bff88', ring: true }); if (navigator.vibrate) navigator.vibrate(10); }
+    hud(); return o.type; }
+  return 'miss';
+}
+const scale = o => { const p = o.age / o.life; return p < .12 ? p / .12 : p > .85 ? Math.max(.2, 1 - (p - .85) / .15 * .8) : 1; };
+function draw() {
+  if (!C) return; const x = C.x, W = C.w, H = C.h; x.save();
+  if (S && S.shake > 0) x.translate((AP.rnd() - .5) * 10, (AP.rnd() - .5) * 10);
+  x.fillStyle = '#05070a'; x.fillRect(-10, -10, W + 20, H + 20); if (BG) { x.globalAlpha = .45; const k = Math.max(W / BG.width, H / BG.height); x.drawImage(BG, (W - BG.width * k) / 2, (H - BG.height * k) / 2, BG.width * k, BG.height * k); x.globalAlpha = 1; }
+  x.fillStyle = 'rgba(3,6,6,.35)'; x.fillRect(0, 0, W, H);
+  if (S) { for (const o of S.t) { const s = SPR[o.id]; if (!s) continue; const r = o.r * scale(o);
+      if (o.type === 'gold') { x.save(); x.shadowColor = '#f3d77a'; x.shadowBlur = 18; x.drawImage(s, o.x - r, o.y - r, r * 2, r * 2); x.restore(); AP.crown(x, o.x, o.y - r * 1.05, r * .45); }
+      else x.drawImage(s, o.x - r, o.y - r, r * 2, r * 2);
+      if (o.life - o.age < .5 && o.type !== 'bomb') { x.strokeStyle = 'rgba(255,61,154,.8)'; x.lineWidth = 3; x.beginPath(); x.arc(o.x, o.y, r + 3, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * (o.life - o.age) / .5); x.stroke(); } }
+    x.textAlign = 'center'; x.font = '900 22px system-ui,sans-serif';
+    for (const f of S.fx) { x.globalAlpha = 1 - f.a / .6; if (f.ring) { x.strokeStyle = '#f3d77a'; x.lineWidth = 3; x.beginPath(); x.arc(f.x, f.y, 20 + f.a * 90, 0, 7); x.stroke(); }
+      x.fillStyle = f.c; x.strokeStyle = '#000'; x.lineWidth = 4; x.strokeText(f.txt, f.x, f.y - f.a * 50); x.fillText(f.txt, f.x, f.y - f.a * 50); }
+    x.globalAlpha = 1; }
+  x.restore();
+}
+const L = AP.loop(step, draw); L.onHide = () => { if (S && !S.over) { L.stop(); $('#msg').textContent = 'Paused. Tap to carry on'; S.paused = true; } };
+function end() {
+  S.over = true; S.run = false; L.stop(); hud(); draw();
+  const fav = Object.entries(S.best).sort((a, b) => b[1] - a[1])[0], a = art(fav ? fav[0] : 'anon');
+  const acc = S.taps ? Math.min(100, Math.round(100 * S.hits / S.taps)) : 0;
+  modal({ art: a.img, title: "Time's up! ⏱", text: `<b>${S.score}</b> points. ${S.hits} ANONs tapped${S.golds ? ` (${S.golds} golden 👑)` : ''}, ${S.bombs} skull${S.bombs === 1 ? '' : 's'} hit, ${acc}% accuracy.${fav ? `<br>Most whacked: <b>${a.name}</b>` : ''}`, lb: S.score > 0,
+    buttons: [['PLAY AGAIN', () => newRound()], ['Leaderboard', () => openLB(GAME, TITLE, null, 'hits'), 1], ['Menu', () => show('setup'), 1]] });
+  if (S.score > 0 && S.hits > 0) post(GAME, S.score, ROUND, S.hits, null);
+  gameOver();
+}
+const cv = $('#cv');
+cv.addEventListener('pointerdown', e => { if (S && S.paused) { S.paused = false; $('#msg').textContent = ''; L.start(); return; } const r = cv.getBoundingClientRect(); tapAt(e.clientX - r.left, e.clientY - r.top); });
+AP.keys({ ' ': () => { if (!S || S.over) newRound(); } });
+$('#goBtn').onclick = () => ready.then(newRound); $('#againBtn').onclick = () => { L.stop(); newRound(); };
+$('#setBtn').onclick = $('#menuBtn').onclick = () => { L.stop(); if (S) S.over = true; show('setup'); };
+$('#lbBtn').onclick = () => openLB(GAME, TITLE, null, 'hits');
+window.G = { state: () => S, newRound, step, tapAt, spawn, L, end, ready, C: () => C };
+</script>
+</body>
+</html>
