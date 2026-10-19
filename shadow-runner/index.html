@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05070a">
+<title>Shadow Runner · ANON NFTs</title>
+<meta name="description" content="Shadow Runner: run through the ANON forest as the crowned hooded ANON and collect pink gems. Free, no sign-up.">
+<link rel="icon" href="../assets/logo.webp">
+<link rel="stylesheet" href="../assets/nft/kit.css">
+<link rel="stylesheet" href="../assets/play/play.css">
+</head>
+<body>
+<header><div class="top">
+  <div class="brand"><a class="back-btn" href="../" aria-label="Back to ANON Arcade">&larr; Arcade</a><img src="../assets/logo.webp" alt=""><h1>SHADOW RUNNER</h1></div>
+  <div class="top-r"><button class="icon-btn" id="lbBtn" aria-label="Leaderboard">🏆</button><button class="icon-btn" id="menuBtn" aria-label="Menu">↻</button></div>
+</div></header>
+<section class="view on" id="setup">
+  <img class="hero" src="../assets/nft/c-img8142.webp" alt="ANON NFTs artwork" style="object-position:50% 35%">
+  <p class="howto"><b>Tap</b> (or Space / ↑) to jump, tap again in the air to double-jump. <b>Swipe down</b> (or ↓) to slide under branches. Grab 💎 pink gems (+10 each) and run as far as you can. It gets faster!</p>
+  <button class="go" id="goBtn">RUN</button>
+  <div class="nick" id="nick"></div>
+</section>
+<section class="view" id="play">
+  <div class="hud"><span id="dist">🏃 0 m</span><span id="gems">💎 0</span><span id="sc">⭐ 0</span></div>
+  <div class="stage"><canvas id="cv"></canvas><div class="tap" id="msg"></div></div>
+  <div class="bar"><button id="slideBtn">⬇ Slide</button><button id="againBtn">Restart</button><button id="setBtn">Menu</button></div>
+</section>
+<script src="../shared/leaderboard.js"></script>
+<script src="../shared/newsletter.js"></script>
+<script src="../assets/nft/kit.js"></script>
+<script src="../assets/play/play.js"></script>
+<script>
+'use strict';
+const { $, ls, modal, post, openLB, gameOver } = AK;
+const GAME = 'shadow-runner', TITLE = 'Shadow Runner', V0 = 8, VMAX = 20, GEM = 10;
+AK.nickLine($('#nick'));
+const show = id => document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === id));
+let C = null, S = null, BG = null, LOGO = null, PX = 30;
+AP.load(['../assets/nft/c-anon.webp', '../assets/logo.webp']).then(([a, b]) => { BG = a; LOGO = b; });
+// world units are metres; PX = pixels per metre
+function newRun() {
+  show('play'); if (!C) C = AP.canvas($('#cv'), 0, () => { PX = C.h / 15; draw(); }); else C.fit(); PX = C.h / 15;
+  S = { t: 0, d: 0, v: V0, y: 0, vy: 0, air: false, jumps: 0, slide: 0, gems: 0, ob: [], gm: [], nextOb: 14, nextGem: 8, over: false, count: 1.6, taps: 0, fx: [] };
+  hud(); $('#msg').textContent = 'Tap to jump · swipe down to slide'; L.start();
+}
+const G0 = () => C.h * .8; // ground line (px)
+const PLX = () => C.w * .22; // player x (px)
+const score = () => Math.floor(S.d) + S.gems * GEM;
+function hud() { $('#dist').textContent = '🏃 ' + Math.floor(S.d) + ' m'; $('#gems').textContent = '💎 ' + S.gems; $('#sc').textContent = '⭐ ' + score(); }
+function jump() { if (!S || S.over) return; if (!S.air || S.jumps < 2) { S.vy = S.air ? 10.5 : 12.5; S.air = true; S.jumps++; S.slide = 0; S.taps++; } }
+function slide() { if (!S || S.over) return; if (S.air) S.vy = Math.min(S.vy, -18); S.slide = .65; }
+function addOb() {
+  const k = AP.rnd(), x = S.d + 30, lv = Math.min(1, S.d / 1500);
+  if (k < .42) S.ob.push({ x, w: 1.1, h: 1.1, y: 0, kind: 'rock' });
+  else if (k < .62) S.ob.push({ x, w: 1.6, h: 1.8, y: 0, kind: 'stump' });
+  else if (k < .85) S.ob.push({ x, w: 2.6, h: 4, y: 1.45, kind: 'branch' });
+  else S.ob.push({ x, w: 1.1, h: 1.1, y: 0, kind: 'skull' });
+  if (lv > .4 && AP.rnd() < .25) S.ob.push({ x: x + 1.4 + AP.rnd() * .4, w: 1.1, h: 1.1, y: 0, kind: 'rock' });
+  S.nextOb = S.v * (1.05 + AP.rnd() * 1.1) * (1.25 - .3 * lv) + 6;
+}
+function addGems() { const x = S.d + 30, n = AP.ri(3, 6), arc = AP.rnd() < .5; for (let i = 0; i < n; i++) S.gm.push({ x: x + i * 1.4, y: arc ? .9 + Math.sin(i / (n - 1) * Math.PI) * 3 : .9 }); S.nextGem = 10 + AP.rnd() * 18; }
+function step(dt) {
+  if (!S || S.over) return;
+  if (S.count > 0) { S.count -= dt; if (S.count <= 0) $('#msg').textContent = ''; }
+  S.t += dt; S.v = Math.min(VMAX, V0 + S.t * .1); const dx = S.v * dt; S.d += dx;
+  S.nextOb -= dx; if (S.nextOb <= 0 && S.count <= 0) addOb(); S.nextGem -= dx; if (S.nextGem <= 0) addGems();
+  if (S.air) { S.vy -= 34 * dt; S.y += S.vy * dt; if (S.y <= 0) { S.y = 0; S.vy = 0; S.air = false; S.jumps = 0; } }
+  if (S.slide > 0) S.slide -= dt;
+  // collisions: player box (metres, relative to player x)
+  const ph = S.slide > 0 && !S.air ? .9 : 2.0, pw = .9, px0 = S.d;
+  for (const o of S.ob) { const ox = o.x - px0; if (ox > pw / 2 + .1 || ox + o.w < -pw / 2 + .15) continue;
+    const top = o.y + o.h, bot = o.y; if (S.y + ph > bot + .15 && S.y < top - .2) return crash(o); }
+  for (let i = S.gm.length - 1; i >= 0; i--) { const g = S.gm[i]; if (Math.abs(g.x - px0) < .9 && g.y > S.y - .4 && g.y < S.y + ph + .3) { S.gm.splice(i, 1); S.gems++; S.fx.push({ x: g.x, y: g.y, a: 0 }); } }
+  const back = S.d - 12; S.ob = S.ob.filter(o => o.x + o.w > back); S.gm = S.gm.filter(g => g.x > back); S.fx = S.fx.filter(f => (f.a += dt) < .4);
+  hud();
+}
+function runner(x, cx, gy, s, t) { // crowned hooded ANON, pure canvas
+  const sl = S && S.slide > 0 && !S.air, h = (sl ? 1.0 : 2.0) * s, w = .95 * s, bob = S && !S.air && !sl ? Math.sin(t * 18) * .06 * s : 0;
+  x.save(); x.translate(cx, gy - bob);
+  if (!sl) { const k = Math.sin(t * 18) * .25 * s; x.strokeStyle = '#0d1420'; x.lineWidth = .22 * s; x.lineCap = 'round'; x.beginPath(); x.moveTo(-.12 * s, -.5 * s); x.lineTo(-.12 * s - k, 0); x.moveTo(.12 * s, -.5 * s); x.lineTo(.12 * s + k, 0); x.stroke(); }
+  const g = x.createLinearGradient(0, -h, 0, 0); g.addColorStop(0, '#1d2a44'); g.addColorStop(1, '#070b14'); x.fillStyle = g;
+  x.beginPath(); x.moveTo(-w / 2, -.35 * s); x.quadraticCurveTo(-w * .55, -h * .8, 0, -h); x.quadraticCurveTo(w * .55, -h * .8, w / 2, -.35 * s); x.lineTo(w * .7, -.3 * s); x.lineTo(-w * .2, -.42 * s); x.closePath(); x.fill();
+  x.strokeStyle = '#d4af37'; x.lineWidth = .05 * s; x.stroke();
+  x.fillStyle = '#000'; x.beginPath(); x.ellipse(.08 * s, -h + .48 * s, .22 * s, .26 * s, 0, 0, 7); x.fill();
+  x.fillStyle = '#ff3d9a'; x.beginPath(); x.arc(.02 * s, -h + .46 * s, .045 * s, 0, 7); x.arc(.17 * s, -h + .46 * s, .045 * s, 0, 7); x.fill();
+  AP.gem(x, 0, -h * .45, .12 * s); AP.crown(x, 0, -h - .05 * s, .26 * s); x.restore();
+}
+function draw() {
+  if (!C) return; const x = C.x, W = C.w, H = C.h, gy = G0(), d = S ? S.d : 0;
+  AP.forest(x, W, H, d * PX, BG);
+  x.fillStyle = '#0a0f0b'; x.fillRect(0, gy, W, H - gy); x.fillStyle = '#d4af37'; x.fillRect(0, gy, W, 2);
+  x.fillStyle = 'rgba(212,175,55,.25)'; const o = (d * PX) % 40; for (let X = -o; X < W; X += 40) x.fillRect(X, gy + 10, 18, 2);
+  if (!S) return; const px = PLX(), M = PX;
+  for (const g of S.gm) AP.gem(x, px + (g.x - S.d) * M, gy - g.y * M - .3 * M, .32 * M);
+  for (const ob of S.ob) { const X = px + (ob.x - S.d) * M, w = ob.w * M, h = ob.h * M, Y = gy - (ob.y + ob.h) * M;
+    if (ob.kind === 'rock') { x.fillStyle = '#2b2f2c'; x.beginPath(); x.ellipse(X + w / 2, gy - h / 2, w / 2, h / 2, 0, 0, 7); x.fill(); x.strokeStyle = '#d4af37'; x.lineWidth = 1.5; x.stroke(); }
+    else if (ob.kind === 'stump') { x.fillStyle = '#3a2a16'; x.fillRect(X, Y, w, h); x.fillStyle = '#d4af37'; x.fillRect(X, Y, w, 3); x.fillStyle = '#5a4022'; x.fillRect(X + w * .3, Y + 4, 3, h - 6); }
+    else if (ob.kind === 'skull') { AP.skull(x, X + w / 2, gy - h / 2, h * .5); }
+    else { x.fillStyle = '#1b130a'; x.fillRect(X, Y, w, h); x.fillStyle = '#2f4a1e'; for (let k = 0; k < 5; k++) { x.beginPath(); x.arc(X + w * (k / 4), Y + h, M * .45, 0, Math.PI); x.fill(); }
+      x.fillStyle = '#ff3d9a'; x.beginPath(); x.arc(X + w / 2, Y + h + M * .5, M * .18, 0, 7); x.fill(); } }
+  for (const f of S.fx) { x.globalAlpha = 1 - f.a / .4; x.strokeStyle = '#ff8cc4'; x.lineWidth = 2; x.beginPath(); x.arc(px + (f.x - S.d) * M, gy - f.y * M - .3 * M, 6 + f.a * 60, 0, 7); x.stroke(); } x.globalAlpha = 1;
+  runner(x, px, gy - S.y * M, M, S.t);
+  if (S.over) { x.fillStyle = 'rgba(255,61,154,.18)'; x.fillRect(0, 0, W, H); }
+}
+const L = AP.loop(step, draw); L.onHide = () => { if (S && !S.over) { L.stop(); S.paused = true; $('#msg').textContent = 'Paused. Tap to carry on'; } };
+function crash() {
+  S.over = true; L.stop(); draw(); if (navigator.vibrate) navigator.vibrate([50, 40, 80]);
+  const sc = score(), t = Math.max(1, Math.ceil(S.t)), m = Math.floor(S.d), best = ls.get('anonRun.best', 0), pb = sc > best; if (pb) ls.set('anonRun.best', sc);
+  setTimeout(() => { modal({ art: '../assets/nft/p-anon.webp', title: pb ? 'New best! 🏆' : 'Caught in the forest! 🌲', text: `You ran <b>${m} m</b> and grabbed <b>${S.gems}</b> gems.<br>Score: ${m} + ${S.gems} × 10 = <b>${sc}</b>`, lb: sc > 0 && t >= 3,
+    buttons: [['RUN AGAIN', () => newRun()], ['Leaderboard', () => openLB(GAME, TITLE, null, 'gems'), 1], ['Menu', () => show('setup'), 1]] });
+    if (sc > 0 && t >= 3) post(GAME, sc, t, S.gems, null); }, 650);
+  gameOver();
+}
+const cv = $('#cv'); let sy = 0, sx = 0, st = 0;
+cv.addEventListener('pointerdown', e => { if (S && S.paused) { S.paused = false; $('#msg').textContent = ''; L.start(); return; } sy = e.clientY; sx = e.clientX; st = 1; });
+cv.addEventListener('pointermove', e => { if (st === 1 && e.clientY - sy > 28 && Math.abs(e.clientY - sy) > Math.abs(e.clientX - sx)) { st = 2; slide(); } });
+cv.addEventListener('pointerup', () => { if (st === 1) jump(); st = 0; });
+cv.addEventListener('pointercancel', () => st = 0);
+$('#slideBtn').addEventListener('pointerdown', e => { e.preventDefault(); slide(); });
+AP.keys({ ' ': jump, ArrowUp: jump, w: jump, ArrowDown: slide, s: slide });
+$('#goBtn').onclick = () => newRun(); $('#againBtn').onclick = () => { L.stop(); newRun(); };
+$('#setBtn').onclick = $('#menuBtn').onclick = () => { L.stop(); if (S) S.over = true; show('setup'); };
+$('#lbBtn').onclick = () => openLB(GAME, TITLE, null, 'gems');
+window.G = { state: () => S, newRun, step, jump, slide, L, score, crash, draw };
+</script>
+</body>
+</html>

@@ -390,10 +390,52 @@
     {
       "id": "shadow-runner",
       "name": "Shadow Runner",
-      "tagline": "Dash through the forest, dodge the guards",
-      "thumb": "assets/coming-soon.webp",
+      "tagline": "Dash through the forest, grab the gems",
+      "path": "shadow-runner/",
+      "thumb": "shadow-runner/thumb.webp",
       "category": "Arcade",
-      "status": "soon"
+      "tags": [
+        "runner",
+        "endless",
+        "jump",
+        "gems"
+      ],
+      "status": "live",
+      "leaderboard": true,
+      "scoreLabel": "Score",
+      "order": "desc",
+      "periods": [
+        "day",
+        "all"
+      ],
+      "movesLabel": "gems",
+      "hideMode": true,
+      "added": "2026-10-19"
+    },
+    {
+      "id": "anon-flutter",
+      "name": "ANON Flutter",
+      "tagline": "Tap to fly through the forest gaps",
+      "path": "anon-flutter/",
+      "thumb": "anon-flutter/thumb.webp",
+      "category": "Arcade",
+      "tags": [
+        "tap",
+        "fly",
+        "endless",
+        "one button"
+      ],
+      "status": "live",
+      "leaderboard": true,
+      "scoreLabel": "Score",
+      "order": "desc",
+      "periods": [
+        "day",
+        "all"
+      ],
+      "movesLabel": "taps",
+      "hideMode": true,
+      "added": "2026-10-19"
     }
   ]
 }

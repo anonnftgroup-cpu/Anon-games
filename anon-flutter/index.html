@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05070a">
+<title>ANON Flutter · ANON NFTs</title>
+<meta name="description" content="ANON Flutter: tap to fly the winged ANON through the gaps in the forest. Free, no sign-up.">
+<link rel="icon" href="../assets/logo.webp">
+<link rel="stylesheet" href="../assets/nft/kit.css">
+<link rel="stylesheet" href="../assets/play/play.css">
+</head>
+<body>
+<header><div class="top">
+  <div class="brand"><a class="back-btn" href="../" aria-label="Back to ANON Arcade">&larr; Arcade</a><img src="../assets/logo.webp" alt=""><h1>ANON FLUTTER</h1></div>
+  <div class="top-r"><button class="icon-btn" id="lbBtn" aria-label="Leaderboard">🏆</button><button class="icon-btn" id="menuBtn" aria-label="Menu">↻</button></div>
+</div></header>
+<section class="view on" id="setup">
+  <img class="hero" id="hero" alt="ANON NFTs artwork">
+  <div class="lbl">Choose who flies</div>
+  <div class="chars five" id="artPick"></div>
+  <button class="go" id="goBtn">FLY</button>
+  <p class="howto"><b>Tap</b> (or Space / ↑) to flap your golden wings. Fly through the gaps between the trees. Each gap is 1 point. 👑 Bronze at 10, Silver at 25, Gold at 50.</p>
+  <div class="nick" id="nick"></div>
+</section>
+<section class="view" id="play">
+  <div class="hud"><span id="sc">🌲 0</span><span id="best">🏆 0</span></div>
+  <div class="stage"><canvas id="cv"></canvas><div class="tap" id="msg"></div></div>
+  <div class="bar"><button id="againBtn">Restart</button><button id="setBtn">Change ANON</button></div>
+</section>
+<script src="../shared/leaderboard.js"></script>
+<script src="../shared/newsletter.js"></script>
+<script src="../assets/nft/kit.js"></script>
+<script src="../assets/play/play.js"></script>
+<script>
+'use strict';
+const { $, ls, modal, post, openLB, gameOver, art } = AK;
+const GAME = 'anon-flutter', TITLE = 'ANON Flutter', GAPT = 1.6;
+const pref = ls.get('anonFlutter.pref', { art: 'anon', best: 0 });
+const show = id => document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === id));
+const setHero = () => $('#hero').src = art(pref.art).cover;
+AK.picker($('#artPick'), pref.art, id => { pref.art = id; ls.set('anonFlutter.pref', pref); setHero(); });
+setHero(); AK.nickLine($('#nick'));
+let C = null, S = null, ME = null, BG = null;
+AP.img('../assets/nft/c-lake.webp').then(i => BG = i);
+const SPR = {};
+function mk(im) { const d = 2, R = 40, c = document.createElement('canvas'); c.width = c.height = R * 2 * d; const x = c.getContext('2d'); x.scale(d, d);
+  x.save(); x.beginPath(); x.arc(R, R, R - 4, 0, 7); x.clip(); if (im) AP.cover(x, im, 4, 4, R * 2 - 8, R * 2 - 8); x.restore(); x.lineWidth = 4; x.strokeStyle = '#f3d77a'; x.beginPath(); x.arc(R, R, R - 3, 0, 7); x.stroke(); return c; }
+async function newRun() {
+  const a = art(pref.art); ME = SPR[a.id] || (SPR[a.id] = mk(await AP.img(a.img)));
+  show('play'); if (!C) C = AP.canvas($('#cv'), 0, () => draw()); else C.fit();
+  const H = C.h; S = { t: 0, live: false, over: false, y: H * .45, vy: 0, r: Math.max(15, H * .034), trees: [], next: 1.4, score: 0, taps: 0, flap: 0, art: a.id, scroll: 0 };
+  $('#best').textContent = '🏆 ' + (pref.best || 0); hud(); $('#msg').textContent = 'Tap to fly'; L.start();
+}
+const hud = () => { $('#sc').textContent = '🌲 ' + S.score; };
+const SPD = () => C.h * .24, GRAV = () => C.h * 2.3, FLAP = () => -C.h * .72, PX = () => C.w * .28, TW = () => Math.max(46, C.h * .085);
+function flap() { if (!S || S.over) return; if (!S.live) { S.live = true; $('#msg').textContent = ''; } S.vy = FLAP(); S.taps++; S.flap = .18; }
+function addTree() { const H = C.h, gap = Math.max(S.r * 5.2, H * (.29 - Math.min(.06, S.score * .002))), m = H * .1; const cy = m + gap / 2 + AP.rnd() * (H - 2 * m - gap); S.trees.push({ x: C.w + TW(), cy, gap, passed: false }); }
+function step(dt) {
+  if (!S || S.over) return; S.flap = Math.max(0, S.flap - dt);
+  if (!S.live) { S.y = C.h * .45 + Math.sin(performance.now() / 250) * 8; S.scroll += SPD() * dt * .5; return; }
+  S.t += dt; S.vy += GRAV() * dt; S.vy = Math.min(S.vy, C.h * 1.2); S.y += S.vy * dt; S.scroll += SPD() * dt;
+  S.next -= dt; if (S.next <= 0) { addTree(); S.next += GAPT; }
+  const px = PX(), tw = TW();
+  for (const t of S.trees) { t.x -= SPD() * dt;
+    if (!t.passed && t.x + tw / 2 < px - S.r) { t.passed = true; S.score++; hud(); if (navigator.vibrate) navigator.vibrate(8); }
+    if (px + S.r * .85 > t.x - tw / 2 && px - S.r * .85 < t.x + tw / 2 && (S.y - S.r * .85 < t.cy - t.gap / 2 || S.y + S.r * .85 > t.cy + t.gap / 2)) return crash(); }
+  S.trees = S.trees.filter(t => t.x > -tw);
+  if (S.y + S.r > C.h * .94 || S.y - S.r < 0 && S.y < -S.r * 2) return crash();
+  if (S.y - S.r < 0) { S.y = S.r; S.vy = Math.max(0, S.vy); }
+}
+function tree(x, X, top, bot, w, H) {
+  const g = x.createLinearGradient(X - w / 2, 0, X + w / 2, 0); g.addColorStop(0, '#120c06'); g.addColorStop(.5, '#3a2814'); g.addColorStop(1, '#0d0904');
+  x.fillStyle = g; x.fillRect(X - w / 2, 0, w, top); x.fillRect(X - w / 2, bot, w, H - bot);
+  x.strokeStyle = 'rgba(212,175,55,.35)'; x.lineWidth = 1.5; x.beginPath(); for (let k = 0; k < 3; k++) { const xx = X - w / 4 + k * w / 4; x.moveTo(xx, 0); x.lineTo(xx, top - 14); x.moveTo(xx, bot + 14); x.lineTo(xx, H); } x.stroke();
+  x.fillStyle = '#d4af37'; x.fillRect(X - w / 2 - 5, top - 12, w + 10, 12); x.fillRect(X - w / 2 - 5, bot, w + 10, 12);
+  x.fillStyle = '#ff3d9a'; x.beginPath(); x.arc(X, top - 6, 3.5, 0, 7); x.arc(X, bot + 6, 3.5, 0, 7); x.fill();
+  x.fillStyle = 'rgba(30,70,30,.9)'; for (let k = -1; k <= 1; k++) { x.beginPath(); x.arc(X + k * w * .4, top - 16, w * .3, Math.PI, 0); x.fill(); }
+}
+function draw() {
+  if (!C || !S) return; const x = C.x, W = C.w, H = C.h;
+  AP.forest(x, W, H, S.scroll, BG);
+  for (const t of S.trees) tree(x, t.x, t.cy - t.gap / 2, t.cy + t.gap / 2, TW(), H);
+  x.fillStyle = '#070a08'; x.fillRect(0, H * .94, W, H * .06); x.fillStyle = '#d4af37'; x.fillRect(0, H * .94, W, 2);
+  const px = PX(), r = S.r, ang = Math.max(-.5, Math.min(1.1, S.vy / (C.h * 1.1))), wf = S.flap > 0 ? -1 : Math.sin(performance.now() / 70) * .4;
+  x.save(); x.translate(px, S.y); x.rotate(ang);
+  x.fillStyle = '#e9c858'; x.strokeStyle = '#7a5a12'; x.lineWidth = 1.5;
+  for (const s of [-1, 1]) { x.save(); x.scale(s === 1 ? 1 : 1, 1); x.beginPath(); x.ellipse(-r * .6, -r * .2 + wf * r * .5, r * .95, r * .38, -.5 + wf * .5, 0, 7); x.fill(); x.stroke(); x.restore(); if (s === -1) continue; }
+  if (ME) x.drawImage(ME, -r, -r, r * 2, r * 2); AP.crown(x, 0, -r * 1.05, r * .45); x.restore();
+  if (S.over) { x.fillStyle = 'rgba(255,61,154,.15)'; x.fillRect(0, 0, W, H); }
+  x.textAlign = 'center'; x.font = '900 ' + Math.round(H * .07) + 'px Georgia,serif'; x.lineWidth = 5; x.strokeStyle = '#000'; x.fillStyle = '#f3d77a';
+  if (S.live) { x.strokeText(S.score, W / 2, H * .13); x.fillText(S.score, W / 2, H * .13); }
+}
+const L = AP.loop(step, draw); L.onHide = () => { if (S && S.live && !S.over) { S.live = false; $('#msg').textContent = 'Paused. Tap to fly'; } };
+const medal = n => n >= 50 ? '🥇 Gold crown' : n >= 25 ? '🥈 Silver crown' : n >= 10 ? '🥉 Bronze crown' : '';
+function crash() {
+  S.over = true; L.stop(); draw(); if (navigator.vibrate) navigator.vibrate([40, 30, 70]);
+  const n = S.score, t = Math.max(1, Math.ceil(S.t)), a = art(S.art), pb = n > (pref.best || 0); if (pb) { pref.best = n; ls.set('anonFlutter.pref', pref); }
+  setTimeout(() => { modal({ art: a.img, title: pb && n ? 'New best! 🏆' : 'Bonk! 🌲', text: `<b>${a.name}</b> flew through <b>${n}</b> gap${n === 1 ? '' : 's'}.${medal(n) ? '<br>' + medal(n) + ' earned!' : ''}`, lb: n > 0,
+    buttons: [['FLY AGAIN', () => newRun()], ['Leaderboard', () => openLB(GAME, TITLE, null, 'taps'), 1], ['Change ANON', () => show('setup'), 1]] });
+    if (n > 0) post(GAME, n, t, Math.max(1, S.taps), null); }, 650);
+  gameOver();
+}
+$('#cv').addEventListener('pointerdown', e => { e.preventDefault(); flap(); });
+AP.keys({ ' ': flap, ArrowUp: flap, w: flap, Enter: () => { if (S && S.over) newRun(); } });
+$('#goBtn').onclick = () => newRun(); $('#againBtn').onclick = () => { L.stop(); newRun(); };
+$('#setBtn').onclick = $('#menuBtn').onclick = () => { L.stop(); if (S) S.over = true; show('setup'); };
+$('#lbBtn').onclick = () => openLB(GAME, TITLE, null, 'taps');
+window.G = { state: () => S, newRun, step, flap, L, C: () => C, PX, TW, GAPT, draw };
+</script>
+</body>
+</html>
