@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05070a">
+<title>ANON Moon Lander · ANON NFTs</title>
+<meta name="description" content="ANON Moon Lander: guide your ANON pilot down to the glowing landing pads. Watch your fuel, speed and tilt. Free, no sign-up.">
+<link rel="icon" href="../assets/logo.webp">
+<link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
+<link rel="stylesheet" href="../assets/nft/kit.css">
+<link rel="stylesheet" href="../assets/retro-c1/rk.css">
+</head>
+<body>
+<script src="../shared/leaderboard.js"></script>
+<script src="../shared/newsletter.js"></script>
+<script src="../assets/nft/kit.js"></script>
+<script src="../assets/retro-c1/rk.js"></script>
+<script src="game.js"></script>
+<script>
+'use strict';
+(function () {
+  const G = MLGame, IDS = RK.ART.map(a => a.id), W = G.W, H = G.H; let sky = null, land = null, landFor = null;
+  function skyArt() { const c = document.createElement('canvas'), k = 2; c.width = W * k; c.height = H * k; const x = c.getContext('2d'); x.scale(k, k);
+    const g = x.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#05030c'); g.addColorStop(1, '#170a1c'); x.fillStyle = g; x.fillRect(0, 0, W, H); RK.cover(x, RK.C.ghost, 0, 0, W, H * 0.6, 0.12); RK.stars(x, W, H * 0.8, 7, 120);
+    x.save(); x.shadowColor = '#d4af37'; x.shadowBlur = 30; RK.portrait(x, RK.P.anon, W * 0.8, H * 0.15, 36, '#d4af37'); x.restore(); return c; }
+  function landArt(S) { const c = document.createElement('canvas'), k = 2; c.width = W * k; c.height = H * k; const x = c.getContext('2d'); x.scale(k, k);
+    x.beginPath(); x.moveTo(0, H); S.ground.forEach(([gx, gy]) => x.lineTo(gx, gy)); x.lineTo(W, H); x.closePath(); x.save(); x.fillStyle = '#100b14'; x.fill(); x.clip(); RK.cover(x, RK.C[IDS[(S.round * 3) % IDS.length]], 0, H * 0.45, W, H * 0.55, 0.35); x.fillStyle = 'rgba(0,0,0,.35)'; x.fillRect(0, 0, W, H); x.restore();
+    x.strokeStyle = '#d4af37'; x.lineWidth = 2; x.beginPath(); S.ground.forEach(([gx, gy], i) => i ? x.lineTo(gx, gy) : x.moveTo(gx, gy)); x.stroke();
+    for (const p of S.pads) { const col = p.mult === 5 ? '#ff3d9a' : p.mult === 3 ? '#2bff88' : '#f3d77a'; x.strokeStyle = col; x.lineWidth = 4; x.shadowColor = col; x.shadowBlur = 12; x.beginPath(); x.moveTo(p.x0, p.y); x.lineTo(p.x1, p.y); x.stroke(); x.shadowBlur = 0;
+      RK.text(x, '×' + p.mult, (p.x0 + p.x1) / 2, p.y + 18, 13, col); }
+    return c; }
+  RK.shell({
+    game: 'moon-lander', title: 'ANON Moon Lander', h1: 'ANON MOON LANDER', W, H, movesLabel: 'landings', pickLabel: 'Pick your pilot', startMsg: 'LAND ON A PAD!',
+    controls: [{ k: 'left', label: '⟲', aria: 'rotate left' }, { k: 'right', label: '⟳', aria: 'rotate right' }, { k: 'up', label: '🔥 THRUST', aria: 'thrust' }],
+    how: '<b>⟲ ⟳</b> (or ← →) tilt the lander, hold <b>🔥 THRUST</b> (or ↑ / Space) to fire the engine. Touch down on a glowing pad <b>slowly, level and without sliding</b> — the gauges turn green when it is safe. Pads pay ×2, ×3 or ×5; a feather-soft landing doubles it, and leftover fuel adds a bonus. Gravity gets stronger every landing. 3 landers.',
+    keys: { Space: 'up' },
+    create: o => { land = null; return G.create(o); },
+    hud: S => { const s = S.ship || {}; const okv = (s.vy || 0) <= G.SAFE.vy, okx = Math.abs(s.vx || 0) <= G.SAFE.vx, oka = Math.abs(s.a || 0) <= G.SAFE.ang; const c = b => b ? '#2bff88' : '#ff3d9a';
+      return `<span>⭐ ${S.score.toLocaleString()}</span><span>⛽ ${Math.ceil(s.fuel || 0)}</span><span style="color:${c(okv)}">↓${Math.round(s.vy || 0)}</span><span style="color:${c(okx)}">↔${Math.round(Math.abs(s.vx || 0))}</span><span style="color:${c(oka)}">∠${Math.round(Math.abs(s.a || 0) * 57.3)}°</span><span>${'🚀'.repeat(Math.max(0, S.lives))}</span>`; },
+    result: S => ({ score: S.score, time: S.t, moves: S.landings, text: `${S.landings} landings (${S.perfect} perfect) · ${Math.round(S.t)} s` }),
+    draw(x, S, t) {
+      if (!sky) sky = skyArt(); x.drawImage(sky, 0, 0, W, H); if (!land || landFor !== S.ground) { land = landArt(S); landFor = S.ground; } x.drawImage(land, 0, 0, W, H);
+      for (const b of S.bits) { x.globalAlpha = Math.min(1, b.life * 2); x.fillStyle = b.col; x.fillRect(b.x - 1.5, b.y - 1.5, 3, 3); } x.globalAlpha = 1;
+      const s = S.ship; if (s && S.state !== 'crash') { x.save(); x.translate(s.x, s.y); x.rotate(s.a);
+        if (S.thrusting) { x.fillStyle = Math.floor(t * 30) % 2 ? '#ff3d9a' : '#f3d77a'; x.beginPath(); x.moveTo(-5, 8); x.lineTo(0, 18 + Math.random() * 8); x.lineTo(5, 8); x.fill(); }
+        x.strokeStyle = '#d4af37'; x.lineWidth = 2; x.beginPath(); x.moveTo(-6, 4); x.lineTo(-9, 10); x.moveTo(6, 4); x.lineTo(9, 10); x.moveTo(-12, 10); x.lineTo(-6, 10); x.moveTo(6, 10); x.lineTo(12, 10); x.stroke();
+        x.fillStyle = '#1a1206'; x.fillRect(-7, 2, 14, 6); x.strokeRect(-7, 2, 14, 6); x.restore(); RK.portrait(x, RK.P[S.art], s.x + Math.sin(s.a) * 3, s.y - Math.cos(s.a) * 3, 8, '#f3d77a', 'rgba(243,215,122,.7)');
+        if (s.y < 0) RK.text(x, '▲', s.x, 12, 12); }
+      if (s && S.state === 'fly') { const p = S.pads.slice().sort((a, b) => Math.abs((a.x0 + a.x1) / 2 - s.x) - Math.abs((b.x0 + b.x1) / 2 - s.x))[0]; const alt = Math.max(0, Math.round(S.groundY(s.x) - s.y - 10)); RK.text(x, 'ALT ' + alt, 8, H - 8, 11, '#f3d77a', 'left'); }
+      RK.text(x, 'ROUND ' + S.round, W - 8, H - 8, 11, '#f3d77a', 'right');
+    }
+  });
+})();
+</script>
+</body>
+</html>

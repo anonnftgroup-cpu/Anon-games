@@ -1127,6 +1127,31 @@
       "movesLabel": "blocks",
       "hideMode": true,
       "added": "2026-10-19"
+    },
+    {
+      "id": "moon-lander",
+      "name": "ANON Moon Lander",
+      "tagline": "Land softly on the ANON moon pads",
+      "path": "moon-lander/",
+      "thumb": "moon-lander/thumb.webp",
+      "category": "Arcade",
+      "tags": [
+        "lander",
+        "space",
+        "gravity",
+        "retro"
+      ],
+      "status": "live",
+      "leaderboard": true,
+      "scoreLabel": "Score",
+      "order": "desc",
+      "periods": [
+        "day",
+        "all"
+      ],
+      "movesLabel": "landings",
+      "hideMode": true,
+      "added": "2026-10-19"
     }
   ]
 }
