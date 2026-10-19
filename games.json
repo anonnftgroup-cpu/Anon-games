@@ -1051,6 +1051,32 @@
         "hard": "Hard"
       },
       "added": "2026-10-19"
+    },
+    {
+      "id": "pool-plumber",
+      "name": "Pool Plumber",
+      "tagline": "Rotate pipes so at least half the mint reaches the pool",
+      "path": "pool-plumber/",
+      "thumb": "pool-plumber/thumb.webp",
+      "category": "Learn",
+      "tags": [
+        "learn",
+        "puzzle",
+        "pipes",
+        "backing",
+        "levels"
+      ],
+      "status": "live",
+      "leaderboard": true,
+      "scoreLabel": "Score",
+      "order": "desc",
+      "periods": [
+        "day",
+        "all"
+      ],
+      "movesLabel": "levels",
+      "hideMode": true,
+      "added": "2026-10-19"
     }
   ]
 }

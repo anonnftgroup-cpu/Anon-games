@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05070a">
+<title>Pool Plumber · ANON NFTs</title>
+<meta name="description" content="Pool Plumber: rotate the pipes so at least half of the mint flow reaches the liquidity pool. 32 levels. Free, no sign-up.">
+<link rel="icon" href="../assets/logo.webp">
+<link rel="stylesheet" href="../assets/nft/kit.css">
+<link rel="stylesheet" href="../assets/play/play.css">
+<link rel="stylesheet" href="bk.css">
+<style>.split{display:flex;gap:6px;justify-content:center;font-size:12.5px;font-weight:800;padding:0 6px 2px;flex-wrap:wrap}
+.split span{padding:2px 8px;border-radius:9px;background:rgba(0,0,0,.5);border:1px solid rgba(212,175,55,.3)}
+.split .ok{color:var(--green);border-color:rgba(43,255,136,.5)}.split .no{color:#ff8a8a;border-color:rgba(255,90,90,.5)}
+#contBtn{display:none}</style>
+</head>
+<body>
+<header><div class="top">
+  <div class="brand"><a class="back-btn" href="../" aria-label="Back to ANON Arcade">&larr; Arcade</a><img src="../assets/logo.webp" alt=""><h1>POOL PLUMBER</h1></div>
+  <div class="top-r"><button class="icon-btn" id="sndBtn" aria-label="Sound">🔊</button><button class="icon-btn" id="lbBtn" aria-label="Leaderboard">🏆</button><button class="icon-btn" id="menuBtn" aria-label="Menu">↻</button></div>
+</div></header>
+<section class="view on" id="setup">
+  <img class="hero" id="hero" alt="ANON NFTs artwork">
+  <div class="lbl">Choose the NFT you're minting</div>
+  <div class="chars five" id="artPick"></div>
+  <button class="go" id="contBtn">CONTINUE RUN</button>
+  <button class="go" id="goBtn">NEW RUN · LEVEL 1</button>
+  <p class="howto"><b>Tap a pipe to rotate it.</b> The mint flow pours in at the top. It splits evenly at every junction and out of every open end. Route it so <b>at least half reaches the LIQUIDITY POOL</b>, with no leaks. The rest may go to the project wallet. Keep it away from the <b>RUG DRAIN</b>! 32 levels: 100 points each, +50 for using few taps. End your run any time to post your total.</p>
+  <p class="howto">This mirrors how ANON NFTs works: ANON collections are backed by at least 50% of mint price in FUSD at mint. Check it on-chain.</p>
+  <div class="nick" id="nick"></div>
+  <p class="risk-foot">NFTs and cryptoassets are high-risk. Not financial advice. <a href="https://anonnfts.com/check-backing-on-chain-1" target="_top" rel="noopener">How to check backing on-chain</a></p>
+</section>
+<section class="view" id="play">
+  <div class="hud"><span id="lvl">🧩 1/32</span><span id="taps">👆 0</span><span id="sc">⭐ 0</span></div>
+  <div class="split" id="split"></div>
+  <div class="stage" id="stage"><canvas id="cv"></canvas><div class="tap" id="msg"></div></div>
+  <div class="bar"><button id="resetBtn">↺ Reset level</button><button id="endBtn">End run &amp; post</button><button id="setBtn">Menu</button></div>
+</section>
+<script src="../shared/leaderboard.js"></script>
+<script src="../shared/newsletter.js"></script>
+<script src="../assets/nft/kit.js"></script>
+<script src="../assets/play/play.js"></script>
+<script src="bk.js"></script>
+<script>
+'use strict';
+const { $, ls, post, openLB, gameOver, art, modal } = AK;
+const GAME = 'pool-plumber', TITLE = 'Pool Plumber', LEVELS = 32;
+const N = 1, E = 2, S_ = 4, W = 8, DIRS = [[N, 0, -1, S_], [E, 1, 0, W], [S_, 0, 1, N], [W, -1, 0, E]];
+const rot = (m, r) => { for (let i = 0; i < (r & 3); i++) m = ((m << 1) | (m >> 3)) & 15; return m; };
+const pref = ls.get('anonPlumb.pref', { art: 'anon', best: 0 });
+let RUN = ls.get('anonPlumb.run', null);
+const show = id => document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === id));
+const setHero = () => $('#hero').src = art(pref.art).cover;
+AK.picker($('#artPick'), pref.art, id => { pref.art = id; ls.set('anonPlumb.pref', pref); setHero(); });
+setHero(); AK.nickLine($('#nick')); BK.muteBtn($('#sndBtn'));
+const paintCont = () => { const b = $('#contBtn'); if (RUN && RUN.level <= LEVELS) { b.style.display = 'block'; b.textContent = 'CONTINUE RUN · LEVEL ' + RUN.level + ' · ⭐ ' + RUN.score; } else b.style.display = 'none'; };
+paintCont();
+// ---------- level generator (seeded per level, so every player gets the same 32 levels) ----------
+function size(n) { return n <= 4 ? [4, 4] : n <= 10 ? [5, 5] : n <= 18 ? [5, 6] : n <= 26 ? [6, 7] : [7, 8]; }
+function makeLevel(n) {
+  AP.seed(0xA11CE + n * 7919); const [cols, rows] = size(n), idx = (x, y) => y * cols + x;
+  for (let attempt = 0; attempt < 200; attempt++) {
+    const sc = AP.ri(0, cols - 1), pc = AP.ri(0, cols - 1); const want = Math.min(cols * rows * .6, cols + rows + n * .6);
+    // random self-avoiding path from (sc,0) to (pc,rows-1)
+    let path = null, tries = 0;
+    const dfs = (x, y, seen, acc) => { if (++tries > 4000) return false; acc.push([x, y]); seen.add(idx(x, y));
+      if (x === pc && y === rows - 1 && acc.length >= Math.min(want, cols * rows * .7) - 2) { path = acc.slice(); return true; }
+      const ds = AP.shuffle(DIRS.slice()); for (const d of ds) { const nx = x + d[1], ny = y + d[2]; if (nx < 0 || ny < 0 || nx >= cols || ny >= rows || seen.has(idx(nx, ny))) continue; if (dfs(nx, ny, seen, acc)) return true; }
+      acc.pop(); seen.delete(idx(x, y)); return false; };
+    dfs(sc, 0, new Set(), []); if (!path) continue;
+    const mask = new Array(cols * rows).fill(0), on = new Set(path.map(([x, y]) => idx(x, y)));
+    const link = (a, b) => { const dx = b[0] - a[0], dy = b[1] - a[1]; const d = DIRS.find(q => q[1] === dx && q[2] === dy); mask[idx(a[0], a[1])] |= d[0]; mask[idx(b[0], b[1])] |= d[3]; };
+    for (let i = 0; i + 1 < path.length; i++) link(path[i], path[i + 1]);
+    mask[idx(sc, 0)] |= N; mask[idx(pc, rows - 1)] |= S_;
+    // project wallet on the right from level 3: a branch from the main path (makes a 50 / 50 split)
+    let wallet = null, drain = null;
+    if (n >= 3) { const wr = AP.ri(0, rows - 1), start = [cols - 1, wr];
+      if (on.has(idx(cols - 1, wr))) { if ((mask[idx(cols - 1, wr)] & E) === 0 && [N, E, S_, W].filter(b => mask[idx(cols - 1, wr)] & b).length === 2) { mask[idx(cols - 1, wr)] |= E; wallet = wr; } }
+      else { // BFS from the wallet cell to the nearest 2-way path cell, through free cells
+        const prev = new Map([[idx(...start), null]]), q = [start]; let hit = null;
+        while (q.length && !hit) { const [x, y] = q.shift(); for (const d of AP.shuffle(DIRS.slice())) { const nx = x + d[1], ny = y + d[2]; if (nx < 0 || ny < 0 || nx >= cols || ny >= rows) continue; const k = idx(nx, ny); if (prev.has(k)) continue;
+          if (on.has(k)) { const deg = [N, E, S_, W].filter(b => mask[k] & b).length; if (deg === 2) { prev.set(k, [x, y]); hit = [nx, ny]; break; } continue; } prev.set(k, [x, y]); q.push([nx, ny]); } }
+        if (hit) { let cur = hit; while (prev.get(idx(...cur))) { const p = prev.get(idx(...cur)); link(cur, p); on.add(idx(...p)); cur = p; } mask[idx(...start)] |= E; wallet = wr; } }
+      if (wallet === null) continue; }
+    // rug drain on the left from level 8 (a decoy exit: connect it and the pool share drops below half)
+    if (n >= 8) { const free = []; for (let y = 0; y < rows; y++) if (!(mask[idx(0, y)] & W)) free.push(y); if (!free.length) continue; drain = AP.pick(free); }
+    // fill the rest; mostly real pieces so there are tempting wrong routes
+    const kinds = [], PIECES = [N | S_, N | E, N | E | S_];
+    for (let i = 0; i < cols * rows; i++) { if (mask[i]) { kinds.push(mask[i]); continue; } kinds.push(AP.rnd() < .12 ? 0 : rot(AP.pick(PIECES), AP.ri(0, 3))); }
+    // canonical piece + its solution rotation
+    const tiles = kinds.map((m, i) => { if (!m) return { base: 0, r: 0, sol: null };
+      const deg = [N, E, S_, W].filter(b => m & b).length; const base = deg === 4 ? 15 : deg === 3 ? (N | E | S_) : (m === (N | S_) || m === (E | W)) ? (N | S_) : (N | E);
+      const sols = [0, 1, 2, 3].filter(r => rot(base, r) === m); return { base, r: 0, sol: mask[i] ? sols : null }; });
+    // scramble (never already solved)
+    tiles.forEach(t => { t.r = AP.ri(0, 3); });
+    const L = { n, cols, rows, sc, pc, wallet, drain, tiles };
+    if (evaluate(L).win) { tiles.forEach(t => { if (t.sol && t.base !== 15) t.r = (t.r + 1) & 3; }); if (evaluate(L).win) continue; }
+    L.par = tiles.reduce((a, t) => a + (t.sol ? Math.min(...t.sol.map(s => (s - t.r + 4) & 3)) : 0), 0);
+    L.start = tiles.map(t => t.r); AP.seed((Date.now() ^ 0x2545F491) >>> 0); return L;
+  }
+  throw new Error('level gen failed ' + n);
+}
+// flow: BFS from the mint; every open end is an outlet and the flow splits evenly between outlets
+function evaluate(L) {
+  const { cols, rows, tiles } = L, idx = (x, y) => y * cols + x, m = i => rot(tiles[i].base, tiles[i].r);
+  const seen = new Set(), q = [[L.sc, 0]], out = { pool: 0, wallet: 0, drain: 0, leak: 0 }, leaks = [];
+  if (!(m(idx(L.sc, 0)) & N)) return { out, total: 0, wet: seen, win: false, leaks, share: 0, blocked: true };
+  seen.add(idx(L.sc, 0));
+  while (q.length) { const [x, y] = q.shift(), k = m(idx(x, y));
+    for (const [b, dx, dy, back] of DIRS) { if (!(k & b)) continue; const nx = x + dx, ny = y + dy;
+      if (nx < 0 || ny < 0 || nx >= cols || ny >= rows) { if (b === N && x === L.sc && y === 0) continue; if (b === S_ && x === L.pc && ny === rows) out.pool++; else if (b === E && nx === cols && y === L.wallet) out.wallet++; else if (b === W && nx < 0 && y === L.drain) out.drain++; else { out.leak++; leaks.push([x, y, b]); } continue; }
+      if (!(m(idx(nx, ny)) & back)) { out.leak++; leaks.push([x, y, b]); continue; }
+      if (!seen.has(idx(nx, ny))) { seen.add(idx(nx, ny)); q.push([nx, ny]); } } }
+  const total = out.pool + out.wallet + out.drain + out.leak, share = total ? out.pool / total : 0;
+  return { out, total, wet: seen, leaks, share, win: out.pool > 0 && out.leak === 0 && out.drain === 0 && share >= .5 };
+}
+// ---------- run ----------
+let C = null, LV = null, ST = null, NFT = null, BG = null;
+AP.img('../assets/nft/c-anon.webp').then(i => BG = i);
+function saveRun() { ls.set('anonPlumb.run', RUN); paintCont(); }
+async function startRun(fresh) { if (fresh || !RUN) RUN = { level: 1, score: 0, time: 0, cleared: 0, taps: 0, art: pref.art }; saveRun(); NFT = await AP.img(art(RUN.art).img); show('play'); if (!C) C = AP.canvas($('#cv'), .78, () => draw()); else C.fit(); loadLevel(); }
+function loadLevel() { LV = makeLevel(RUN.level); ST = { taps: 0, t: 0, done: false, anim: {}, ev: evaluate(LV) }; L.start(); hud(); draw(); }
+function hud() { $('#lvl').textContent = '🧩 ' + RUN.level + '/' + LEVELS; $('#taps').textContent = '👆 ' + ST.taps + ' (par ' + LV.par + ')'; $('#sc').textContent = '⭐ ' + RUN.score;
+  const e = ST.ev, pct = v => e.total ? Math.round(v / e.total * 100) : 0; const sp = $('#split');
+  sp.innerHTML = `<span class="${e.out.pool && e.share >= .5 ? 'ok' : 'no'}">🏊 Pool ${pct(e.out.pool)}%</span>` + (LV.wallet !== null ? `<span>👛 Wallet ${pct(e.out.wallet)}%</span>` : '') +
+    (LV.drain !== null ? `<span class="${e.out.drain ? 'no' : ''}">🕳️ Rug drain ${pct(e.out.drain)}%</span>` : '') + `<span class="${e.out.leak ? 'no' : ''}">💧 Leaks ${pct(e.out.leak)}%</span>`; }
+function geom() { const W_ = C.w, H = C.h, mx = 34, mt = 54, mb = 58; const cs = Math.floor(Math.min((W_ - 2 * mx) / LV.cols, (H - mt - mb) / LV.rows)); const ox = Math.floor((W_ - cs * LV.cols) / 2), oy = Math.floor(mt + (H - mt - mb - cs * LV.rows) / 2); return { cs, ox, oy }; }
+function tap(cx, cy) { if (!ST || ST.done) return false; const t = LV.tiles[cy * LV.cols + cx]; if (!t || !t.base) return false;
+  t.r = (t.r + 1) & 3; ST.anim[cy * LV.cols + cx] = 1; ST.taps++; RUN.taps++; BK.play('turn'); ST.ev = evaluate(LV); hud();
+  if (ST.ev.win) clear(); return true; }
+function clear() { ST.done = true; BK.play('win'); const extra = Math.max(0, ST.taps - LV.par), bonus = Math.max(0, 50 - 5 * extra), pts = 100 + bonus;
+  RUN.score += pts; RUN.cleared++; RUN.time += Math.max(3, ST.t); const n = RUN.level; RUN.level++; saveRun(); hud();
+  setTimeout(() => { if (RUN.level > LEVELS) return endRun(true);
+    modal({ art: art(RUN.art).img, title: 'Level ' + n + ' flowing! 💧', text: `Pool share <b>${Math.round(ST.ev.share * 100)}%</b>. <b>+${pts}</b> (${ST.taps} taps, par ${LV.par}).` + BK.factHTML(n - 1),
+      buttons: [['NEXT LEVEL →', () => loadLevel()], ['End run & post', () => endRun(false), 1]] }); }, 700); }
+function endRun(all) {
+  if (!RUN || !RUN.cleared) { modal({ title: 'Nothing to post yet', text: 'Clear at least one level first.', buttons: [['OK', () => {}]] }); return; }
+  L.stop(); const r = RUN, a = art(r.art), secs = Math.max(r.cleared * 3, Math.ceil(r.time)), pb = r.score > (pref.best || 0); if (pb) { pref.best = r.score; ls.set('anonPlumb.pref', pref); }
+  RUN = null; saveRun();
+  BK.end({ art: a.img, title: all ? 'All 32 pools flowing! 🏆' : (pb ? 'New best! 🏆' : 'Run posted'), lb: true,
+    text: `You cleared <b>${r.cleared}</b> level${r.cleared === 1 ? '' : 's'} with <b>${r.taps}</b> taps. Total <b>${r.score}</b>.`, fact: 0,
+    buttons: [['NEW RUN', () => startRun(true)], ['Leaderboard', () => openLB(GAME, TITLE, null, 'levels'), 1], ['Menu', () => show('setup'), 1]] });
+  post(GAME, r.score, secs, r.cleared, null); gameOver();
+}
+function step(dt) { if (!ST) return; if (!ST.done) ST.t += dt; for (const k in ST.anim) { ST.anim[k] -= dt * 7; if (ST.anim[k] <= 0) delete ST.anim[k]; } }
+function pipe(x, m, cx, cy, cs, wet) { const h = cs / 2, w = Math.max(6, cs * .26);
+  x.lineCap = 'round'; const segs = []; DIRS.forEach(([b, dx, dy]) => { if (m & b) segs.push([dx, dy]); });
+  for (const pass of [0, 1]) { x.strokeStyle = pass ? (wet ? '#f3c94a' : '#3a4250') : '#0b0d12'; x.lineWidth = pass ? w : w + 6; x.beginPath(); segs.forEach(([dx, dy]) => { x.moveTo(cx, cy); x.lineTo(cx + dx * h, cy + dy * h); }); x.stroke(); }
+  if (wet) { x.strokeStyle = 'rgba(255,255,255,.35)'; x.lineWidth = w * .25; x.beginPath(); segs.forEach(([dx, dy]) => { x.moveTo(cx, cy); x.lineTo(cx + dx * h, cy + dy * h); }); x.stroke(); }
+  x.fillStyle = wet ? '#f3c94a' : '#3a4250'; x.beginPath(); x.arc(cx, cy, w * .62, 0, 7); x.fill(); }
+function label(x, t, cx, cy, col, bg) { x.font = '900 12px system-ui'; const w = x.measureText(t).width + 14; x.fillStyle = bg; AP.rr(x, cx - w / 2, cy - 11, w, 22, 8); x.fill(); x.fillStyle = col; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(t, cx, cy + 1); }
+function draw() {
+  if (!C || !LV) return; const x = C.x, Wd = C.w, H = C.h; x.fillStyle = '#05070a'; x.fillRect(0, 0, Wd, H);
+  if (BG) { x.globalAlpha = .18; const k = Math.max(Wd / BG.width, H / BG.height); x.drawImage(BG, (Wd - BG.width * k) / 2, (H - BG.height * k) / 2, BG.width * k, BG.height * k); x.globalAlpha = 1; }
+  const { cs, ox, oy } = geom(), e = ST.ev;
+  x.fillStyle = 'rgba(0,0,0,.45)'; x.fillRect(ox - 4, oy - 4, cs * LV.cols + 8, cs * LV.rows + 8); x.strokeStyle = 'rgba(212,175,55,.5)'; x.lineWidth = 2; x.strokeRect(ox - 4, oy - 4, cs * LV.cols + 8, cs * LV.rows + 8);
+  // mint source + NFT
+  const sx = ox + LV.sc * cs + cs / 2; x.strokeStyle = '#f3c94a'; x.lineWidth = Math.max(6, cs * .26); x.beginPath(); x.moveTo(sx, oy - 20); x.lineTo(sx, oy); x.stroke();
+  if (NFT) { x.save(); x.beginPath(); x.arc(sx, oy - 30, 17, 0, 7); x.clip(); AP.cover(x, NFT, sx - 17, oy - 47, 34, 34); x.restore(); x.strokeStyle = '#f3d77a'; x.lineWidth = 2; x.beginPath(); x.arc(sx, oy - 30, 17, 0, 7); x.stroke(); }
+  label(x, 'MINT 🪙', Math.min(Wd - 40, Math.max(40, sx + 52)), oy - 32, '#120e02', '#e9c858');
+  const px = ox + LV.pc * cs + cs / 2, by = oy + cs * LV.rows; x.strokeStyle = e.out.pool ? '#f3c94a' : '#3a4250'; x.beginPath(); x.moveTo(px, by); x.lineTo(px, by + 14); x.stroke();
+  label(x, '🏊 LIQUIDITY POOL', Math.min(Wd - 70, Math.max(70, px)), by + 30, '#04150b', e.out.pool ? '#2bff88' : '#7fbf9a');
+  if (LV.wallet !== null) { const wy = oy + LV.wallet * cs + cs / 2, wx = ox + cs * LV.cols; x.strokeStyle = e.out.wallet ? '#f3c94a' : '#3a4250'; x.beginPath(); x.moveTo(wx, wy); x.lineTo(wx + 10, wy); x.stroke();
+    x.save(); x.translate(wx + 22, wy); x.rotate(Math.PI / 2); label(x, '👛 WALLET', 0, 0, '#fff', '#5a4a1a'); x.restore(); }
+  if (LV.drain !== null) { const dy = oy + LV.drain * cs + cs / 2; x.save(); x.translate(ox - 22, dy); x.rotate(-Math.PI / 2); label(x, '🕳️ RUG DRAIN', 0, 0, '#fff', e.out.drain ? '#d4143f' : '#5a1020'); x.restore(); }
+  for (let y = 0; y < LV.rows; y++) for (let c = 0; c < LV.cols; c++) { const i = y * LV.cols + c, t = LV.tiles[i], cx = ox + c * cs + cs / 2, cy = oy + y * cs + cs / 2;
+    x.strokeStyle = 'rgba(212,175,55,.12)'; x.lineWidth = 1; x.strokeRect(ox + c * cs, oy + y * cs, cs, cs); if (!t.base) continue;
+    const a = ST.anim[i] || 0; x.save(); x.translate(cx, cy); x.rotate(-a * Math.PI / 2); pipe(x, rot(t.base, t.r), 0, 0, cs, e.wet.has(i)); x.restore(); }
+  for (const [lx, ly, b] of e.leaks) { const d = DIRS.find(q => q[0] === b), cx = ox + lx * cs + cs / 2 + d[1] * cs / 2, cy = oy + ly * cs + cs / 2 + d[2] * cs / 2;
+    x.fillStyle = 'rgba(255,90,90,.85)'; for (let k = 0; k < 5; k++) { x.beginPath(); x.arc(cx + d[1] * k * 3 + Math.sin(ST.t * 9 + k) * 3, cy + d[2] * k * 3 + Math.cos(ST.t * 9 + k) * 3, 3, 0, 7); x.fill(); } }
+  if (ST.done) { x.fillStyle = 'rgba(43,255,136,.12)'; x.fillRect(0, 0, Wd, H); }
+}
+const L = AP.loop(step, draw);
+BK.autoPause({ running: () => !!ST && !ST.done && L.running && $('#play').classList.contains('on'), pause: () => L.stop(), resume: () => L.start(), host: $('#stage') });
+const cv = $('#cv'); cv.addEventListener('pointerdown', e => { if (!LV) return; e.preventDefault(); const r = cv.getBoundingClientRect(), k = C.w / (r.width - 4), px = (e.clientX - r.left - 2) * k, py = (e.clientY - r.top - 2) * k;
+  const { cs, ox, oy } = geom(), cx = Math.floor((px - ox) / cs), cy = Math.floor((py - oy) / cs); if (cx >= 0 && cy >= 0 && cx < LV.cols && cy < LV.rows) tap(cx, cy); });
+$('#goBtn').onclick = () => startRun(true); $('#contBtn').onclick = () => startRun(false);
+$('#resetBtn').onclick = () => { if (!LV || ST.done) return; LV.tiles.forEach((t, i) => t.r = LV.start[i]); ST.ev = evaluate(LV); hud(); };
+$('#endBtn').onclick = () => endRun(false);
+$('#setBtn').onclick = $('#menuBtn').onclick = () => { L.stop(); show('setup'); paintCont(); };
+$('#lbBtn').onclick = () => openLB(GAME, TITLE, null, 'levels');
+// solver for tests: set every path tile to its nearest solution rotation
+const solve = () => LV.tiles.forEach(t => { if (t.sol) t.r = t.sol.reduce((b, s) => ((s - t.r + 4) & 3) < ((b - t.r + 4) & 3) ? s : b, t.sol[0]); });
+window.G = { makeLevel, evaluate, lv: () => LV, st: () => ST, run: () => RUN, tap, startRun, endRun, solve, geom, rot, L, LEVELS };
+</script>
+</body>
+</html>
