@@ -831,6 +831,42 @@
       "movesLabel": "level",
       "hideMode": true,
       "added": "2026-10-19"
+    },
+    {
+      "id": "paper-toss",
+      "name": "ANON Paper Toss",
+      "tagline": "Flick unbacked doodles into the bin, beat the wind",
+      "path": "paper-toss/",
+      "thumb": "paper-toss/thumb.webp",
+      "category": "Casual",
+      "tags": [
+        "flick",
+        "casual",
+        "skill",
+        "wind"
+      ],
+      "status": "live",
+      "leaderboard": true,
+      "scoreLabel": "Score",
+      "order": "desc",
+      "periods": [
+        "day",
+        "all"
+      ],
+      "movesLabel": "binned",
+      "modeLabels": {
+        "anon": "Revenue Share",
+        "apes": "Apes",
+        "royals": "King & Queen",
+        "aces": "Aces",
+        "ghost": "Ghost",
+        "skulls": "Skulls",
+        "eyes": "Eyes",
+        "lake": "Lake District",
+        "venge": "Vengeance",
+        "grumpy": "Grumpy Cat"
+      },
+      "added": "2026-10-19"
     }
   ]
 }

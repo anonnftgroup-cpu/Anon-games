@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05070a">
+<title>ANON Paper Toss · ANON NFTs</title>
+<meta name="description" content="ANON Paper Toss: flick crumpled 'unbacked NFT' doodles into the bin, beating the wind as the bin moves further away. Free, no sign-up.">
+<link rel="icon" href="../assets/logo.webp">
+<link rel="stylesheet" href="../assets/nft/kit.css">
+<link rel="stylesheet" href="../assets/play/play.css">
+<style>
+.pad{display:flex;gap:6px;justify-content:center;align-items:center;padding:4px 4px 2px;flex:none;user-select:none;-webkit-user-select:none}
+.pad button{min-width:52px;min-height:48px;border-radius:12px;border:1px solid rgba(212,175,55,.6);background:rgba(0,0,0,.55);color:var(--gold2);font-size:20px;font-weight:900;touch-action:none}
+.pad button.on{background:rgba(255,61,154,.35)}.pad .big{min-width:84px;background:linear-gradient(180deg,#ff5aab,#c41f73);color:#fff;font-size:15px}
+.dpad{display:grid;grid-template-columns:repeat(3,48px);grid-template-rows:repeat(2,40px);gap:4px}.dpad button{min-width:0;min-height:0}
+.dpad [data-k=U]{grid-column:2}.dpad [data-k=L]{grid-column:1;grid-row:2}.dpad [data-k=D]{grid-column:2;grid-row:2}.dpad [data-k=R]{grid-column:3;grid-row:2}
+@media (max-height:700px){.pad button{min-height:40px}.dpad{grid-template-rows:repeat(2,34px)}}
+</style>
+</head>
+<body>
+<header><div class="top">
+  <div class="brand"><a class="back-btn" href="../" aria-label="Back to ANON Arcade">&larr; Arcade</a><img src="../assets/logo.webp" alt=""><h1>PAPER TOSS</h1></div>
+  <div class="top-r"><button class="icon-btn" id="lbBtn" aria-label="Leaderboard">🏆</button><button class="icon-btn" id="menuBtn" aria-label="Menu">↻</button></div>
+</div></header>
+<section class="view on" id="setup">
+  <img class="hero" id="hero" alt="ANON NFTs artwork">
+  <div class="lbl">Choose your ANON</div>
+  <div class="chars five" id="artPick"></div>
+  
+  <button class="go" id="goBtn">PLAY</button>
+  <p class="howto">Swipe up (flick) from anywhere to throw the crumpled sketch: a longer swipe throws further, and swiping to the side aims left or right. Watch the green wind arrow: it pushes the paper sideways, so aim against it. Every throw you bin moves you up a level, and the bin gets further away and the wind gets stronger. Streaks earn bonus points. 3 misses and you're out. Keys: ◀ ▶ aim, ▲ ▼ power, Space throws. The doodles are made-up joke sketches, not real projects.</p>
+  <div class="nick" id="nick"></div>
+</section>
+<section class="view" id="play">
+  <div class="hud"><span id="sc"></span><span id="sk"></span><span id="ms"></span></div>
+  <div class="stage"><canvas id="cv"></canvas><div class="tap" id="msg"></div></div>
+  <div class="pad"><div class="dpad"><button data-k="U" aria-label="More power">▲</button><button data-k="L" aria-label="Aim left">◀</button><button data-k="D" aria-label="Less power">▼</button><button data-k="R" aria-label="Aim right">▶</button></div><button class="big" data-k="B">THROW</button></div>
+  <div class="bar"><button id="againBtn">Restart</button><button id="setBtn">Change ANON</button></div>
+</section>
+<script src="../shared/leaderboard.js"></script>
+<script src="../shared/newsletter.js"></script>
+<script src="../assets/nft/kit.js"></script>
+<script src="../assets/play/play.js"></script>
+<script>
+const GAME = 'paper-toss', TITLE = 'ANON Paper Toss', PK = 'anonC2.paper-toss', ASPECT = 3/4, MOVES = 'binned';
+'use strict';
+const { $, ls, modal, post, openLB, gameOver, art, ART } = AK;
+const NAMES = Object.fromEntries(ART.map(a => [a.id, a.name.replace(/^ANON /, '')]));
+const DIFFN = { easy: 'Easy', medium: 'Medium', hard: 'Hard' };
+const pref = ls.get(PK, { art: 'anon', diff: 'medium', best: 0 });
+const show = id => document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === id));
+const setHero = () => $('#hero').src = art(pref.art).cover;
+AK.picker($('#artPick'), pref.art, id => { pref.art = id; ls.set(PK, pref); setHero(); });
+if ($('#diff')) AK.seg($('#diff'), pref.diff, v => { pref.diff = v; ls.set(PK, pref); });
+setHero(); AK.nickLine($('#nick'));
+// ---- sound: generated in the browser, nothing plays before the first tap/key ----
+let AC = null; window.__sfx = 0;
+const unlock = () => { if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } if (AC && AC.state === 'suspended') AC.resume(); };
+['pointerdown', 'keydown', 'touchstart'].forEach(t => window.addEventListener(t, unlock, { capture: true, passive: true }));
+function tone(f, d, type, vol, f2) { if (!AC || pref.mute) return; window.__sfx++; const t = AC.currentTime, o = AC.createOscillator(), g = AC.createGain();
+  o.type = type || 'square'; o.frequency.setValueAtTime(f, t); if (f2) o.frequency.exponentialRampToValueAtTime(Math.max(20, f2), t + d);
+  g.gain.setValueAtTime(vol || .08, t); g.gain.exponentialRampToValueAtTime(.0001, t + d); o.connect(g).connect(AC.destination); o.start(t); o.stop(t + d + .02); }
+function boom(d, vol) { if (!AC || pref.mute) return; window.__sfx++; const n = Math.floor(AC.sampleRate * d), b = AC.createBuffer(1, n, AC.sampleRate), c = b.getChannelData(0);
+  for (let i = 0; i < n; i++) c[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 2); const s = AC.createBufferSource(), g = AC.createGain(), fl = AC.createBiquadFilter();
+  fl.type = 'lowpass'; fl.frequency.value = 900; s.buffer = b; g.gain.value = vol || .25; s.connect(fl).connect(g).connect(AC.destination); s.start(); }
+// ---- shared loop, pause when hidden, game over ----
+let C = null, S = null;
+const imgs = {}; const IM = id => imgs[id];
+ART.forEach(a => { AP.img(a.img).then(i => imgs[a.id] = i); AP.img(a.cover).then(i => imgs['c-' + a.id] = i); });
+function ring(x, im, cx, cy, r, col) { x.save(); x.beginPath(); x.arc(cx, cy, r, 0, 7); x.closePath(); x.fillStyle = '#111'; x.fill(); x.clip(); if (im) AP.cover(x, im, cx - r, cy - r, r * 2, r * 2); x.restore();
+  x.lineWidth = Math.max(1.5, r * .16); x.strokeStyle = col || '#f3d77a'; x.beginPath(); x.arc(cx, cy, r, 0, 7); x.stroke(); }
+function bgArt(x, id, a) { const im = IM('c-' + id); if (!im) return; x.globalAlpha = a || .22; const k = Math.max(C.w / im.width, C.h / im.height); x.drawImage(im, (C.w - im.width * k) / 2, (C.h - im.height * k) / 2, im.width * k, im.height * k); x.globalAlpha = 1; }
+const L = AP.loop(dt => { if (S && !S.over && !S.paused) step(dt); }, () => draw());
+let paused = false;
+function pause() { if (!S || S.over || S.paused) return; S.paused = true; $('#msg').textContent = 'Paused\nTap to resume'; }
+function resume() { if (S && S.paused) { S.paused = false; $('#msg').textContent = ''; } }
+document.addEventListener('visibilitychange', () => { if (document.hidden) pause(); });
+$('#msg').parentElement.addEventListener('pointerdown', () => { if (S && S.paused) resume(); }, true);
+async function start() { show('play'); if (!C) C = AP.canvas($('#cv'), ASPECT, () => draw()); else C.fit(); $('#msg').textContent = ''; newRun(); L.start(); }
+function end(score, secs, moves, mode, title, text) {
+  if (!S || S.over) return; S.over = true; draw(); setTimeout(() => L.stop(), 50); if (navigator.vibrate) navigator.vibrate([40, 30, 70]);
+  const a = art(S.art || pref.art), pb = score > (pref.best || 0); if (pb) { pref.best = score; ls.set(PK, pref); }
+  S.final = { score, secs, moves, mode };
+  setTimeout(() => { modal({ art: a.img, title: pb && score > 0 ? 'New best! 🏆' : title, text, lb: score > 0,
+    buttons: [['PLAY AGAIN', () => start()], ['Leaderboard', () => lb(), 1], ['Change ANON', () => show('setup'), 1]] });
+    if (score > 0) post(GAME, score, Math.max(1, Math.round(secs)), moves, mode); }, 500);
+  gameOver();
+}
+const lb = () => openLB(GAME, TITLE, MODES, MOVES);
+$('#goBtn').onclick = () => start(); $('#againBtn').onclick = () => { if (S) S.over = true; start(); };
+$('#setBtn').onclick = $('#menuBtn').onclick = () => { if (S) S.over = true; L.stop(); show('setup'); };
+$('#lbBtn').onclick = lb;
+// hold-buttons for on-screen pads: data-k = key name
+const held = new Set(); window.__held = held;
+document.querySelectorAll('.pad [data-k]').forEach(b => { const k = b.dataset.k;
+  b.addEventListener('pointerdown', e => { e.preventDefault(); held.add(k); b.classList.add('on'); if (window.onPad) onPad(k); });
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach(t => b.addEventListener(t, () => { held.delete(k); b.classList.remove('on'); })); });
+const KM = { ArrowLeft: 'L', a: 'L', A: 'L', ArrowRight: 'R', d: 'R', D: 'R', ArrowUp: 'U', w: 'U', W: 'U', ArrowDown: 'D', s: 'D', S: 'D', ' ': 'B', Enter: 'B', x: 'B', z: 'B' };
+const playing = () => $('#play').classList.contains('on') && !document.querySelector('.modal.show,.alb-ov,.anw-ov');
+window.addEventListener('keydown', e => { const k = KM[e.key]; if (!k || !playing()) return; e.preventDefault(); if (S && S.paused) resume(); if (!held.has(k) && window.onPad) onPad(k); held.add(k); });
+window.addEventListener('keyup', e => { const k = KM[e.key]; if (k) held.delete(k); });
+
+const MODES = NAMES;
+// 3D-ish: x lateral (-30..30), z depth from thrower, h height. Ball arc is fixed; swipe length = power, swipe sideways = aim.
+const GV = 40, VH = 22, BIN_R = 4, BIN_H = 6, HZ = 52, FLOOR = 128;
+const DOODLES = ['Sad Toaster', 'Laser Turnip', 'Wobbly Duck', 'Moon Sock', 'Pixel Spud', 'Haunted Spoon', 'Disco Pickle', 'Sleepy Brick', 'Angry Muffin', 'Cosmic Noodle'];
+function newRun() { S = { art: pref.art, score: 0, t: 0, makes: 0, misses: 0, streak: 0, best: 0, level: 1, aim: { vx: 0, vz: 30 }, ball: null, res: 0, n: 0 }; setup(); }
+function setup() { const L = S.level; S.bz = Math.min(80, 18 + L * 4); S.bx = L < 3 ? 0 : (AP.rnd() * 2 - 1) * Math.min(14, L * 1.2);
+  S.wind = L < 2 ? 0 : (AP.rnd() < .5 ? -1 : 1) * Math.min(16, 1 + L * 1.1) * (.55 + AP.rnd() * .45); S.wind = Math.round(S.wind * 10) / 10;
+  S.n++; S.doodle = { name: AP.pick(DOODLES) + ' #' + (100 + AP.ri(0, 899)), seed: AP.ri(0, 9999) }; S.ball = null; S.res = 0; hud(); }
+const hud = () => { $('#sc').textContent = '⭐ ' + S.score; $('#sk').textContent = '🔥 ' + S.streak; $('#ms').textContent = '🗑️ ' + '✖'.repeat(S.misses) + '○'.repeat(Math.max(0, 3 - S.misses)); };
+const sProj = z => 22 / (22 + z), toS = (x, z, h) => { const s = sProj(z); return [50 + x * s * 3, HZ + (FLOOR - HZ) * s - h * s * 3, s]; };
+function throwBall(vx, vz) { if (!S || S.over || S.paused || S.ball || S.res) return false; vz = Math.max(8, Math.min(110, vz)); S.ball = { x: 0, z: 0, h: 4, vx, vz, vh: VH, rot: 0 }; tone(300, .15, 'triangle', .05, 120); return true; }
+function score(swish) { const pts = 10 * Math.min(S.level, 30) + 5 * Math.min(S.streak, 20) + (swish ? 5 : 0); S.makes++; S.streak++; S.best = Math.max(S.best, S.streak); S.score += pts; S.level++;
+  $('#msg').textContent = (swish ? 'SWISH! ' : 'Binned! ') + '+' + pts; tone(520, .1, 'square', .05); setTimeout(() => tone(780, .18, 'square', .05), 110); S.res = 1.1; }
+function miss() { S.misses++; S.streak = 0; boom(.2, .12); $('#msg').textContent = ['Missed!', 'Wide!', 'Not even close…'][S.misses - 1] || 'Missed!'; S.res = 1.1; if (navigator.vibrate) navigator.vibrate(40); hud(); }
+function step(dt) {
+  S.t += dt; const a = S.aim;
+  if (held.has('L')) a.vx -= 14 * dt; if (held.has('R')) a.vx += 14 * dt; if (held.has('U')) a.vz += 30 * dt; if (held.has('D')) a.vz -= 30 * dt; a.vx = Math.max(-30, Math.min(30, a.vx)); a.vz = Math.max(8, Math.min(110, a.vz));
+  if (S.res) { S.res -= dt; if (S.res <= 0) { S.res = 0; $('#msg').textContent = ''; if (S.misses >= 3) return finish(); setup(); } return; }
+  const b = S.ball; if (!b) return; const ph = b.h;
+  b.vx += S.wind * dt; b.x += b.vx * dt; b.z += b.vz * dt; b.vh -= GV * dt; b.h += b.vh * dt; b.rot += dt * 8;
+  const d = Math.hypot(b.x - S.bx, b.z - S.bz);
+  if (b.vh < 0 && ph >= BIN_H && b.h < BIN_H) { if (d < BIN_R - .8) return score(d < 1.6); if (d < BIN_R + .8) { b.vh = 8; b.vz *= -.3; b.vx *= .5; tone(160, .05, 'square', .04); } }
+  if (b.h <= 0) { b.h = 0; S.ball = null; miss(); }
+}
+function finish() { end(S.score, S.t, S.makes, S.art, 'Out of paper 🗑️', `<b>${art(S.art).name}</b> binned <b>${S.makes}</b> unbacked sketches (best streak ${S.best}, reached level ${S.level}).<br>Score <b>${S.score}</b>`); }
+// swipe / flick
+let sw = null; const toW = (cx, cy) => { const r = $('#cv').getBoundingClientRect(); return [(cx - r.left) / r.width * 100, (cy - r.top) / r.height * 133]; };
+$('#cv').addEventListener('pointerdown', e => { if (!playing() || !S || S.paused) return; const [x, y] = toW(e.clientX, e.clientY); sw = { x, y, t: performance.now() }; });
+$('#cv').addEventListener('pointerup', e => { if (!sw || !S) return; const [x, y] = toW(e.clientX, e.clientY), dy = sw.y - y, dx = x - sw.x; sw = null; if (dy < 4) return; throwBall(dx * .45, dy * 1.25); });
+function onPad(k) { if (k === 'B' && S) throwBall(S.aim.vx, S.aim.vz); }
+function doodle(x, cx, cy, r, seed) { x.save(); x.strokeStyle = '#333'; x.lineWidth = Math.max(1, r * .08); x.beginPath(); x.arc(cx, cy, r * .55, 0, 7); x.stroke(); const s = seed % 4;
+  x.beginPath(); x.arc(cx - r * .2, cy - r * .1, r * .07, 0, 7); x.arc(cx + r * .2, cy - r * .1, r * (s === 1 ? .15 : .07), 0, 7); x.fillStyle = '#333'; x.fill();
+  x.beginPath(); if (s === 2) x.arc(cx, cy + r * .35, r * .2, Math.PI * 1.15, Math.PI * 1.85); else x.arc(cx, cy + r * .1, r * .22, .2, Math.PI - .2); x.stroke();
+  if (s === 3) { x.beginPath(); x.moveTo(cx - r * .4, cy - r * .5); x.lineTo(cx - r * .2, cy - r * .85); x.lineTo(cx, cy - r * .5); x.lineTo(cx + r * .2, cy - r * .85); x.lineTo(cx + r * .4, cy - r * .5); x.stroke(); } x.restore(); }
+function paperBall(x, cx, cy, r, rot, seed) { x.save(); x.translate(cx, cy); x.rotate(rot); x.fillStyle = '#f2efe6'; x.strokeStyle = '#9a968a'; x.lineWidth = 1; x.beginPath();
+  for (let i = 0; i < 11; i++) { const a = i / 11 * 6.283, rr = r * (.82 + ((seed * (i + 3)) % 7) / 30); x.lineTo(Math.cos(a) * rr, Math.sin(a) * rr); } x.closePath(); x.fill(); x.stroke();
+  x.beginPath(); for (let i = 0; i < 4; i++) { const a = (seed + i * 97) % 628 / 100; x.moveTo(Math.cos(a) * r * .7, Math.sin(a) * r * .7); x.lineTo(Math.cos(a + 2) * r * .2, Math.sin(a + 2) * r * .3); } x.stroke(); x.restore(); }
+function draw() {
+  if (!C) return; const x = C.x, W = C.w, H = C.h, k = W / 100; if (!S) { x.fillStyle = '#0a0a10'; x.fillRect(0, 0, W, H); return; }
+  const forest = S.level > 5 && Math.floor((S.level - 6) / 5) % 2 === 0;
+  if (forest) { x.fillStyle = '#04080a'; x.fillRect(0, 0, W, H); bgArt(x, 'lake', .35); x.fillStyle = 'rgba(0,0,0,.55)'; for (let i = 0; i < 9; i++) { const tx = (i * 13 + 4) * k, th = (30 + (i * 7) % 20) * k; x.beginPath(); x.moveTo(tx, HZ * k + 4); x.lineTo(tx + 5 * k, HZ * k - th); x.lineTo(tx + 10 * k, HZ * k + 4); x.fill(); } x.fillStyle = '#0b140e'; x.fillRect(0, HZ * k, W, H - HZ * k); }
+  else { x.fillStyle = '#1a1626'; x.fillRect(0, 0, W, HZ * k); x.fillStyle = '#0b0a12'; x.fillRect(22 * k, 10 * k, 56 * k, 32 * k); const im = IM('c-ghost'); if (im) { x.save(); x.beginPath(); x.rect(23 * k, 11 * k, 54 * k, 30 * k); x.clip(); x.globalAlpha = .6; AP.cover(x, im, 23 * k, 11 * k, 54 * k, 30 * k); x.restore(); x.globalAlpha = 1; }
+    x.strokeStyle = '#d4af37'; x.lineWidth = 2; x.strokeRect(22 * k, 10 * k, 56 * k, 32 * k); x.beginPath(); x.moveTo(50 * k, 10 * k); x.lineTo(50 * k, 42 * k); x.stroke();
+    for (const [px, id] of [[8, 'anon'], [92, 'royals']]) { const pi = IM(id); x.fillStyle = '#000'; x.fillRect((px - 6) * k, 16 * k, 12 * k, 14 * k); if (pi) AP.cover(x, pi, (px - 5) * k, 17 * k, 10 * k, 12 * k); x.strokeStyle = '#d4af37'; x.lineWidth = 1; x.strokeRect((px - 6) * k, 16 * k, 12 * k, 14 * k); }
+    x.fillStyle = '#2a2233'; x.fillRect(0, HZ * k, W, H - HZ * k); x.strokeStyle = 'rgba(255,255,255,.05)'; for (let z = 0; z < 120; z += 10) { const [, sy] = toS(0, z, 0); x.beginPath(); x.moveTo(0, sy * k); x.lineTo(W, sy * k); x.stroke(); } }
+  x.font = `bold ${3.6 * k}px system-ui`; x.textAlign = 'center'; x.fillStyle = '#f3d77a'; x.fillText('Level ' + S.level + ' · ' + Math.round(S.bz / 4) + ' m', 50 * k, 5 * k);
+  // wind arrow
+  const wx = 50 * k, wy = 48 * k, wl = S.wind * 2.2 * k; x.fillStyle = 'rgba(0,0,0,.55)'; AP.rr(x, 30 * k, 44 * k, 40 * k, 8 * k, 8); x.fill(); x.strokeStyle = '#2bff88'; x.fillStyle = '#2bff88'; x.lineWidth = 2.5;
+  if (S.wind) { x.beginPath(); x.moveTo(wx - wl / 2, wy); x.lineTo(wx + wl / 2, wy); x.stroke(); const dir = Math.sign(S.wind); x.beginPath(); x.moveTo(wx + wl / 2 + dir * 2.4 * k, wy); x.lineTo(wx + wl / 2 - dir * .5 * k, wy - 1.8 * k); x.lineTo(wx + wl / 2 - dir * .5 * k, wy + 1.8 * k); x.fill(); }
+  x.font = `bold ${2.6 * k}px system-ui`; x.fillStyle = '#fff'; x.textAlign = 'left'; x.fillText('WIND ' + Math.abs(S.wind).toFixed(1), 31.5 * k, 46.8 * k);
+  // bin (drawn before/after ball depending on depth)
+  const drawBin = () => { const [bx1, by, s] = toS(S.bx, S.bz, 0), bx = bx1 * k, r = BIN_R * s * 3 * k, h = BIN_H * s * 3 * k; x.fillStyle = 'rgba(0,0,0,.35)'; x.beginPath(); x.ellipse(bx, by * k, r * 1.2, r * .35, 0, 0, 7); x.fill();
+    x.fillStyle = '#3c3c46'; x.beginPath(); x.moveTo(bx - r, by * k - h); x.lineTo(bx - r * .8, by * k); x.lineTo(bx + r * .8, by * k); x.lineTo(bx + r, by * k - h); x.fill(); x.strokeStyle = '#d4af37'; x.lineWidth = Math.max(1, 2 * s);
+    x.beginPath(); x.ellipse(bx, by * k - h, r, r * .35, 0, 0, 7); x.fillStyle = '#15151b'; x.fill(); x.stroke();
+    if (r > 9) { x.fillStyle = '#f3d77a'; x.font = `bold ${Math.max(7, r * .3)}px system-ui`; x.textAlign = 'center'; x.fillText('Unbacked?', bx, by * k - h * .55); x.fillText('Bin it.', bx, by * k - h * .55 + Math.max(7, r * .3) * 1.1); } };
+  const b = S.ball, behind = b && b.z > S.bz; if (!behind) drawBin();
+  if (b) { const [sx, sy, s] = toS(b.x, b.z, 0), [, hy] = toS(b.x, b.z, b.h); x.fillStyle = 'rgba(0,0,0,.3)'; x.beginPath(); x.ellipse(sx * k, sy * k, 2 * s * 2 * k, .6 * s * 2 * k, 0, 0, 7); x.fill(); paperBall(x, sx * k, hy * k, 1.7 * s * 3 * k, b.rot, S.doodle.seed); }
+  if (behind) drawBin();
+  // thrower + doodle card
+  ring(x, IM(S.art), 50 * k, 124 * k, 7 * k); if (!b && !S.res) { paperBall(x, 58 * k, 118 * k, 3 * k, 0, S.doodle.seed); const a = S.aim, [ax, ay] = toS(a.vx * 1.1, a.vz * 1.1, 0); x.strokeStyle = 'rgba(243,215,122,.35)'; x.setLineDash([3, 4]); x.beginPath(); x.moveTo(50 * k, 118 * k); x.lineTo(ax * k, ay * k); x.stroke(); x.setLineDash([]); }
+  x.save(); x.translate(4 * k, 100 * k); x.rotate(-.08); x.fillStyle = '#f2efe6'; x.fillRect(0, 0, 22 * k, 26 * k); doodle(x, 11 * k, 10 * k, 8 * k, S.doodle.seed); x.fillStyle = '#c41f73'; x.font = `bold ${2.2 * k}px system-ui`; x.textAlign = 'center'; x.fillText('UNBACKED NFT', 11 * k, 21 * k); x.fillStyle = '#333'; x.font = `${1.9 * k}px system-ui`; x.fillText(S.doodle.name, 11 * k, 24 * k); x.restore();
+}
+window.G = { state: () => S, step: dt => step(dt), throwBall, setup, C: () => C, L, GV, VH };
+
+</script>
+</body>
+</html>
