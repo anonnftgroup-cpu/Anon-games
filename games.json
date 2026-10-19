@@ -1350,6 +1350,35 @@
         "hard": "Hard"
       },
       "added": "2026-10-19"
+    },
+    {
+      "id": "crazy-eights",
+      "name": "ANON Crazy 8s",
+      "tagline": "Match suits, play wild 8s, beat ANON rivals",
+      "path": "crazy-eights/",
+      "thumb": "crazy-eights/thumb.webp",
+      "category": "Cards",
+      "tags": [
+        "crazy eights",
+        "cards",
+        "vs computer",
+        "shedding"
+      ],
+      "status": "live",
+      "leaderboard": true,
+      "scoreLabel": "Score",
+      "order": "desc",
+      "periods": [
+        "day",
+        "all"
+      ],
+      "movesLabel": "cards played",
+      "modeLabels": {
+        "easy": "Easy · 1 rival",
+        "medium": "Medium · 2",
+        "hard": "Hard · 3"
+      },
+      "added": "2026-10-19"
     }
   ]
 }

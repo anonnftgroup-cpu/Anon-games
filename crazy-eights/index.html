@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05070a">
+<title>ANON Crazy 8s · ANON NFTs</title>
+<meta name="description" content="ANON Crazy 8s: the classic card game against ANON NFT rivals. Match the suit or number, 8s are wild. Free, no sign-up.">
+<link rel="icon" href="../assets/logo.webp">
+<link rel="stylesheet" href="../assets/nft/kit.css">
+<link rel="stylesheet" href="../assets/play/play.css">
+<style>
+.pad{display:flex;gap:6px;justify-content:center;align-items:center;padding:4px 4px 2px;flex:none;user-select:none;-webkit-user-select:none;flex-wrap:wrap}
+.pad button{min-width:52px;min-height:44px;border-radius:12px;border:1px solid rgba(212,175,55,.6);background:rgba(0,0,0,.55);color:var(--gold2);font-size:17px;font-weight:900;touch-action:none;padding:0 8px}
+.pad button.on{background:rgba(255,61,154,.35)}.pad .big{min-width:84px;background:linear-gradient(180deg,#ff5aab,#c41f73);color:#fff;font-size:15px}
+.pad button:disabled{opacity:.35}
+.dpad{display:grid;grid-template-columns:repeat(3,48px);grid-template-rows:repeat(2,40px);gap:4px}.dpad button{min-width:0;min-height:0}
+.dpad [data-k=U]{grid-column:2}.dpad [data-k=L]{grid-column:1;grid-row:2}.dpad [data-k=D]{grid-column:2;grid-row:2}.dpad [data-k=R]{grid-column:3;grid-row:2}
+.seg.wrap{flex-wrap:wrap}.seg.wrap button{flex:1 1 22%}
+@media (max-height:700px){.pad button{min-height:38px}}
+</style>
+</head>
+<body>
+<header><div class="top">
+  <div class="brand"><a class="back-btn" href="../" aria-label="Back to ANON Arcade">&larr; Arcade</a><img src="../assets/logo.webp" alt=""><h1>CRAZY 8S</h1></div>
+  <div class="top-r"><button class="icon-btn" id="lbBtn" aria-label="Leaderboard">🏆</button><button class="icon-btn" id="menuBtn" aria-label="Menu">↻</button></div>
+</div></header>
+<section class="view on" id="setup">
+  <img class="hero" id="hero" alt="ANON NFTs artwork">
+  <div class="lbl">Choose your ANON</div>
+  <div class="chars five" id="artPick"></div>
+  <div class="lbl">Difficulty</div><div class="seg" id="diff"><button data-v="easy">Easy · 1 rival</button><button data-v="medium">Medium · 2</button><button data-v="hard">Hard · 3</button></div>
+  <button class="go" id="goBtn">PLAY</button>
+  <p class="howto">Be first to empty your hand. Play a card that matches the top card's suit or number (raised cards are playable). 8s are wild: play one any time and pick the new suit. Can't play? Tap the deck to draw one card. Win to score: you get points for every card left in your rivals' hands (8 = 50, J/Q/K = 10).</p>
+  <div class="nick" id="nick"></div>
+</section>
+<section class="view" id="play">
+  <div class="hud"><span id="tn"></span><span id="st"></span><span id="dk"></span></div>
+  <div class="stage"><canvas id="cv"></canvas><div class="tap" id="msg"></div></div>
+  
+  <div class="bar"><button id="againBtn">New round</button><button id="setBtn">Change ANON</button></div>
+</section>
+<script src="../shared/leaderboard.js"></script>
+<script src="../shared/newsletter.js"></script>
+<script src="../assets/nft/kit.js"></script>
+<script src="../assets/play/play.js"></script>
+<script>
+const GAME = 'crazy-eights', TITLE = 'ANON Crazy 8s', PK = 'anonB.crazy-eights', ASPECT = 0.62, MOVES = 'cards played', DEFMODE = 'medium';
+'use strict';
+const { $, ls, modal, post, openLB, gameOver, art, ART } = AK;
+const NAMES = Object.fromEntries(ART.map(a => [a.id, a.name.replace(/^ANON /, '')]));
+const DIFFN = { easy: 'Easy', medium: 'Medium', hard: 'Hard' };
+const pref = ls.get(PK, { art: 'anon', diff: DEFMODE, best: 0 }); if (window.MODELIST && !MODELIST.includes(pref.diff)) pref.diff = DEFMODE;
+const show = id => document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === id));
+const setHero = () => $('#hero').src = art(pref.art).cover;
+AK.picker($('#artPick'), pref.art, id => { pref.art = id; ls.set(PK, pref); setHero(); });
+if ($('#diff') && ![...$('#diff').children].some(b => b.dataset.v === pref.diff)) pref.diff = DEFMODE;
+if ($('#diff')) AK.seg($('#diff'), pref.diff, v => { pref.diff = v; ls.set(PK, pref); });
+setHero(); AK.nickLine($('#nick'));
+// ---- sound: generated in the browser, nothing plays before the first tap/key ----
+let AC = null; window.__sfx = 0;
+const unlock = () => { if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } if (AC && AC.state === 'suspended') AC.resume(); };
+['pointerdown', 'keydown', 'touchstart'].forEach(t => window.addEventListener(t, unlock, { capture: true, passive: true }));
+function tone(f, d, type, vol, f2) { if (!AC || pref.mute) return; window.__sfx++; const t = AC.currentTime, o = AC.createOscillator(), g = AC.createGain();
+  o.type = type || 'square'; o.frequency.setValueAtTime(f, t); if (f2) o.frequency.exponentialRampToValueAtTime(Math.max(20, f2), t + d);
+  g.gain.setValueAtTime(vol || .08, t); g.gain.exponentialRampToValueAtTime(.0001, t + d); o.connect(g).connect(AC.destination); o.start(t); o.stop(t + d + .02); }
+function boom(d, vol) { if (!AC || pref.mute) return; window.__sfx++; const n = Math.floor(AC.sampleRate * d), b = AC.createBuffer(1, n, AC.sampleRate), c = b.getChannelData(0);
+  for (let i = 0; i < n; i++) c[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 2); const s = AC.createBufferSource(), g = AC.createGain(), fl = AC.createBiquadFilter();
+  fl.type = 'lowpass'; fl.frequency.value = 900; s.buffer = b; g.gain.value = vol || .25; s.connect(fl).connect(g).connect(AC.destination); s.start(); }
+// ---- shared loop, pause when hidden, game over ----
+let C = null, S = null;
+const imgs = {}; const IM = id => imgs[id];
+ART.forEach(a => { AP.img(a.img).then(i => { imgs[a.id] = i; dirty = true; }); AP.img(a.cover).then(i => { imgs['c-' + a.id] = i; dirty = true; }); });
+function ring(x, im, cx, cy, r, col) { x.save(); x.beginPath(); x.arc(cx, cy, r, 0, 7); x.closePath(); x.fillStyle = '#111'; x.fill(); x.clip(); if (im) AP.cover(x, im, cx - r, cy - r, r * 2, r * 2); x.restore();
+  x.lineWidth = Math.max(1.5, r * .16); x.strokeStyle = col || '#f3d77a'; x.beginPath(); x.arc(cx, cy, r, 0, 7); x.stroke(); }
+function bgArt(x, id, a) { const im = IM('c-' + id); if (!im) return; x.globalAlpha = a || .22; const k = Math.max(C.w / im.width, C.h / im.height); x.drawImage(im, (C.w - im.width * k) / 2, (C.h - im.height * k) / 2, im.width * k, im.height * k); x.globalAlpha = 1; }
+const L = AP.loop(dt => { if (S && !S.over && !S.paused) step(dt); }, () => draw());
+let paused = false;
+function pause() { if (!S || S.over || S.paused) return; S.paused = true; $('#msg').textContent = 'Paused\nTap to resume'; }
+function resume() { if (S && S.paused) { S.paused = false; $('#msg').textContent = ''; } }
+document.addEventListener('visibilitychange', () => { if (document.hidden) pause(); });
+$('#msg').parentElement.addEventListener('pointerdown', () => { if (S && S.paused) resume(); }, true);
+async function start() { show('play'); if (!C) C = AP.canvas($('#cv'), ASPECT, () => draw()); else C.fit(); $('#msg').textContent = ''; newRun(); L.start(); }
+function end(score, secs, moves, mode, title, text) {
+  if (!S || S.over) return; S.over = true; draw(); setTimeout(() => L.stop(), 50); if (navigator.vibrate) navigator.vibrate([40, 30, 70]);
+  const a = art(S.art || pref.art), pb = score > (pref.best || 0); if (pb) { pref.best = score; ls.set(PK, pref); }
+  S.final = { score, secs, moves, mode };
+  setTimeout(() => { modal({ art: a.img, title: pb && score > 0 ? 'New best! 🏆' : title, text, lb: score > 0,
+    buttons: [['PLAY AGAIN', () => start()], ['Leaderboard', () => lb(), 1], ['Change ANON', () => show('setup'), 1]] });
+    if (score > 0) post(GAME, score, Math.max(1, Math.round(secs)), moves, mode); }, 500);
+  gameOver();
+}
+const lb = () => openLB(GAME, TITLE, MODES, MOVES);
+$('#goBtn').onclick = () => start(); $('#againBtn').onclick = () => { if (S) S.over = true; start(); };
+$('#setBtn').onclick = $('#menuBtn').onclick = () => { if (S) S.over = true; L.stop(); show('setup'); };
+$('#lbBtn').onclick = lb;
+// hold-buttons for on-screen pads: data-k = key name
+const held = new Set(); window.__held = held;
+document.querySelectorAll('.pad [data-k]').forEach(b => { const k = b.dataset.k;
+  b.addEventListener('pointerdown', e => { e.preventDefault(); held.add(k); b.classList.add('on'); if (window.onPad) onPad(k); });
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach(t => b.addEventListener(t, () => { held.delete(k); b.classList.remove('on'); })); });
+const KM = { ArrowLeft: 'L', a: 'L', A: 'L', ArrowRight: 'R', d: 'R', D: 'R', ArrowUp: 'U', w: 'U', W: 'U', ArrowDown: 'D', s: 'D', S: 'D', ' ': 'B', Enter: 'B', x: 'B', z: 'B' };
+const playing = () => $('#play').classList.contains('on') && !document.querySelector('.modal.show,.alb-ov,.anw-ov');
+window.addEventListener('keydown', e => { const k = KM[e.key]; if (!k || !playing()) return; e.preventDefault(); if (S && S.paused) resume(); if (!held.has(k) && window.onPad) onPad(k); held.add(k); });
+window.addEventListener('keyup', e => { const k = KM[e.key]; if (k) held.delete(k); });
+
+// pointer -> canvas CSS coords (canvas has a 2px border)
+function P(e) { const r = $('#cv').getBoundingClientRect(); return { x: (e.clientX - r.left - 2) * C.w / (r.width - 4), y: (e.clientY - r.top - 2) * C.h / (r.height - 4) }; }
+const ukDay = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/London' }).format(new Date());
+function hashStr(s) { let h = 2166136261; for (const c of s) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
+function txt(x, s, X, Y, size, col, align, weight, font) { x.font = `${weight || 800} ${size}px ${font || 'system-ui,sans-serif'}`; x.fillStyle = col || '#f3d77a'; x.textAlign = align || 'center'; x.textBaseline = 'middle'; x.fillText(s, X, Y); }
+var dirty = true; window.addEventListener('resize', () => dirty = true); window.addEventListener('pointerup', () => dirty = true);
+const fmt = s => Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
+
+const MODES = {"easy": "Easy \u00b7 1 rival", "medium": "Medium \u00b7 2", "hard": "Hard \u00b7 3"};
+// ---- batch B card helper: faces with ANON art on courts, ANON art backs ----
+const SUITS = ['♠', '♥', '♦', '♣'], RANKS = ['', 'A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+const red = s => s === 1 || s === 2;
+const COURT = { 11: 'apes', 12: 'royals', 13: 'royals' };
+function deck(n) { const d = []; for (let k = 0; k < (n || 1); k++) for (let s = 0; s < 4; s++) for (let r = 1; r <= 13; r++) d.push({ r, s, up: false, id: k * 52 + s * 13 + r }); return d; }
+function cardBack(x, X, Y, W, H, id) {
+  const rad = Math.max(3, W * .1); AP.rr(x, X, Y, W, H, rad); x.fillStyle = '#16110a'; x.fill();
+  x.save(); AP.rr(x, X + 2, Y + 2, W - 4, H - 4, rad * .8); x.clip(); const im = IM('c-' + (id || pref.art)) || IM(id || pref.art);
+  if (im) { const k = Math.max((W - 4) / im.width, (H - 4) / im.height); x.drawImage(im, X + W / 2 - im.width * k / 2, Y + H / 2 - im.height * k / 2, im.width * k, im.height * k); }
+  x.fillStyle = 'rgba(0,0,0,.18)'; x.fillRect(X, Y, W, H); x.restore();
+  AP.rr(x, X, Y, W, H, rad); x.lineWidth = Math.max(1, W * .04); x.strokeStyle = '#d4af37'; x.stroke();
+}
+function cardFace(x, c, X, Y, W, H, hi, dim) {
+  const rad = Math.max(3, W * .1); AP.rr(x, X, Y, W, H, rad); x.fillStyle = dim ? '#cfc8b4' : '#fbf6e8'; x.fill();
+  x.lineWidth = hi ? Math.max(2, W * .07) : 1; x.strokeStyle = hi ? '#ff3d9a' : '#8a7a4a'; x.stroke();
+  const col = red(c.s) ? '#d0105e' : '#111', fs = Math.max(9, W * .32);
+  txt(x, RANKS[c.r], X + W * .06, Y + fs * .62, fs, col, 'left', 900); txt(x, SUITS[c.s], X + W * .94, Y + fs * .62, fs * .95, col, 'right', 700);
+  const cy = Y + H * .62;
+  if (c.r > 10 && H > W * 1.1) { const r = Math.min(W * .34, H * .22); ring(x, IM(COURT[c.r] === 'royals' && c.r === 12 ? 'royals' : COURT[c.r]), X + W / 2, cy, r, red(c.s) ? '#ff3d9a' : '#d4af37');
+    txt(x, ['J', 'Q', 'K'][c.r - 11], X + W / 2, cy + r * 1.05, Math.max(8, W * .2), '#8a6414', 'center', 900); }
+  else if (H > W * 1.1) txt(x, SUITS[c.s], X + W / 2, cy, Math.min(W * .62, H * .38), col, 'center', 700);
+  if (hi) { x.fillStyle = 'rgba(255,61,154,.12)'; AP.rr(x, X, Y, W, H, rad); x.fill(); }
+}
+function slot(x, X, Y, W, H, label) { AP.rr(x, X, Y, W, H, Math.max(3, W * .1)); x.fillStyle = 'rgba(0,0,0,.35)'; x.fill(); x.lineWidth = 1.2; x.strokeStyle = 'rgba(212,175,55,.5)'; x.stroke(); if (label) txt(x, label, X + W / 2, Y + H / 2, W * .42, 'rgba(243,215,122,.45)'); }
+
+// ANON Crazy 8s vs 1-3 computer players
+const BASE = { easy: 50, medium: 150, hard: 300 }, NOPP = { easy: 1, medium: 2, hard: 3 }, OPPS = ['apes', 'skulls', 'ghost', 'grumpy', 'eyes'];
+const pts = c => c.r === 8 ? 50 : c.r > 10 ? 10 : c.r;
+function newRun() { const n = NOPP[pref.diff], d = AP.shuffle(deck()), opp = OPPS.filter(o => o !== pref.art).slice(0, n);
+  S = { art: pref.art, mode: pref.diff, hands: [[]], names: ['You'], arts: [pref.art], stock: d, pile: [], suit: 0, turn: 0, wait: 0, moves: 0, t: 0, drew: false, pick8: false, lack: [0, 0, 0, 0], msg: '' };
+  opp.forEach(o => { S.hands.push([]); S.arts.push(o); S.names.push(NAMES[o]); }); const hs = n === 1 ? 7 : 5;
+  for (let k = 0; k < hs; k++) S.hands.forEach(h => h.push(S.stock.pop()));
+  let t0; do { t0 = S.stock.pop(); if (t0.r === 8) S.stock.unshift(t0); } while (t0.r === 8); S.pile.push(t0); S.suit = t0.s; sortHand(); hud(); dirty = true; }
+const sortHand = () => S.hands[0].sort((a, b) => a.s - b.s || a.r - b.r);
+const topC = () => S.pile[S.pile.length - 1];
+const okc = c => c.r === 8 || c.s === S.suit || c.r === topC().r;
+const hud = () => { $('#tn').textContent = S.over ? 'Round over' : S.turn === 0 ? (S.pick8 ? 'Pick a suit' : 'Your turn') : S.names[S.turn] + '…'; $('#dk').textContent = '🂠 ' + S.stock.length; $('#st').textContent = 'Suit ' + SUITS[S.suit]; };
+function draw1(p) { if (!S.stock.length) { const t = S.pile.pop(); S.stock = AP.shuffle(S.pile); S.pile = [t]; } if (!S.stock.length) return null; const c = S.stock.pop(); S.hands[p].push(c); if (p === 0) sortHand(); return c; }
+function playCard(p, c, suit) { const h = S.hands[p]; h.splice(h.indexOf(c), 1); S.pile.push(c); S.suit = c.r === 8 ? suit : c.s; if (p === 0) S.moves++; S.drew = false;
+  tone(c.r === 8 ? 880 : 440 + c.r * 12, .08, 'triangle', .07); dirty = true; if (c.r === 8 && p) AK.toast(S.names[p] + ' played an 8: ' + SUITS[suit]);
+  if (!h.length) return finish(p); nextTurn(); }
+function nextTurn() { S.turn = (S.turn + 1) % S.hands.length; S.drew = false; if (S.turn) S.wait = .75; hud(); dirty = true; }
+function finish(p) { S.turn = -1; hud(); const total = S.hands.reduce((a, h, i) => a + (i ? h.reduce((b, c) => b + pts(c), 0) : 0), 0);
+  const sc = p === 0 ? BASE[S.mode] + Math.min(400, total) : 0; dirty = true;
+  end(sc, S.t, S.moves, S.mode, p === 0 ? 'You win the round! 🃏🏆' : S.names[p] + ' went out 💀', p === 0 ? `You beat ${S.hands.length - 1} ANON rival${S.hands.length > 2 ? 's' : ''}. Cards left in their hands: <b>${total}</b> points.<br>Score <b>${sc}</b>` : `${S.names[p]} emptied their hand first. You were left with ${S.hands[0].length} card${S.hands[0].length === 1 ? '' : 's'}. Try again!`); }
+function bestSuit(h, lvl) { const n = [0, 0, 0, 0]; h.forEach(c => { if (c.r !== 8) n[c.s] += 1 + (lvl === 'hard' ? pts(c) / 20 : 0); }); if (lvl === 'hard') S.lack.forEach((v, s) => n[s] += v * (S.hands[0].length <= 3 ? 1.5 : .6)); return n.indexOf(Math.max(...n)); }
+function aiTurn() { const p = S.turn, h = S.hands[p], lvl = S.mode; let L = h.filter(okc);
+  if (!L.length) { const c = draw1(p); if (c && okc(c)) L = [c]; else { AK.toast(S.names[p] + ' drew and passed'); return nextTurn(); } }
+  let c; if (lvl === 'easy') c = AP.pick(L); else { const non8 = L.filter(x => x.r !== 8); const pool = non8.length ? non8 : L; const n = [0, 0, 0, 0]; h.forEach(x => n[x.s]++);
+    c = pool.reduce((a, b) => { const sa = n[a.s] * 2 + (lvl === 'hard' ? pts(a) / 5 + (S.lack[a.s] && S.hands[0].length <= 3 ? 6 : 0) : 0) + AP.rnd(), sb = n[b.s] * 2 + (lvl === 'hard' ? pts(b) / 5 + (S.lack[b.s] && S.hands[0].length <= 3 ? 6 : 0) : 0) + AP.rnd(); return sb > sa ? b : a; });
+    if (lvl === 'hard' && c.r !== 8 && S.hands[0].length <= 2 && !S.lack[S.suit] && L.some(x => x.r === 8) && !S.lack[c.s]) c = L.find(x => x.r === 8); }
+  playCard(p, c, c.r === 8 ? (lvl === 'easy' ? AP.ri(0, 3) : bestSuit(h.filter(x => x !== c), lvl)) : 0); }
+function lay() { const W = C.w, H = C.h, cw = Math.min(W / 6.2, 64), ch = cw * 1.42, n = S.hands[0].length, perRow = Math.max(1, Math.ceil(n / (n > 12 ? 2 : 1))), step = Math.min(cw * 1.04, (W - 12 - cw) / Math.max(1, perRow - 1));
+  return { W, H, cw, ch, step, perRow, hy: H - (n > 12 ? 2 : 1) * (ch * .72) - ch * .35 - 8, my: H * .38 }; }
+function handPos(L, k) { const row = Math.floor(k / L.perRow), i = k % L.perRow, cnt = Math.min(L.perRow, S.hands[0].length - row * L.perRow), w = (cnt - 1) * L.step + L.cw; return { X: (L.W - w) / 2 + i * L.step, Y: L.hy + row * L.ch * .72 }; }
+function tapAt(p) { if (!S || S.over || S.turn !== 0) return; const L = lay(); dirty = true;
+  if (S.pick8) { const bw = L.W * .2; for (let s = 0; s < 4; s++) { const X = L.W / 2 - bw * 2.1 + s * bw * 1.05; if (p.x > X && p.x < X + bw && Math.abs(p.y - L.my) < bw * .6) { S.pick8 = false; const c = S.pending; S.pending = null; return playCard(0, c, s); } } return; }
+  const dx = L.W / 2 - L.cw * 1.2; if (p.x > dx && p.x < dx + L.cw && p.y > L.my - L.ch / 2 && p.y < L.my + L.ch / 2) return tapDeck();
+  for (let k = S.hands[0].length - 1; k >= 0; k--) { const { X, Y } = handPos(L, k), c = S.hands[0][k]; if (p.x >= X && p.x <= X + (k % L.perRow === L.perRow - 1 || k === S.hands[0].length - 1 ? L.cw : L.step) && p.y >= Y - 10 && p.y <= Y + L.ch) return tapCard(c); } }
+function tapCard(c) { if (!okc(c)) { tone(150, .08, 'square', .04); return AK.toast('Match ' + SUITS[S.suit] + ' or ' + RANKS[topC().r] + ', or play an 8'); }
+  if (S.drew && c !== S.drewCard) return AK.toast('Play the card you drew, or tap the deck to pass');
+  if (c.r === 8) { S.pick8 = true; S.pending = c; hud(); return; } playCard(0, c, 0); }
+function tapDeck() { if (S.drew) { S.drew = false; return nextTurn(); } if (S.hands[0].some(okc)) return AK.toast('You have a card you can play');
+  const c = draw1(0); tone(300, .06, 'square', .05); if (c && okc(c)) { S.drew = true; S.drewCard = c; AK.toast('You drew a card you can play. Play it or tap the deck to pass'); } else { AK.toast('No match: pass'); nextTurn(); } hud(); }
+$('#cv').addEventListener('pointerdown', e => { if (S && !S.paused) tapAt(P(e)); });
+function step(dt) { S.t += dt; if (S.turn > 0) { S.wait -= dt; if (S.wait <= 0) aiTurn(); } }
+function draw() { if (!C || !dirty) return; dirty = false; const x = C.x; x.fillStyle = '#071410'; x.fillRect(0, 0, C.w, C.h); if (!S) return; bgArt(x, S.art, .12); const L = lay(), n = S.hands.length - 1;
+  for (let i = 1; i <= n; i++) { const bx = L.W * (i - .5) / n, by = 34, on = S.turn === i; ring(x, IM(S.arts[i]), bx, by, 20, on ? '#2bff88' : '#ff3d9a'); txt(x, S.names[i] + ' · ' + S.hands[i].length, bx, by + 32, 12, on ? '#2bff88' : '#f3d77a');
+    const m = Math.min(S.hands[i].length, 10), w = L.cw * .5; for (let k = 0; k < m; k++) cardBack(x, bx - (m - 1) * 5 - w / 2 + k * 10, by + 44, w, w * 1.42, S.arts[i]); if (S.over) S.hands[i].slice(0, 8).forEach((c, k) => cardFace(x, c, bx - 4 * 9 - w / 2 + k * 9, by + 44 + w * 1.5, w, w * 1.42)); }
+  const dx = L.W / 2 - L.cw * 1.2, py = L.my - L.ch / 2; if (S.stock.length) cardBack(x, dx, py, L.cw, L.ch, S.art); else slot(x, dx, py, L.cw, L.ch, '↻');
+  if (S.turn === 0 && (S.drew || !S.hands[0].some(okc))) { AP.rr(x, dx - 2, py - 2, L.cw + 4, L.ch + 4, 6); x.strokeStyle = '#2bff88'; x.lineWidth = 3; x.stroke(); txt(x, S.drew ? 'PASS' : 'DRAW', dx + L.cw / 2, py + L.ch + 12, 12, '#2bff88'); }
+  cardFace(x, topC(), L.W / 2 + L.cw * .2, py, L.cw, L.ch); const sx = L.W / 2 + L.cw * 1.55; ring(x, null, sx, L.my, 16, '#d4af37'); txt(x, SUITS[S.suit], sx, L.my + 1, 18, red(S.suit) ? '#ff3d9a' : '#f3d77a');
+  S.hands[0].forEach((c, k) => { const { X, Y } = handPos(L, k), ok = S.turn === 0 && okc(c) && (!S.drew || c === S.drewCard); cardFace(x, c, X, Y - (ok ? 10 : 0), L.cw, L.ch, ok && S.drew, S.turn === 0 && !ok); });
+  if (S.pick8) { x.fillStyle = 'rgba(0,0,0,.7)'; x.fillRect(0, L.my - L.W * .2, L.W, L.W * .4); txt(x, 'Choose the new suit', L.W / 2, L.my - L.W * .15, 14, '#f3d77a'); const bw = L.W * .2;
+    for (let s = 0; s < 4; s++) { const X = L.W / 2 - bw * 2.1 + s * bw * 1.05; AP.rr(x, X, L.my - bw * .45, bw, bw * .9, 10); x.fillStyle = '#fbf6e8'; x.fill(); txt(x, SUITS[s], X + bw / 2, L.my, bw * .55, red(s) ? '#d0105e' : '#111'); } } }
+window.G = { state: () => S, tapCard, tapDeck, aiTurn, playCard, okc, C: () => C, L };
+
+</script>
+</body>
+</html>
