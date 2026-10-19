@@ -712,11 +712,11 @@
       "added": "2026-10-19"
     },
     {
-      "id": "simon-says",
-      "name": "ANON Simon Says",
+      "id": "shadow-echo",
+      "name": "ANON Shadow Echo",
       "tagline": "Repeat the light & sound pattern on 4 NFT pads",
-      "path": "simon-says/",
-      "thumb": "simon-says/thumb.webp",
+      "path": "shadow-echo/",
+      "thumb": "shadow-echo/thumb.webp",
       "category": "Puzzle",
       "tags": [
         "memory",
