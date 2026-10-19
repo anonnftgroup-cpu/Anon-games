@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05070a">
+<title>ANON Space Rocks · ANON NFTs</title>
+<meta name="description" content="ANON Space Rocks: pilot your ANON ship through drifting NFT space rocks, split them into shards and blast the shadow drone. Free, no sign-up.">
+<link rel="icon" href="../assets/logo.webp">
+<link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
+<link rel="stylesheet" href="../assets/nft/kit.css">
+<link rel="stylesheet" href="../assets/retro-c1/rk.css">
+</head>
+<body>
+<script src="../shared/leaderboard.js"></script>
+<script src="../shared/newsletter.js"></script>
+<script src="../assets/nft/kit.js"></script>
+<script src="../assets/retro-c1/rk.js"></script>
+<script src="game.js"></script>
+<script>
+'use strict';
+(function () {
+  const G = SRGame, IDS = RK.ART.map(a => a.id), W = G.W, H = G.H; let bg = null; const spr = new WeakMap();
+  function backdrop() { const c = document.createElement('canvas'), k = 2; c.width = W * k; c.height = H * k; const x = c.getContext('2d'); x.scale(k, k);
+    x.fillStyle = '#04030a'; x.fillRect(0, 0, W, H); RK.cover(x, RK.C.eyes, 0, 0, W, H, 0.16);
+    const g = x.createRadialGradient(W * 0.75, H * 0.2, 10, W * 0.75, H * 0.2, 200); g.addColorStop(0, 'rgba(255,61,154,.18)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.fillRect(0, 0, W, H);
+    RK.stars(x, W, H, 99, 140); x.globalAlpha = 0.5; RK.portrait(x, RK.P.anon, W * 0.18, H * 0.82, 34, 'rgba(212,175,55,.6)'); x.globalAlpha = 1; return c; }
+  function rockSprite(r) { let c = spr.get(r); if (c && c.ok) return c; const k = 2, d = Math.ceil(r.r * 2 + 6); c = document.createElement('canvas'); c.width = c.height = d * k; const x = c.getContext('2d'); x.scale(k, k); const m = d / 2;
+    x.beginPath(); r.sh.forEach((f, i) => { const a = i / r.sh.length * Math.PI * 2; const px = m + Math.cos(a) * r.r * f, py = m + Math.sin(a) * r.r * f; i ? x.lineTo(px, py) : x.moveTo(px, py); }); x.closePath();
+    x.save(); x.fillStyle = '#1a1424'; x.fill(); x.clip(); const im = RK.C[IDS[r.art]]; c.ok = RK.ready(im); if (c.ok) { x.globalAlpha = 0.85; RK.cover(x, im, m - r.r, m - r.r, r.r * 2, r.r * 2, 0.85); }
+    const sh = x.createRadialGradient(m - r.r * 0.3, m - r.r * 0.3, r.r * 0.2, m, m, r.r); sh.addColorStop(0, 'rgba(255,255,255,.08)'); sh.addColorStop(1, 'rgba(0,0,0,.55)'); x.globalAlpha = 1; x.fillStyle = sh; x.fillRect(0, 0, d, d); x.restore();
+    x.strokeStyle = '#d4af37'; x.lineWidth = 1.6; x.stroke(); spr.set(r, c); c.m = m; return c; }
+  RK.shell({
+    game: 'space-rocks', title: 'ANON Space Rocks', h1: 'ANON SPACE ROCKS', W, H, movesLabel: 'wave', pickLabel: 'Pick your pilot', startMsg: 'CLEAR THE ROCKS!',
+    controls: [{ k: 'left', label: '⟲', aria: 'rotate left' }, { k: 'right', label: '⟳', aria: 'rotate right' }, { k: 'up', label: '🔥', aria: 'thrust' }, { k: 'fire', label: '✦ FIRE', aria: 'fire' }],
+    how: '<b>⟲ ⟳</b> (or ← →) rotate, <b>🔥</b> (or ↑) thrust, <b>FIRE</b> (Space, or tap the screen) shoots. Space wraps around at the edges. Big NFT rocks split into two smaller ones: 20 / 50 / 100 points. The shadow drone fires at you — hit it for +500. Extra ship every 10,000.',
+    create: o => { bg = null; return G.create(o); },
+    hud: S => `<span>⭐ ${S.score.toLocaleString()}</span><span>WAVE ${Math.max(1, S.wave)}</span><span>${'🚀'.repeat(Math.max(0, Math.min(5, S.lives)))}</span>`,
+    result: S => ({ score: S.score, time: S.t, moves: Math.max(1, S.wave), text: `Wave ${Math.max(1, S.wave)} · ${S.rocksHit} rocks · ${S.dronesHit} drones · ${Math.round(S.t)} s` }),
+    draw(x, S, t) {
+      if (!bg) bg = backdrop(); x.drawImage(bg, 0, 0, W, H);
+      const at = (o, rad, fn) => { for (const ox of [0, -W, W]) for (const oy of [0, -H, H]) { const X = o.x + ox, Y = o.y + oy; if (X + rad < 0 || X - rad > W || Y + rad < 0 || Y - rad > H) continue; fn(X, Y); } };
+      for (const r of S.rocks) { const c = rockSprite(r); at(r, r.r + 4, (X, Y) => { x.save(); x.translate(X, Y); x.rotate(r.rot); x.drawImage(c, -c.m, -c.m, c.m * 2, c.m * 2); x.restore(); }); }
+      x.fillStyle = '#f3d77a'; for (const b of S.shots) { x.beginPath(); x.arc(b.x, b.y, 2.4, 0, 7); x.fill(); }
+      x.fillStyle = '#2bff88'; for (const b of S.eshots) { x.beginPath(); x.arc(b.x, b.y, 3, 0, 7); x.fill(); }
+      for (const b of S.bits) { x.globalAlpha = Math.min(1, b.life * 2); x.fillStyle = b.col; x.fillRect(b.x - 1.5, b.y - 1.5, 3, 3); } x.globalAlpha = 1;
+      const D = S.drone; if (D) { x.save(); x.translate(D.x, D.y); x.fillStyle = '#0b1f16'; x.strokeStyle = '#2bff88'; x.lineWidth = 2; x.beginPath(); x.moveTo(-18, 2); x.lineTo(-8, -5); x.lineTo(8, -5); x.lineTo(18, 2); x.lineTo(8, 8); x.lineTo(-8, 8); x.closePath(); x.fill(); x.stroke(); x.restore(); RK.portrait(x, RK.P[IDS[D.art]], D.x, D.y - 5, 7, '#2bff88'); }
+      const s = S.ship; if (s && !(s.inv > 0 && Math.floor(t * 10) % 2)) at(s, 20, (X, Y) => { x.save(); x.translate(X, Y); x.rotate(s.a);
+        if (S.thrusting) { x.fillStyle = Math.floor(t * 30) % 2 ? '#ff3d9a' : '#f3d77a'; x.beginPath(); x.moveTo(-9, -5); x.lineTo(-19 - Math.random() * 5, 0); x.lineTo(-9, 5); x.fill(); }
+        x.fillStyle = '#120d05'; x.strokeStyle = '#d4af37'; x.lineWidth = 2; x.beginPath(); x.moveTo(16, 0); x.lineTo(-10, -11); x.lineTo(-6, 0); x.lineTo(-10, 11); x.closePath(); x.fill(); x.stroke(); x.restore(); RK.portrait(x, RK.P[S.art], X, Y, 6.5, '#ff3d9a'); });
+      if (!s && !S.over && S.respawn <= 0) RK.text(x, 'CLEARING SPAWN…', W / 2, H / 2, 14);
+    }
+  });
+})();
+</script>
+</body>
+</html>

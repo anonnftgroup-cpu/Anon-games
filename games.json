@@ -947,6 +947,31 @@
         "endless": "Endless"
       },
       "added": "2026-10-19"
+    },
+    {
+      "id": "space-rocks",
+      "name": "ANON Space Rocks",
+      "tagline": "Blast NFT meteors in a wrap-around galaxy",
+      "path": "space-rocks/",
+      "thumb": "space-rocks/thumb.webp",
+      "category": "Arcade",
+      "tags": [
+        "space",
+        "shooter",
+        "rocks",
+        "retro"
+      ],
+      "status": "live",
+      "leaderboard": true,
+      "scoreLabel": "Score",
+      "order": "desc",
+      "periods": [
+        "day",
+        "all"
+      ],
+      "movesLabel": "wave",
+      "hideMode": true,
+      "added": "2026-10-19"
     }
   ]
 }
