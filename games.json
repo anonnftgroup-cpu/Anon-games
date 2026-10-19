@@ -1438,6 +1438,36 @@
         "hard": "Hard"
       },
       "added": "2026-10-19"
+    },
+    {
+      "id": "word-search",
+      "name": "ANON Word Search",
+      "tagline": "Find the hidden words before time runs out",
+      "path": "word-search/",
+      "thumb": "word-search/thumb.webp",
+      "category": "Word",
+      "tags": [
+        "word search",
+        "word",
+        "puzzle",
+        "letters",
+        "timed"
+      ],
+      "status": "live",
+      "leaderboard": true,
+      "scoreLabel": "Score",
+      "order": "desc",
+      "periods": [
+        "day",
+        "all"
+      ],
+      "movesLabel": "words",
+      "modeLabels": {
+        "easy": "Easy",
+        "medium": "Medium",
+        "hard": "Hard"
+      },
+      "added": "2026-10-19"
     }
   ]
 }

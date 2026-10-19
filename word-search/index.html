@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05070a">
+<title>ANON Word Search · ANON NFTs</title>
+<meta name="description" content="ANON Word Search: find the hidden themed words in the grid before the clock runs out. Free, no sign-up.">
+<link rel="icon" href="../assets/logo.webp">
+<link rel="stylesheet" href="../assets/nft/kit.css">
+<link rel="stylesheet" href="../assets/play/play.css">
+<style>
+.pad{display:flex;gap:6px;justify-content:center;align-items:center;padding:4px 4px 2px;flex:none;user-select:none;-webkit-user-select:none;flex-wrap:wrap}
+.pad button{min-width:52px;min-height:44px;border-radius:12px;border:1px solid rgba(212,175,55,.6);background:rgba(0,0,0,.55);color:var(--gold2);font-size:17px;font-weight:900;touch-action:none;padding:0 8px}
+.pad button.on{background:rgba(255,61,154,.35)}.pad .big{min-width:84px;background:linear-gradient(180deg,#ff5aab,#c41f73);color:#fff;font-size:15px}
+.pad button:disabled{opacity:.35}
+.dpad{display:grid;grid-template-columns:repeat(3,48px);grid-template-rows:repeat(2,40px);gap:4px}.dpad button{min-width:0;min-height:0}
+.dpad [data-k=U]{grid-column:2}.dpad [data-k=L]{grid-column:1;grid-row:2}.dpad [data-k=D]{grid-column:2;grid-row:2}.dpad [data-k=R]{grid-column:3;grid-row:2}
+.seg.wrap{flex-wrap:wrap}.seg.wrap button{flex:1 1 22%}
+@media (max-height:700px){.pad button{min-height:38px}}
+</style>
+</head>
+<body>
+<header><div class="top">
+  <div class="brand"><a class="back-btn" href="../" aria-label="Back to ANON Arcade">&larr; Arcade</a><img src="../assets/logo.webp" alt=""><h1>WORD SEARCH</h1></div>
+  <div class="top-r"><button class="icon-btn" id="lbBtn" aria-label="Leaderboard">🏆</button><button class="icon-btn" id="menuBtn" aria-label="Menu">↻</button></div>
+</div></header>
+<section class="view on" id="setup">
+  <img class="hero" id="hero" alt="ANON NFTs artwork">
+  <div class="lbl">Choose your ANON</div>
+  <div class="chars five" id="artPick"></div>
+  <div class="lbl">Difficulty</div><div class="seg" id="diff"><button data-v="easy">Easy</button><button data-v="medium">Medium</button><button data-v="hard">Hard</button></div>
+  <button class="go" id="goBtn">PLAY</button>
+  <p class="howto">Drag your finger across the letters in a straight line to circle a word from the list. Easy: 8×8, words go across or down, 3 minutes. Medium: 10×10, adds diagonals, 4 minutes. Hard: 12×12, words can run backwards in any direction, 5 minutes. Every word scores, and finding them all adds a bonus for the time left.</p>
+  <div class="nick" id="nick"></div>
+</section>
+<section class="view" id="play">
+  <div class="hud"><span id="ct"></span><span id="fd"></span><span id="tm"></span></div>
+  <div class="stage"><canvas id="cv"></canvas><div class="tap" id="msg"></div></div>
+  
+  <div class="bar"><button id="againBtn">New grid</button><button id="setBtn">Change ANON</button></div>
+</section>
+<script src="../shared/leaderboard.js"></script>
+<script src="../shared/newsletter.js"></script>
+<script src="../assets/nft/kit.js"></script>
+<script src="../assets/play/play.js"></script>
+<script>
+const GAME = 'word-search', TITLE = 'ANON Word Search', PK = 'anonB.word-search', ASPECT = 0.66, MOVES = 'words', DEFMODE = 'easy';
+'use strict';
+const { $, ls, modal, post, openLB, gameOver, art, ART } = AK;
+const NAMES = Object.fromEntries(ART.map(a => [a.id, a.name.replace(/^ANON /, '')]));
+const DIFFN = { easy: 'Easy', medium: 'Medium', hard: 'Hard' };
+const pref = ls.get(PK, { art: 'anon', diff: DEFMODE, best: 0 }); if (window.MODELIST && !MODELIST.includes(pref.diff)) pref.diff = DEFMODE;
+const show = id => document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === id));
+const setHero = () => $('#hero').src = art(pref.art).cover;
+AK.picker($('#artPick'), pref.art, id => { pref.art = id; ls.set(PK, pref); setHero(); });
+if ($('#diff') && ![...$('#diff').children].some(b => b.dataset.v === pref.diff)) pref.diff = DEFMODE;
+if ($('#diff')) AK.seg($('#diff'), pref.diff, v => { pref.diff = v; ls.set(PK, pref); });
+setHero(); AK.nickLine($('#nick'));
+// ---- sound: generated in the browser, nothing plays before the first tap/key ----
+let AC = null; window.__sfx = 0;
+const unlock = () => { if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } if (AC && AC.state === 'suspended') AC.resume(); };
+['pointerdown', 'keydown', 'touchstart'].forEach(t => window.addEventListener(t, unlock, { capture: true, passive: true }));
+function tone(f, d, type, vol, f2) { if (!AC || pref.mute) return; window.__sfx++; const t = AC.currentTime, o = AC.createOscillator(), g = AC.createGain();
+  o.type = type || 'square'; o.frequency.setValueAtTime(f, t); if (f2) o.frequency.exponentialRampToValueAtTime(Math.max(20, f2), t + d);
+  g.gain.setValueAtTime(vol || .08, t); g.gain.exponentialRampToValueAtTime(.0001, t + d); o.connect(g).connect(AC.destination); o.start(t); o.stop(t + d + .02); }
+function boom(d, vol) { if (!AC || pref.mute) return; window.__sfx++; const n = Math.floor(AC.sampleRate * d), b = AC.createBuffer(1, n, AC.sampleRate), c = b.getChannelData(0);
+  for (let i = 0; i < n; i++) c[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 2); const s = AC.createBufferSource(), g = AC.createGain(), fl = AC.createBiquadFilter();
+  fl.type = 'lowpass'; fl.frequency.value = 900; s.buffer = b; g.gain.value = vol || .25; s.connect(fl).connect(g).connect(AC.destination); s.start(); }
+// ---- shared loop, pause when hidden, game over ----
+let C = null, S = null;
+const imgs = {}; const IM = id => imgs[id];
+ART.forEach(a => { AP.img(a.img).then(i => { imgs[a.id] = i; dirty = true; }); AP.img(a.cover).then(i => { imgs['c-' + a.id] = i; dirty = true; }); });
+function ring(x, im, cx, cy, r, col) { x.save(); x.beginPath(); x.arc(cx, cy, r, 0, 7); x.closePath(); x.fillStyle = '#111'; x.fill(); x.clip(); if (im) AP.cover(x, im, cx - r, cy - r, r * 2, r * 2); x.restore();
+  x.lineWidth = Math.max(1.5, r * .16); x.strokeStyle = col || '#f3d77a'; x.beginPath(); x.arc(cx, cy, r, 0, 7); x.stroke(); }
+function bgArt(x, id, a) { const im = IM('c-' + id); if (!im) return; x.globalAlpha = a || .22; const k = Math.max(C.w / im.width, C.h / im.height); x.drawImage(im, (C.w - im.width * k) / 2, (C.h - im.height * k) / 2, im.width * k, im.height * k); x.globalAlpha = 1; }
+const L = AP.loop(dt => { if (S && !S.over && !S.paused) step(dt); }, () => draw());
+let paused = false;
+function pause() { if (!S || S.over || S.paused) return; S.paused = true; $('#msg').textContent = 'Paused\nTap to resume'; }
+function resume() { if (S && S.paused) { S.paused = false; $('#msg').textContent = ''; } }
+document.addEventListener('visibilitychange', () => { if (document.hidden) pause(); });
+$('#msg').parentElement.addEventListener('pointerdown', () => { if (S && S.paused) resume(); }, true);
+async function start() { show('play'); if (!C) C = AP.canvas($('#cv'), ASPECT, () => draw()); else C.fit(); $('#msg').textContent = ''; newRun(); L.start(); }
+function end(score, secs, moves, mode, title, text) {
+  if (!S || S.over) return; S.over = true; draw(); setTimeout(() => L.stop(), 50); if (navigator.vibrate) navigator.vibrate([40, 30, 70]);
+  const a = art(S.art || pref.art), pb = score > (pref.best || 0); if (pb) { pref.best = score; ls.set(PK, pref); }
+  S.final = { score, secs, moves, mode };
+  setTimeout(() => { modal({ art: a.img, title: pb && score > 0 ? 'New best! 🏆' : title, text, lb: score > 0,
+    buttons: [['PLAY AGAIN', () => start()], ['Leaderboard', () => lb(), 1], ['Change ANON', () => show('setup'), 1]] });
+    if (score > 0) post(GAME, score, Math.max(1, Math.round(secs)), moves, mode); }, 500);
+  gameOver();
+}
+const lb = () => openLB(GAME, TITLE, MODES, MOVES);
+$('#goBtn').onclick = () => start(); $('#againBtn').onclick = () => { if (S) S.over = true; start(); };
+$('#setBtn').onclick = $('#menuBtn').onclick = () => { if (S) S.over = true; L.stop(); show('setup'); };
+$('#lbBtn').onclick = lb;
+// hold-buttons for on-screen pads: data-k = key name
+const held = new Set(); window.__held = held;
+document.querySelectorAll('.pad [data-k]').forEach(b => { const k = b.dataset.k;
+  b.addEventListener('pointerdown', e => { e.preventDefault(); held.add(k); b.classList.add('on'); if (window.onPad) onPad(k); });
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach(t => b.addEventListener(t, () => { held.delete(k); b.classList.remove('on'); })); });
+const KM = { ArrowLeft: 'L', a: 'L', A: 'L', ArrowRight: 'R', d: 'R', D: 'R', ArrowUp: 'U', w: 'U', W: 'U', ArrowDown: 'D', s: 'D', S: 'D', ' ': 'B', Enter: 'B', x: 'B', z: 'B' };
+const playing = () => $('#play').classList.contains('on') && !document.querySelector('.modal.show,.alb-ov,.anw-ov');
+window.addEventListener('keydown', e => { const k = KM[e.key]; if (!k || !playing()) return; e.preventDefault(); if (S && S.paused) resume(); if (!held.has(k) && window.onPad) onPad(k); held.add(k); });
+window.addEventListener('keyup', e => { const k = KM[e.key]; if (k) held.delete(k); });
+
+// pointer -> canvas CSS coords (canvas has a 2px border)
+function P(e) { const r = $('#cv').getBoundingClientRect(); return { x: (e.clientX - r.left - 2) * C.w / (r.width - 4), y: (e.clientY - r.top - 2) * C.h / (r.height - 4) }; }
+const ukDay = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/London' }).format(new Date());
+function hashStr(s) { let h = 2166136261; for (const c of s) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
+function txt(x, s, X, Y, size, col, align, weight, font) { x.font = `${weight || 800} ${size}px ${font || 'system-ui,sans-serif'}`; x.fillStyle = col || '#f3d77a'; x.textAlign = align || 'center'; x.textBaseline = 'middle'; x.fillText(s, X, Y); }
+var dirty = true; window.addEventListener('resize', () => dirty = true); window.addEventListener('pointerup', () => dirty = true);
+const fmt = s => Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
+
+const MODES = {"easy": "Easy", "medium": "Medium", "hard": "Hard"};
+const WORDS = {
+ 'Ninja & Japan': 'KATANA SHURIKEN DOJO SAMURAI SHOGUN RONIN KIMONO BONSAI SUSHI LANTERN TEMPLE PAGODA BAMBOO KUNAI SHADOW STEALTH ORIGAMI SAKURA DRAGON TATAMI NOODLE SHRINE MONK ARCHER ARROW SCROLL MASK HOOD BLADE SILENCE ROOFTOP',
+ 'Lakes & Mountains': 'MOUNTAIN WATERFALL LAKE MEADOW FOREST VALLEY BOULDER HEATHER SHEEP BRIDGE CASTLE RIVER ISLAND CANYON GLACIER VOLCANO SUNSET THUNDER RAINBOW BLIZZARD LIGHTHOUSE HARBOUR MOORLAND WOODLAND SUMMIT CAVERN STREAM PEBBLE',
+ 'Animals': 'TIGER FALCON RAVEN PANTHER GORILLA OCTOPUS PENGUIN DOLPHIN JAGUAR COBRA VIPER KITTEN HEDGEHOG BADGER SQUIRREL BUTTERFLY CHAMELEON FLAMINGO CROCODILE ELEPHANT GIRAFFE KANGAROO LEOPARD PARROT OWL WOLF FOX MONKEY',
+ 'Gems & Treasure': 'DIAMOND EMERALD SAPPHIRE RUBY AMETHYST CRYSTAL CROWN GOLDEN TREASURE JEWEL PEARL TOPAZ GARNET OPAL SCEPTRE THRONE CHALICE TIARA AMULET RELIC COMPASS LOCKET',
+ 'Space': 'GALAXY PLANET COMET ASTEROID NEBULA ROCKET ORBIT METEOR SATELLITE ECLIPSE JUPITER SATURN TELESCOPE ASTRONAUT STARDUST UNIVERSE COSMOS LUNAR MARTIAN SPACESHIP',
+ 'Art & Digital': 'ARTWORK PIXEL CANVAS GALLERY PORTRAIT SKETCH PALETTE COLLECTION CREATOR ARTIST MASTERPIECE BLOCKCHAIN WALLET AVATAR DIGITAL SIGNATURE EDITION ANIMATION HOLOGRAM NETWORK KEYBOARD BRUSH EASEL MURAL',
+ 'Games': 'ARCADE JOYSTICK PINBALL PUZZLE CHESS DOMINO LEVEL HIGHSCORE CHAMPION LEADERBOARD CONTROLLER QUEST DUNGEON WIZARD POTION KNIGHT DICE CHECKMATE BOSS RESPAWN',
+ 'Spooky': 'GHOST SKELETON PHANTOM VAMPIRE CAULDRON GOBLIN SPECTRE MIDNIGHT HAUNTED PUMPKIN MUMMY WEREWOLF SPIDER COBWEB SKULL GRAVEYARD BROOMSTICK',
+ 'Cats': 'WHISKERS TABBY PURRING CATNIP GRUMPY MITTENS PAWPRINT KITTY TOMCAT SIAMESE PERSIAN FURBALL'
+};
+
+// ANON Word Search: drag across the grid to find the themed words before time runs out
+const CFG = { easy: { n: 8, k: 6, dirs: [[0, 1], [1, 0]], time: 180, m: 2 }, medium: { n: 10, k: 8, dirs: [[0, 1], [1, 0], [1, 1], [-1, 1]], time: 240, m: 3 },
+  hard: { n: 12, k: 10, dirs: [[0, 1], [1, 0], [1, 1], [-1, 1], [0, -1], [-1, 0], [-1, -1], [1, -1]], time: 300, m: 4 } };
+const COLS = ['#ff3d9a', '#2bff88', '#5ab4ff', '#f3d77a', '#c08bff', '#ff9a3d'];
+function makeGrid(cfg) { const cats = Object.keys(WORDS); for (let t = 0; t < 50; t++) { const cat = AP.pick(cats), pool = AP.shuffle(WORDS[cat].split(' ').filter(w => w.length <= cfg.n && w.length >= 3));
+    const g = Array(cfg.n * cfg.n).fill(''), placed = [];
+    for (const w of pool) { if (placed.length >= cfg.k) break; for (let a = 0; a < 120; a++) { const [dr, dc] = AP.pick(cfg.dirs), r = AP.ri(0, cfg.n - 1), c = AP.ri(0, cfg.n - 1), er = r + dr * (w.length - 1), ec = c + dc * (w.length - 1);
+        if (er < 0 || er >= cfg.n || ec < 0 || ec >= cfg.n) continue; let okk = true; for (let i = 0; i < w.length; i++) { const v = g[(r + dr * i) * cfg.n + c + dc * i]; if (v && v !== w[i]) { okk = false; break; } } if (!okk) continue;
+        for (let i = 0; i < w.length; i++) g[(r + dr * i) * cfg.n + c + dc * i] = w[i]; placed.push({ w, r, c, er, ec, found: false }); break; } }
+    if (placed.length < cfg.k) continue; const AL = 'EEEAAAIIOOTTNNRRSSLLCDGHMPBFKUWY'; for (let i = 0; i < g.length; i++) if (!g[i]) g[i] = AP.pick([...AL]); return { g, placed, cat }; } }
+function newRun() { const cfg = CFG[pref.diff], z = makeGrid(cfg); S = { art: pref.art, mode: pref.diff, cfg, n: cfg.n, g: z.g, words: z.placed, cat: z.cat, drag: null, moves: 0, t: 0, flash: 0 }; hud(); dirty = true; }
+const left = () => Math.max(0, S.cfg.time - S.t);
+const hud = () => { $('#tm').textContent = '⏱ ' + fmt(left()); $('#fd').textContent = '🔎 ' + S.moves + '/' + S.words.length; $('#ct').textContent = S.cat; };
+function lay() { const W = C.w, s = Math.min(W - 8, C.h * .66), q = s / S.n; return { W, s, q, ox: (W - s) / 2, oy: 4 }; }
+function cellAt(p, L) { const c = Math.floor((p.x - L.ox) / L.q), r = Math.floor((p.y - L.oy) / L.q); return r >= 0 && r < S.n && c >= 0 && c < S.n ? [r, c] : null; }
+function snapEnd(a, b) { const dr = b[0] - a[0], dc = b[1] - a[1], ad = Math.abs(dr), ac = Math.abs(dc); if (!ad && !ac) return a; if (ad > 2 * ac) return [b[0], a[1]]; if (ac > 2 * ad) return [a[0], b[1]]; const m = Math.min(ad, ac, S.n); const k = Math.max(ad, ac); const kk = Math.min(k, S.n - 1);
+  let r = a[0] + Math.sign(dr) * kk, c = a[1] + Math.sign(dc) * kk; while ((r < 0 || r >= S.n || c < 0 || c >= S.n) && kk > 0) { r -= Math.sign(dr); c -= Math.sign(dc); } return [r, c]; }
+function lineStr(a, b) { const dr = Math.sign(b[0] - a[0]), dc = Math.sign(b[1] - a[1]), len = Math.max(Math.abs(b[0] - a[0]), Math.abs(b[1] - a[1])) + 1; let s = ''; for (let i = 0; i < len; i++) s += S.g[(a[0] + dr * i) * S.n + a[1] + dc * i]; return s; }
+function tryWord(a, b) { const s = lineStr(a, b), rs = [...s].reverse().join('');
+  const w = S.words.find(w => !w.found && (w.w === s && w.r === a[0] && w.c === a[1] || w.w === rs && w.r === b[0] && w.c === b[1] || w.w === s || w.w === rs));
+  if (w && s.length > 1) { w.found = true; w.col = COLS[S.moves % COLS.length]; if (w.w !== s && w.w === rs) { w.r = b[0]; w.c = b[1]; w.er = a[0]; w.ec = a[1]; } else { w.r = a[0]; w.c = a[1]; w.er = b[0]; w.ec = b[1]; }
+    S.moves++; tone(600 + S.moves * 40, .12, 'triangle', .08); hud(); if (S.moves === S.words.length) finish(true); return true; } if (s.length > 1) tone(160, .08, 'square', .04); return false; }
+function finish(all) { if (S.over) return; const sc = S.cfg.m * (S.moves * 25 + (all ? Math.round(left()) : 0)); hud();
+  end(sc, S.t, S.moves, S.mode, all ? 'All words found! 🔎🏆' : "Time's up ⏱", `<b>${art(S.art).name}</b> found <b>${S.moves}/${S.words.length}</b> ${S.cat} words${all ? ' with ' + fmt(left()) + ' to spare' : ''}.<br>Score <b>${sc}</b>`); }
+const cv = $('#cv'); cv.addEventListener('pointerdown', e => { if (!S || S.paused || S.over) return; const L = lay(), a = cellAt(P(e), L); if (a) { S.drag = { a, b: a }; cv.setPointerCapture && cv.setPointerCapture(e.pointerId); dirty = true; } });
+cv.addEventListener('pointermove', e => { if (!S || !S.drag) return; const L = lay(), b = cellAt(P(e), L); if (b) { S.drag.b = snapEnd(S.drag.a, b); dirty = true; } });
+const up = () => { if (!S || !S.drag) return; tryWord(S.drag.a, S.drag.b); S.drag = null; dirty = true; }; cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', () => { if (S) S.drag = null; });
+let lastSec = -1; function step(dt) { S.t += dt; if (Math.floor(S.t) !== lastSec) { lastSec = Math.floor(S.t); hud(); } if (left() <= 0) finish(false); }
+function capsule(x, L, a, b, col, w) { const cx = i => L.ox + (i + .5) * L.q, cy = i => L.oy + (i + .5) * L.q; x.save(); x.strokeStyle = col; x.globalAlpha = .45; x.lineCap = 'round'; x.lineWidth = L.q * (w || .78);
+  x.beginPath(); x.moveTo(cx(a[1]), cy(a[0])); x.lineTo(cx(b[1]) + .01, cy(b[0])); x.stroke(); x.restore(); }
+function draw() { if (!C || !dirty) return; dirty = false; const x = C.x; x.fillStyle = '#05070a'; x.fillRect(0, 0, C.w, C.h); if (!S) return; bgArt(x, S.art, .1); const L = lay();
+  AP.rr(x, L.ox - 2, L.oy - 2, L.s + 4, L.s + 4, 8); x.fillStyle = 'rgba(0,0,0,.6)'; x.fill(); x.strokeStyle = '#d4af37'; x.lineWidth = 1.5; x.stroke();
+  S.words.forEach(w => { if (w.found) capsule(x, L, [w.r, w.c], [w.er, w.ec], w.col); }); if (S.drag) capsule(x, L, S.drag.a, S.drag.b, '#ffffff', .7);
+  for (let i = 0; i < S.n * S.n; i++) txt(x, S.g[i], L.ox + (i % S.n + .5) * L.q, L.oy + (Math.floor(i / S.n) + .55) * L.q, L.q * .58, '#f3e9c8', 'center', 800);
+  const y0 = L.oy + L.s + 14, cols = 2, cw = (L.W - 16) / cols, rh = Math.min(26, (C.h - y0 - 6) / Math.ceil(S.words.length / cols));
+  S.words.forEach((w, i) => { const X = 8 + (i % cols) * cw + cw / 2, Y = y0 + Math.floor(i / cols) * rh + rh / 2; txt(x, w.w, X, Y, Math.min(16, rh * .62), w.found ? w.col : '#d9d2bc', 'center', 800); if (w.found) { x.strokeStyle = w.col; x.lineWidth = 2; const tw = x.measureText(w.w).width; x.beginPath(); x.moveTo(X - tw / 2, Y); x.lineTo(X + tw / 2, Y); x.stroke(); } }); }
+window.G = { state: () => S, tryWord, makeGrid, finish, C: () => C, L };
+
+</script>
+</body>
+</html>
