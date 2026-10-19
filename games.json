@@ -7,11 +7,41 @@
       "path": "solitaire/",
       "thumb": "solitaire/thumb.webp",
       "category": "Cards",
-      "tags": ["klondike", "patience", "cards"],
+      "tags": [
+        "klondike",
+        "patience",
+        "cards"
+      ],
       "status": "live",
       "leaderboard": true,
       "scoreLabel": "Score",
       "order": "desc",
+      "added": "2026-10-19"
+    },
+    {
+      "id": "daily-word",
+      "name": "Daily ANON Word",
+      "tagline": "One new 5-letter word a day. 6 guesses.",
+      "path": "word/",
+      "thumb": "word/thumb.webp",
+      "category": "Word",
+      "tags": [
+        "word",
+        "puzzle",
+        "daily",
+        "5 letters",
+        "guess"
+      ],
+      "status": "live",
+      "leaderboard": true,
+      "scoreLabel": "Score",
+      "order": "desc",
+      "periods": [
+        "day",
+        "all"
+      ],
+      "movesLabel": "guesses",
+      "hideMode": true,
       "added": "2026-10-19"
     },
     {

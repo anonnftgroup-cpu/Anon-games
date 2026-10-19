@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
+<meta name="theme-color" content="#05070a">
+<title>Daily ANON Word · ANON NFTs</title>
+<meta name="description" content="Daily ANON Word: a free daily 5-letter word puzzle from ANON NFTs. Six guesses, one new word every day at midnight UK time. No sign-up.">
+<link rel="icon" href="../assets/logo.webp">
+<link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
+<style>
+:root{--gold:#d4af37;--gold2:#f3d77a;--pink:#ff3d9a;--grey:#3a3d44;--green:#2bff88;--t:58px;--kh:54px}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overflow:hidden;overscroll-behavior:none}
+body{display:flex;flex-direction:column;height:100vh;height:100dvh;color:#e9e3cf;
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  background:radial-gradient(ellipse at 50% 30%,rgba(255,61,154,.10),transparent 60%),
+    linear-gradient(rgba(3,5,8,.62),rgba(3,5,8,.9)),url(../solitaire/assets/bg.jpg) center/cover no-repeat,#05070a;
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+button{font:inherit;cursor:pointer}
+header{padding:calc(6px + env(safe-area-inset-top)) 10px 2px;max-width:560px;width:100%;margin:0 auto}
+.top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.brand{display:flex;align-items:center;gap:9px;min-width:0}
+.brand img{width:36px;height:36px;border-radius:50%;box-shadow:0 0 0 1px rgba(212,175,55,.6),0 0 12px rgba(255,61,154,.25);flex:none}
+h1{margin:0;font-family:Georgia,"Times New Roman",serif;font-weight:700;font-size:clamp(16px,5vw,26px);letter-spacing:.1em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  background:linear-gradient(180deg,#fff3c4 0%,#e9c858 45%,#b48a25 75%,#f5dc85 100%);-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 0 8px rgba(255,61,154,.2))}
+.icon-btn{width:36px;height:36px;border-radius:50%;border:1px solid rgba(212,175,55,.6);background:rgba(0,0,0,.45);color:var(--gold2);font-weight:800;font-size:16px;flex:none;padding:0}
+.top-r{display:flex;gap:6px;flex:none}
+.back-btn{display:none;align-items:center;gap:4px;height:36px;padding:0 12px 0 9px;border-radius:18px;border:1px solid rgba(212,175,55,.7);background:rgba(0,0,0,.55);color:var(--gold2);font-weight:800;font-size:13px;letter-spacing:.04em;text-decoration:none;flex:none;white-space:nowrap;box-shadow:0 0 10px rgba(43,255,136,.12)}
+.in-hub .back-btn{display:inline-flex}
+.in-hub .brand img{display:none}
+.in-hub h1{font-size:clamp(14px,4.3vw,24px);letter-spacing:.06em}
+@media (max-width:430px){.in-hub h1 .d{display:none}}
+.subbar{display:flex;justify-content:center;gap:8px;margin-top:5px;font-size:12px;color:#9d9580;letter-spacing:.04em}
+.subbar b{color:var(--gold2);font-variant-numeric:tabular-nums}
+.pill{border:1px solid rgba(212,175,55,.32);border-radius:12px;padding:2px 9px;background:rgba(0,0,0,.45)}
+main{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:6px 8px}
+#board{display:grid;grid-template-rows:repeat(6,var(--t));gap:6px}
+.row{display:grid;grid-template-columns:repeat(5,var(--t));gap:6px}
+.row.shake{animation:shake .5s}
+@keyframes shake{10%,90%{transform:translateX(-2px)}20%,80%{transform:translateX(4px)}30%,50%,70%{transform:translateX(-7px)}40%,60%{transform:translateX(7px)}}
+.tile{width:var(--t);height:var(--t);display:flex;align-items:center;justify-content:center;border:2px solid rgba(212,175,55,.28);border-radius:8px;background:rgba(0,0,0,.42);
+  font-family:Georgia,"Times New Roman",serif;font-weight:700;font-size:calc(var(--t)*.56);line-height:1;color:#f6efd9;text-transform:uppercase;box-shadow:inset 0 0 12px rgba(255,255,255,.02)}
+.tile.filled{border-color:rgba(243,215,122,.75);animation:pop .1s}
+@keyframes pop{50%{transform:scale(1.1)}}
+.tile.flip{animation:flip .5s ease forwards}
+@keyframes flip{0%{transform:rotateX(0)}50%{transform:rotateX(90deg)}100%{transform:rotateX(0)}}
+.tile.correct,.key.correct{background:linear-gradient(180deg,#f0cf5f,#b8901f);border-color:#f3d77a;color:#140f02;box-shadow:0 0 14px rgba(243,215,122,.35)}
+.tile.present,.key.present{background:linear-gradient(180deg,#ff5aab,#c41f73);border-color:#ff8cc4;color:#fff;box-shadow:0 0 14px rgba(255,61,154,.35)}
+.tile.absent{background:var(--grey);border-color:#4a4d55;color:#d7d3c8}
+.key.absent{background:#1c1e22;border-color:#2a2c31;color:#6d6a62}
+.tile.win{animation:bounce .9s ease}
+@keyframes bounce{0%,20%{transform:translateY(0)}40%{transform:translateY(-26px)}50%{transform:translateY(4px)}60%{transform:translateY(-12px)}80%{transform:translateY(2px)}100%{transform:translateY(0)}}
+#kb{width:100%;max-width:520px;margin:0 auto;padding:2px 5px calc(6px + env(safe-area-inset-bottom));touch-action:manipulation}
+.krow{display:flex;gap:5px;margin-top:6px;justify-content:center}
+.key{flex:1;min-width:0;height:var(--kh);border-radius:7px;border:1px solid rgba(212,175,55,.45);background:linear-gradient(180deg,#24221a,#121109);color:var(--gold2);
+  font-weight:800;font-size:17px;text-transform:uppercase;padding:0;display:flex;align-items:center;justify-content:center;transition:background .2s}
+.key.wide{flex:1.55;font-size:12px;letter-spacing:.04em}
+.key:active{filter:brightness(1.35);transform:translateY(1px)}
+.spacer{flex:.5}
+footer{text-align:center;font-size:10.5px;color:#7d776a;padding:0 8px calc(4px + env(safe-area-inset-bottom));letter-spacing:.04em}
+footer a{color:#b9a35c;text-decoration:none}
+#toast{position:fixed;left:50%;top:84px;transform:translateX(-50%);background:rgba(10,10,10,.92);border:1px solid var(--gold);color:var(--gold2);padding:9px 16px;border-radius:10px;font-size:14px;font-weight:700;opacity:0;transition:opacity .2s;pointer-events:none;z-index:4500;white-space:nowrap}
+#toast.show{opacity:1}
+.overlay{position:fixed;inset:0;z-index:2000;display:none;align-items:center;justify-content:center;padding:14px;background:rgba(0,0,0,.62)}
+.overlay.show{display:flex}
+.panel{position:relative;width:100%;max-width:370px;max-height:calc(100% - 8px);overflow:auto;-webkit-overflow-scrolling:touch;background:rgba(6,8,11,.97);border:1px solid var(--gold);border-radius:16px;padding:16px 16px 14px;text-align:center;
+  box-shadow:0 0 0 4px rgba(212,175,55,.08),0 0 40px rgba(255,61,154,.16);animation:popin .3s ease}
+@keyframes popin{from{transform:scale(.88);opacity:0}to{transform:scale(1);opacity:1}}
+.panel h2{margin:0 0 6px;font-family:Georgia,serif;color:var(--gold2);letter-spacing:.08em;font-size:20px}
+.panel h3{margin:14px 0 6px;font-size:12px;letter-spacing:.16em;color:#9d9580;text-transform:uppercase}
+.panel p{margin:6px 0;font-size:14px;line-height:1.45;color:#d9d2bc;text-align:left}
+.x{position:absolute;right:8px;top:8px;width:34px;height:34px;border-radius:50%;border:1px solid rgba(212,175,55,.5);background:rgba(0,0,0,.4);color:var(--gold2);font-size:15px}
+.res-art{width:74px;height:74px;border-radius:50%;box-shadow:0 0 0 1px var(--gold),0 0 18px rgba(255,61,154,.35)}
+.res-word{display:flex;justify-content:center;gap:4px;margin:8px 0 2px}
+.res-word span{width:34px;height:34px;display:flex;align-items:center;justify-content:center;border-radius:6px;font-family:Georgia,serif;font-weight:700;font-size:19px;background:linear-gradient(180deg,#f0cf5f,#b8901f);color:#140f02}
+.res-word.lost span{background:var(--grey);color:#eee}
+.res-msg{font-size:15px;color:var(--gold2);letter-spacing:.04em;margin:4px 0 0}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.stat{border:1px solid rgba(212,175,55,.3);border-radius:9px;padding:6px 2px;background:rgba(0,0,0,.4)}
+.stat b{display:block;font-size:21px;color:var(--gold2);font-variant-numeric:tabular-nums;line-height:1.15}
+.stat span{display:block;font-size:9.5px;letter-spacing:.06em;color:#9d9580;text-transform:uppercase;line-height:1.2}
+.dist{display:flex;flex-direction:column;gap:4px;text-align:left}
+.dr{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700}
+.dr i{font-style:normal;width:12px;color:#9d9580;text-align:center}
+.dr .bar{min-width:22px;padding:2px 7px;border-radius:4px;background:var(--grey);color:#eee;text-align:right;font-variant-numeric:tabular-nums}
+.dr.me .bar{background:linear-gradient(90deg,#b8901f,#f0cf5f);color:#140f02}
+.cd{font-size:26px;font-weight:800;color:var(--gold2);font-variant-numeric:tabular-nums;letter-spacing:.06em}
+.btnrow{display:flex;gap:8px;margin-top:14px}
+.btn{flex:1;min-height:46px;border-radius:11px;border:1px solid rgba(212,175,55,.75);background:linear-gradient(180deg,#1d1a0d,#0a0905);color:var(--gold2);font-weight:800;letter-spacing:.05em;font-size:14px}
+.btn.pri{background:linear-gradient(180deg,#ff5aab,#c41f73);border-color:#ff8cc4;color:#fff;box-shadow:0 0 16px rgba(255,61,154,.35)}
+.btn:active{transform:translateY(1px);filter:brightness(1.2)}
+.lbmsg{margin-top:10px;font-size:12.5px;color:#9d9580;min-height:17px;line-height:1.35}
+.lbmsg.ok{color:var(--green)}
+.lbmsg button{background:none;border:0;color:var(--gold);text-decoration:underline;font-size:12.5px;padding:2px 4px}
+.ex{display:flex;gap:4px;margin:6px 0 2px}
+.ex .tile{--t:34px;font-size:19px}
+.small{font-size:12px!important;color:#9d9580!important}
+.copybox{width:100%;height:150px;margin-top:8px;font:13px/1.35 ui-monospace,monospace;background:#0b0d10;color:var(--gold2);border:1px solid rgba(212,175,55,.6);border-radius:10px;padding:8px;-webkit-user-select:text;user-select:text}
+</style>
+</head>
+<body>
+<header>
+  <div class="top">
+    <a class="back-btn" id="backBtn" href="../" aria-label="Back to ANON Arcade">&larr; Arcade</a>
+    <div class="brand"><img src="../assets/logo.webp" alt="ANON NFTs logo"><h1><span class="d">DAILY </span>ANON WORD</h1></div>
+    <div class="top-r">
+      <button class="icon-btn" id="lbBtn" aria-label="Leaderboard">&#127942;</button>
+      <button class="icon-btn" id="statsBtn" aria-label="Statistics">&#128202;</button>
+      <button class="icon-btn" id="helpBtn" aria-label="How to play">?</button>
+    </div>
+  </div>
+  <div class="subbar"><span class="pill">Word <b id="pNum">#1</b></span><span class="pill">Next in <b id="pCd">--:--:--</b></span></div>
+</header>
+<main id="main"><div id="board" role="grid" aria-label="Guesses"></div></main>
+<div id="kb" aria-label="Keyboard"></div>
+<footer>ANON NFTs · <a href="https://anonnfts.com" target="_blank" rel="noopener">anonnfts.com</a> · New word every day at midnight UK time</footer>
+<div id="toast" role="status" aria-live="polite"></div>
+<div class="overlay" id="modal"><div class="panel" id="panel" role="dialog" aria-modal="true"></div></div>
+
+<script src="../shared/leaderboard.js"></script>
+<script src="words.js"></script>
+<script>
+(() => {
+'use strict';
+const GAME = 'daily-word', TITLE = 'Daily ANON Word', LINK = 'https://anonnfts.com/anon-games';
+const EPOCH = Date.UTC(2026, 9, 19);           // Word #1 = 19 Oct 2026 (UK date)
+const K_DAY = 'anonWord.v1.day', K_STATS = 'anonWord.v1.stats', K_SEEN = 'anonWord.v1.seenHelp';
+const $ = s => document.querySelector(s);
+const el = (t, c, x) => { const e = document.createElement(t); if (c) e.className = c; if (x != null) e.textContent = x; return e; };
+const ls = { get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+             set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} } };
+const now = () => (typeof window.ANON_WORD_NOW === 'number' ? window.ANON_WORD_NOW + (performance.now() - (window.__t0 || (window.__t0 = performance.now()))) : Date.now());
+
+/* Inside ANON Arcade (?hub=1 or framed): show the back button */
+const FRAMED = (function () { try { return window.self !== window.top; } catch (e) { return true; } })();
+const IN_HUB = /[?&]hub=1\b/.test(location.search) || (function () { try { return window.self !== window.top; } catch (e) { return true; } })();
+if (IN_HUB) document.documentElement.classList.add('in-hub');
+
+/* ---------- UK date + puzzle number ---------- */
+const FMT = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/London', hourCycle: 'h23', year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric' });
+const wall = ms => { const o = {}; FMT.formatToParts(new Date(ms)).forEach(p => { o[p.type] = +p.value; }); return o; };
+function ukMidnight(y, m, d) { const mid = Date.UTC(y, m - 1, d), w = wall(mid); return mid - (Date.UTC(w.year, w.month - 1, w.day, w.hour, w.minute, w.second) - mid); }
+function today(ms) { const w = wall(ms == null ? now() : ms); return { n: Math.round((Date.UTC(w.year, w.month - 1, w.day) - EPOCH) / 864e5) + 1, next: ukMidnight(w.year, w.month, w.day + 1) }; }
+
+/* ---------- words ---------- */
+const D = window.ANON_WORD_DATA || { a: '', v: '' };
+const ANSWERS = (() => { const K = [0x41, 0x4e, 0x4f, 0x4e, 0x37, 0x19]; let b; try { b = atob(D.a.split('').reverse().join('')); } catch (e) { b = ''; }
+  let s = ''; for (let i = 0; i < b.length; i++) s += String.fromCharCode(b.charCodeAt(i) ^ K[i % 6] ^ (i * 7 & 255)); return s.match(/.{5}/g) || ['crown']; })();
+const VALID = new Set(D.v.match(/.{5}/g) || []); ANSWERS.forEach(w => VALID.add(w));
+const answerFor = n => ANSWERS[((n - 1) % ANSWERS.length + ANSWERS.length) % ANSWERS.length];
+
+/* ---------- state ---------- */
+let T, ANSWER, S, input = '', busy = false;
+const blankStats = () => ({ played: 0, wins: 0, cur: 0, max: 0, dist: [0, 0, 0, 0, 0, 0], lastWon: 0, lastPlayed: 0 });
+const stats = () => Object.assign(blankStats(), ls.get(K_STATS, {}));
+function liveStats() { const s = stats(); if (s.cur && s.lastWon < T.n - 1) { s.cur = 0; ls.set(K_STATS, s); } return s; }
+
+function evaluate(guess, ans) {
+  const r = Array(5).fill('absent'), left = {};
+  for (let i = 0; i < 5; i++) { if (guess[i] === ans[i]) r[i] = 'correct'; else left[ans[i]] = (left[ans[i]] || 0) + 1; }
+  for (let i = 0; i < 5; i++) if (r[i] !== 'correct' && left[guess[i]]) { r[i] = 'present'; left[guess[i]]--; }
+  return r;
+}
+const score = (g, secs) => (7 - g) * 100 + Math.max(0, 99 - Math.floor(secs / 6));
+
+/* ---------- build UI ---------- */
+const board = $('#board'), rows = [];
+for (let r = 0; r < 6; r++) { const row = el('div', 'row'); row.setAttribute('role', 'row'); const cells = [];
+  for (let c = 0; c < 5; c++) { const t = el('div', 'tile'); t.setAttribute('role', 'gridcell'); row.appendChild(t); cells.push(t); }
+  board.appendChild(row); rows.push({ row, cells }); }
+const KEYS = ['qwertyuiop', 'asdfghjkl', '+zxcvbnm-'], keyEls = {};
+KEYS.forEach((line, i) => { const kr = el('div', 'krow');
+  if (i === 1) kr.appendChild(el('div', 'spacer'));
+  line.split('').forEach(k => {
+    const b = el('button', 'key' + (k === '+' || k === '-' ? ' wide' : ''), k === '+' ? 'ENTER' : k === '-' ? '⌫' : k); b.type = 'button';
+    b.dataset.key = k === '+' ? 'Enter' : k === '-' ? 'Backspace' : k;
+    if (k === '-') b.setAttribute('aria-label', 'Delete');
+    b.addEventListener('click', e => { e.preventDefault(); press(b.dataset.key); b.blur(); });
+    kr.appendChild(b); if (k.length === 1 && /[a-z]/.test(k)) keyEls[k] = b; });
+  if (i === 1) kr.appendChild(el('div', 'spacer'));
+  $('#kb').appendChild(kr); });
+
+function fit() {
+  const m = $('#main'), w = m.clientWidth - 16, h = m.clientHeight - 12;
+  const t = Math.floor(Math.max(30, Math.min(64, (w - 4 * 6) / 5, (h - 5 * 6) / 6)));
+  document.documentElement.style.setProperty('--t', t + 'px');
+  const kh = Math.round(Math.max(42, Math.min(58, innerHeight * 0.068)));
+  document.documentElement.style.setProperty('--kh', kh + 'px');
+}
+addEventListener('resize', fit);
+
+const toast = (() => { let t; return (msg, ms) => { const e = $('#toast'); e.textContent = msg; e.classList.add('show'); clearTimeout(t); t = setTimeout(() => e.classList.remove('show'), ms || 1500); }; })();
+
+function paintRow(r, word, res, animate) {
+  const { cells } = rows[r];
+  return new Promise(done => {
+    for (let i = 0; i < 5; i++) { const t = cells[i]; t.textContent = word[i] || ''; t.className = 'tile' + (word[i] ? ' filled' : ''); }
+    if (!res) return done();
+    if (!animate) { cells.forEach((t, i) => { t.className = 'tile ' + res[i]; }); return done(); }
+    cells.forEach((t, i) => setTimeout(() => {
+      t.classList.add('flip'); setTimeout(() => { t.className = 'tile flip ' + res[i]; }, 250);
+      if (i === 4) setTimeout(done, 520);
+    }, i * 280));
+  });
+}
+const RANK = { absent: 1, present: 2, correct: 3 };
+function paintKeys() {
+  const best = {};
+  S.guesses.forEach(g => evaluate(g, ANSWER).forEach((r, i) => { const k = g[i]; if (!best[k] || RANK[r] > RANK[best[k]]) best[k] = r; }));
+  Object.keys(keyEls).forEach(k => { keyEls[k].className = 'key' + (best[k] ? ' ' + best[k] : ''); });
+}
+function paintAll() {
+  for (let r = 0; r < 6; r++) {
+    if (r < S.guesses.length) paintRow(r, S.guesses[r], evaluate(S.guesses[r], ANSWER), false);
+    else paintRow(r, r === S.guesses.length && S.status === 'playing' ? input : '', null);
+  }
+  paintKeys();
+}
+
+/* ---------- input ---------- */
+function press(k) {
+  if (busy || S.status !== 'playing' || $('#modal').classList.contains('show') || document.querySelector('.alb-ov')) return;
+  if (k === 'Enter') return submitGuess();
+  if (k === 'Backspace') { input = input.slice(0, -1); return paintRow(S.guesses.length, input); }
+  if (/^[a-z]$/.test(k) && input.length < 5) {
+    if (!S.start) { S.start = now(); save(); }
+    input += k; paintRow(S.guesses.length, input);
+  }
+}
+document.addEventListener('keydown', e => {
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  if (e.target && /^(INPUT|TEXTAREA)$/.test(e.target.tagName)) return;
+  if (e.key === 'Escape' && $('#modal').classList.contains('show')) return closeModal();
+  const k = e.key === 'Enter' ? 'Enter' : e.key === 'Backspace' ? 'Backspace' : (e.key || '').toLowerCase();
+  if (k === 'Enter' || k === 'Backspace' || /^[a-z]$/.test(k)) { e.preventDefault(); press(k); }
+});
+function shake(msg) {
+  const row = rows[S.guesses.length].row; row.classList.remove('shake'); void row.offsetWidth; row.classList.add('shake');
+  setTimeout(() => row.classList.remove('shake'), 520); toast(msg);
+  if (navigator.vibrate) try { navigator.vibrate(60); } catch (e) {}
+}
+async function submitGuess() {
+  if (input.length < 5) return shake('Not enough letters');
+  if (!VALID.has(input)) return shake('Not in word list');
+  const g = input, r = S.guesses.length, res = evaluate(g, ANSWER);
+  busy = true; input = '';
+  S.guesses.push(g);
+  const won = g === ANSWER, lost = !won && S.guesses.length === 6;
+  if (won || lost) finish(won);
+  save();
+  await paintRow(r, g, res, true);
+  paintKeys(); busy = false;
+  if (won) { rows[r].cells.forEach((t, i) => setTimeout(() => t.classList.add('win'), i * 90)); toast(['Legendary ANON! 👑', 'Masterful! 🥷', 'Splendid! 💎', 'Great! ✨', 'Nice one!', 'Phew! Close one!'][r], 1800); }
+  else if (lost) toast(ANSWER.toUpperCase(), 2600);
+  if (won || lost) setTimeout(() => { showResult(); if (won) postScore(); }, won ? 1500 : 1800);
+}
+function finish(won) {
+  S.status = won ? 'won' : 'lost'; S.end = now();
+  const st = liveStats();
+  if (st.lastPlayed !== T.n) {
+    st.played++; st.lastPlayed = T.n;
+    if (won) { st.wins++; st.dist[S.guesses.length - 1]++; st.cur = st.lastWon === T.n - 1 ? st.cur + 1 : 1; st.lastWon = T.n; st.max = Math.max(st.max, st.cur); }
+    else st.cur = 0;
+    ls.set(K_STATS, st);
+  }
+}
+const secsUsed = () => Math.min(86400, Math.max(3, Math.round(((S.end || now()) - (S.start || S.end || now())) / 1000)));
+function save() { ls.set(K_DAY, { n: T.n, guesses: S.guesses, status: S.status, start: S.start || 0, end: S.end || 0, lb: S.lb || null }); }
+
+/* ---------- leaderboard ---------- */
+async function postScore() {
+  if (S.status !== 'won' || (S.lb && S.lb.done)) return;
+  const g = S.guesses.length, t = secsUsed(), sc = score(g, t);
+  S.lb = { done: false, msg: 'Posting your score…' }; save(); paintLb();
+  let r;
+  try { r = window.ANONLB ? await window.ANONLB.submit({ game: GAME, score: sc, time: t, moves: g, mode: 'n' + S.n }) : { status: 'local', message: 'Leaderboard unavailable.' }; }
+  catch (e) { r = { status: 'error', message: 'Could not reach the leaderboard.' }; }
+  // once per day per device: anything except a network error or a skipped nickname counts as done
+  const retry = r.status === 'error' || r.status === 'skipped' || (r.status === 'local' && window.ANONLB && window.ANONLB.isConfigured() && !window.ANONLB.getNickname());
+  S.lb = { done: !retry, ok: r.status === 'online', msg: r.message || '', score: sc, retry }; save(); paintLb();
+}
+function paintLb() {
+  const box = document.getElementById('lbMsg'); if (!box) return;
+  box.innerHTML = ''; box.className = 'lbmsg' + (S.lb && S.lb.ok ? ' ok' : '');
+  if (S.status !== 'won') { box.textContent = S.status === 'lost' ? 'Win to get on the leaderboard. Back tomorrow, ninja.' : ''; return; }
+  const sc = S.lb && S.lb.score != null ? S.lb.score : score(S.guesses.length, secsUsed());
+  box.appendChild(document.createTextNode('Score ' + sc + '. ' + (S.lb ? S.lb.msg : '')));
+  if (S.lb && S.lb.retry) { const b = el('button', '', 'Post score'); b.onclick = () => { S.lb = null; postScore(); }; box.appendChild(b); }
+}
+const openLB = () => { if (window.ANONLB) window.ANONLB.openBoard(GAME, { title: TITLE, periods: ['day', 'all'], movesLabel: 'guesses', hideMode: true }); else toast('Leaderboard unavailable'); };
+
+/* ---------- modals ---------- */
+function openModal(build) {
+  const p = $('#panel'); p.innerHTML = '';
+  const x = el('button', 'x', '✕'); x.type = 'button'; x.setAttribute('aria-label', 'Close'); x.onclick = closeModal; p.appendChild(x);
+  build(p); $('#modal').classList.add('show');
+}
+function closeModal() { $('#modal').classList.remove('show'); $('#panel').innerHTML = ''; }
+$('#modal').addEventListener('click', e => { if (e.target.id === 'modal') closeModal(); });
+
+function exRow(word, cls) { const d = el('div', 'ex'); word.split('').forEach((c, i) => d.appendChild(el('div', 'tile filled' + (cls[i] ? ' ' + cls[i] : ''), c))); return d; }
+function showHelp() {
+  openModal(p => {
+    p.appendChild(el('h2', '', 'How to play'));
+    p.appendChild(el('p', '', 'Guess the hidden 5-letter word in 6 tries. Type a real word and press Enter. The tiles change colour to show how close you are.'));
+    p.appendChild(exRow('crown', ['correct'])); p.appendChild(el('p', 'small', 'C is in the word and in the right spot (gold).'));
+    p.appendChild(exRow('ninja', ['', '', '', 'present'])); p.appendChild(el('p', 'small', 'J is in the word but in another spot (pink).'));
+    p.appendChild(exRow('ghost', ['', '', 'absent'])); p.appendChild(el('p', 'small', 'O is not in the word at all (grey).'));
+    p.appendChild(el('p', '', 'Everyone gets the same word. A new one arrives every day at midnight UK time. Win in fewer guesses (and a bit faster) for a higher leaderboard score.'));
+    const r = el('div', 'btnrow'), b = el('button', 'btn pri', "Let's play"); b.onclick = closeModal; r.appendChild(b); p.appendChild(r);
+  });
+  ls.set(K_SEEN, 1);
+}
+function fmtCd(ms) { ms = Math.max(0, ms); const s = Math.floor(ms / 1000); return String(Math.floor(s / 3600)).padStart(2, '0') + ':' + String(Math.floor(s / 60) % 60).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0'); }
+function showResult() {
+  const st = liveStats(), done = S.status !== 'playing';
+  openModal(p => {
+    if (done) {
+      const img = el('img', 'res-art'); img.src = '../assets/logo.webp'; img.alt = 'ANON hooded figure'; p.appendChild(img);
+      p.appendChild(el('h2', '', S.status === 'won' ? 'ANON wins!' : 'So close, ninja'));
+      const w = el('div', 'res-word' + (S.status === 'lost' ? ' lost' : '')); ANSWER.split('').forEach(c => w.appendChild(el('span', '', c.toUpperCase()))); p.appendChild(w);
+      p.appendChild(el('div', 'res-msg', S.status === 'won' ? 'Solved in ' + S.guesses.length + '/6 · Word #' + S.n : 'The word was ' + ANSWER.toUpperCase() + ' · Word #' + S.n));
+    } else p.appendChild(el('h2', '', 'Statistics'));
+    p.appendChild(el('h3', '', done ? 'Statistics' : 'Your record'));
+    const g = el('div', 'stats');
+    [[st.played, 'Played'], [st.played ? Math.round(st.wins / st.played * 100) : 0, 'Win %'], [st.cur, 'Current streak'], [st.max, 'Max streak']].forEach(([v, l]) => { const s = el('div', 'stat'); s.appendChild(el('b', '', String(v))); s.appendChild(el('span', '', l)); g.appendChild(s); });
+    p.appendChild(g);
+    p.appendChild(el('h3', '', 'Guess distribution'));
+    const d = el('div', 'dist'), mx = Math.max(1, ...st.dist);
+    st.dist.forEach((v, i) => { const r = el('div', 'dr' + (S.status === 'won' && S.guesses.length === i + 1 ? ' me' : '')); r.appendChild(el('i', '', String(i + 1)));
+      const b = el('div', 'bar', String(v)); b.style.width = Math.max(8, v / mx * 100) + '%'; r.appendChild(b); d.appendChild(r); });
+    p.appendChild(d);
+    p.appendChild(el('h3', '', 'Next ANON word in')); p.appendChild(el('div', 'cd', fmtCd(T.next - now()))).id = 'mCd';
+    const row = el('div', 'btnrow');
+    const lb = el('button', 'btn', '🏆 Leaderboard'); lb.onclick = openLB; row.appendChild(lb);
+    if (done) { const sh = el('button', 'btn pri', 'Share 📤'); sh.id = 'shareBtn'; sh.onclick = share; row.appendChild(sh); }
+    p.appendChild(row);
+    if (done) { const m = el('div', 'lbmsg'); m.id = 'lbMsg'; p.appendChild(m); }
+  });
+  paintLb();
+}
+
+/* ---------- share ---------- */
+function shareText() {
+  const E = { correct: '🟨', present: '🟪', absent: '⬛' };
+  const grid = S.guesses.map(g => evaluate(g, ANSWER).map(r => E[r]).join('')).join('\n');
+  return 'Daily ANON Word #' + S.n + ' ' + (S.status === 'won' ? S.guesses.length : 'X') + '/6\n\n' + grid + '\n\nPlay free: ' + LINK;
+}
+async function copyText(t) {
+  try { if (navigator.clipboard && window.isSecureContext && !FRAMED) { await navigator.clipboard.writeText(t); return true; } } catch (e) {}
+  try { const ta = el('textarea'); ta.value = t; ta.setAttribute('readonly', ''); ta.style.cssText = 'position:fixed;left:-9999px;top:0;opacity:0';
+    document.body.appendChild(ta); ta.select(); ta.setSelectionRange(0, t.length); const ok = document.execCommand('copy'); ta.remove(); return ok; } catch (e) { return false; }
+}
+async function share() {
+  const t = shareText(); window.__lastShare = t;
+  const touch = matchMedia('(pointer:coarse)').matches;
+  if (touch && navigator.share) { try { await navigator.share({ text: t }); return; } catch (e) { if (e && e.name === 'AbortError') return; } }
+  if (await copyText(t)) { toast('Copied! Paste it anywhere 📋', 2000); return; }
+  openModal(p => { p.appendChild(el('h2', '', 'Copy your result')); p.appendChild(el('p', 'small', 'Press and hold, then Copy.'));
+    const ta = el('textarea', 'copybox'); ta.value = t; ta.readOnly = true; p.appendChild(ta); setTimeout(() => { ta.focus(); ta.select(); }, 50); });
+}
+
+/* ---------- day load + countdown ---------- */
+function load() {
+  T = today(); ANSWER = answerFor(T.n); input = ''; busy = false;
+  const d = ls.get(K_DAY, null);
+  S = d && d.n === T.n && Array.isArray(d.guesses) ? d : { n: T.n, guesses: [], status: 'playing', start: 0, end: 0, lb: null };
+  S.n = T.n; S.guesses = S.guesses.filter(g => /^[a-z]{5}$/.test(g)).slice(0, 6);
+  if (S.status !== 'playing' && S.guesses.length === 0) S.status = 'playing';
+  $('#pNum').textContent = '#' + T.n;
+  closeModal(); paintAll(); liveStats();
+  if (S.status === 'won' && S.lb && S.lb.retry === undefined && !S.lb.done) S.lb = null; // a post that was cut off by a reload: allow it again
+}
+function tick() {
+  const left = T.next - now();
+  $('#pCd').textContent = fmtCd(left); const m = document.getElementById('mCd'); if (m) m.textContent = fmtCd(left);
+  if (left <= 0) { load(); toast('🥷 A new ANON word is ready!', 2500); tick(); }
+}
+
+$('#helpBtn').onclick = showHelp;
+$('#statsBtn').onclick = showResult;
+$('#lbBtn').onclick = openLB;
+
+fit(); load(); tick(); setInterval(tick, 1000);
+if (S.status !== 'playing') setTimeout(() => { showResult(); if (S.status === 'won' && !S.lb) postScore(); }, 400);
+else if (!ls.get(K_SEEN, 0)) setTimeout(showHelp, 300);
+window.ANON_WORD = { version: '1.0.0', state: () => JSON.parse(JSON.stringify(S)), number: () => T.n, shareText: () => shareText(), score, evaluate, valid: w => VALID.has(w), answerCount: ANSWERS.length, dayFor: ms => today(ms).n };
+})();
+</script>
+</body>
+</html>

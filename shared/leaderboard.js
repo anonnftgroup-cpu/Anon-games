@@ -41,13 +41,15 @@ const SUPABASE_ANON_KEY = 'sb_publishable_-f0lT5SuVJ-TbFzlfMd7kA_hH6ZXp-N';
     _default: { minScore: 0, maxScore: () => 1000000, minTime: 1, maxTime: 86400, minMoves: 0, maxMoves: 100000 },
     // Solitaire: base points can't exceed ~745 (52x10 foundation + 24x5 waste + 21x5 flips),
     // plus the time bonus round(700000 / seconds). Every card needs a foundation move (52).
-    solitaire: { minScore: 0, maxScore: t => 760 + Math.floor(700000 / Math.max(1, t)), minTime: 60, maxTime: 86400, minMoves: 52, maxMoves: 100000 }
+    solitaire: { minScore: 0, maxScore: t => 760 + Math.floor(700000 / Math.max(1, t)), minTime: 60, maxTime: 86400, minMoves: 52, maxMoves: 100000 },
+    // Daily ANON Word: moves = guesses used (1-6). score = (7 - guesses) * 100 + max(0, 99 - floor(seconds / 6)).
+    'daily-word': { minScore: 100, maxScore: (t, m) => (7 - m) * 100 + Math.max(0, 99 - Math.floor(t / 6)), minTime: 3, maxTime: 86400, minMoves: 1, maxMoves: 6 }
   };
   function sane(game, score, time, moves) {
     const r = Object.assign({}, RULES._default, RULES[game] || {});
     const isInt = n => Number.isInteger(n);
     if (!/^[a-z0-9-]{2,32}$/.test(game)) return 'bad game id';
-    if (!isInt(score) || score < r.minScore || score > r.maxScore(time)) return 'score out of range';
+    if (!isInt(score) || score < r.minScore || score > r.maxScore(time, moves)) return 'score out of range';
     if (!isInt(time) || time < r.minTime || time > r.maxTime) return 'time out of range';
     if (!isInt(moves) || moves < r.minMoves || moves > r.maxMoves) return 'moves out of range';
     return '';
@@ -190,7 +192,7 @@ const SUPABASE_ANON_KEY = 'sb_publishable_-f0lT5SuVJ-TbFzlfMd7kA_hH6ZXp-N';
     list.push(row); ls.set(K_LOCAL(game), list.slice(-200));
   }
   function localTop(game, opts) {
-    const since = opts.period === 'week' ? weekStart().getTime() : 0, asc = opts.order === 'asc';
+    const ps = periodStart(opts.period), since = ps ? ps.getTime() : 0, asc = opts.order === 'asc';
     return ls.get(K_LOCAL(game), [])
       .filter(r => r && isCleanName(r.nickname))
       .filter(r => !since || (r.created_at && Date.parse(r.created_at) >= since))
@@ -201,6 +203,16 @@ const SUPABASE_ANON_KEY = 'sb_publishable_-f0lT5SuVJ-TbFzlfMd7kA_hH6ZXp-N';
     if (ls.get(K_LOCAL(game), []).length) return;
     rows.filter(r => r && Number.isFinite(r.score) && r.score > 0).forEach(r => localAdd(game, Object.assign({ nickname: getNickname() || 'You', created_at: null }, r)));
   }
+  // Midnight UK time (Europe/London, handles BST) for the current day, as a Date
+  function ukDayStart(now) {
+    const t = now == null ? Date.now() : +now;
+    const wall = ms => { const o = {}; new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/London', hourCycle: 'h23', year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric' })
+      .formatToParts(new Date(ms)).forEach(p => { o[p.type] = +p.value; }); return o; };
+    const w = wall(t), mid = Date.UTC(w.year, w.month - 1, w.day), w2 = wall(mid);
+    const off = Date.UTC(w2.year, w2.month - 1, w2.day, w2.hour, w2.minute, w2.second) - mid;
+    return new Date(mid - off);
+  }
+  const periodStart = p => p === 'week' ? weekStart() : p === 'day' ? ukDayStart() : null;
   function weekStart() { // Monday 00:00 local time
     const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return d;
   }
@@ -232,6 +244,8 @@ const SUPABASE_ANON_KEY = 'sb_publishable_-f0lT5SuVJ-TbFzlfMd7kA_hH6ZXp-N';
       if (r.ok) { ls.set(K_LAST(game), Date.now()); return { status: 'online', nickname: nick, message: 'Posted to the global leaderboard as ' + nick + '.' }; }
       const code = r.body && r.body.code, msg = (r.body && r.body.message) || '';
       if (/nickname not allowed/i.test(msg)) { ls.set(K_NICK, ''); return { status: 'rejected', message: NAME_ERR }; }
+      if (r.status === 409 || code === '23505') { ls.set(K_LAST(game), Date.now()); return { status: 'rejected', message: 'This name already has a score on today\'s board.' }; }
+      if (/not today/i.test(msg)) return { status: 'rejected', message: 'That puzzle has ended, so the score stays on this device.' };
       if (/rate/i.test(msg)) return { status: 'rejected', message: 'Slow down, ninja. Try again in a minute.' };
       if (code === '23514' || r.status === 400) return { status: 'rejected', message: 'The server did not accept this score.' };
       return { status: 'error', message: 'Could not reach the leaderboard. Saved on this device.' };
@@ -249,7 +263,7 @@ const SUPABASE_ANON_KEY = 'sb_publishable_-f0lT5SuVJ-TbFzlfMd7kA_hH6ZXp-N';
   }
   async function fetchTop(game, opts) {
     opts = Object.assign({ period: 'all', limit: 50, order: 'desc' }, opts);
-    const asc = opts.order === 'asc', since = opts.period === 'week' ? weekStart().toISOString() : null;
+    const asc = opts.order === 'asc', ps = periodStart(opts.period), since = ps ? ps.toISOString() : null;
     if (!configured()) return { online: false, rows: localTop(game, opts), note: 'Showing your best scores on this device. The global leaderboard switches on soon.' };
     try {
       let r = await req('/rpc/' + CFG.rpc, { method: 'POST', headers: headers(),
@@ -271,11 +285,14 @@ const SUPABASE_ANON_KEY = 'sb_publishable_-f0lT5SuVJ-TbFzlfMd7kA_hH6ZXp-N';
   /* ---------- board UI ---------- */
   function renderBoard(container, opts) {
     injectCSS();
-    opts = Object.assign({ period: 'all', order: 'desc', scoreLabel: 'Score' }, opts);
+    opts = Object.assign({}, opts); Object.keys(opts).forEach(k => { if (opts[k] == null) delete opts[k]; });
+    opts = Object.assign({ order: 'desc', scoreLabel: 'Score', movesLabel: 'moves', periods: ['all', 'week'] }, opts);
+    const PL = { day: 'Today', week: 'This week', all: 'All-time' };
+    opts.periods = opts.periods.filter(p => PL[p]); if (!opts.periods.length) opts.periods = ['all', 'week'];
+    if (!opts.periods.includes(opts.period)) opts.period = opts.periods[0];
     container.innerHTML = ''; container.classList.add('alb-board');
-    const seg = el('div', 'alb-seg');
-    const bAll = el('button', '', 'All-time'), bWeek = el('button', '', 'This week');
-    bAll.type = bWeek.type = 'button'; seg.appendChild(bAll); seg.appendChild(bWeek);
+    const seg = el('div', 'alb-seg'), pb = {};
+    opts.periods.forEach(p => { const b = el('button', '', PL[p]); b.type = 'button'; b.dataset.period = p; b.onclick = () => { opts.period = p; load(); }; pb[p] = b; seg.appendChild(b); });
     const list = el('ol', 'alb-list'), note = el('div', 'alb-note'), you = el('div', 'alb-you');
     container.appendChild(seg); container.appendChild(list); container.appendChild(note); container.appendChild(you);
     let token = 0;
@@ -288,13 +305,13 @@ const SUPABASE_ANON_KEY = 'sb_publishable_-f0lT5SuVJ-TbFzlfMd7kA_hH6ZXp-N';
     };
     async function load() {
       const my = ++token;
-      bAll.classList.toggle('on', opts.period === 'all'); bWeek.classList.toggle('on', opts.period === 'week');
+      Object.keys(pb).forEach(p => pb[p].classList.toggle('on', opts.period === p));
       list.innerHTML = ''; list.appendChild(el('div', 'alb-spin')); note.textContent = '';
       const res = await fetchTop(opts.game, { period: opts.period, order: opts.order, limit: 50 });
       if (my !== token) return;
       list.innerHTML = '';
       const me = (getNickname() || 'You').toLowerCase(); let meDone = false;
-      if (!res.rows.length) list.appendChild(el('div', 'alb-empty', opts.period === 'week' ? 'No scores yet this week. Be the first ninja on the board!' : 'No scores yet. Win a game to claim #1!'));
+      if (!res.rows.length) list.appendChild(el('div', 'alb-empty', opts.period === 'week' ? 'No scores yet this week. Be the first ninja on the board!' : opts.period === 'day' ? 'No scores yet today. Be the first ninja on the board!' : 'No scores yet. Win a game to claim #1!'));
       const rows = res.rows.filter(r => r && isCleanName(r.nickname)); // safety net: never show a blocked name
       if (!rows.length && res.rows.length) list.appendChild(el('div', 'alb-empty', 'No scores yet. Win a game to claim #1!'));
       rows.forEach((r, i) => {
@@ -302,18 +319,16 @@ const SUPABASE_ANON_KEY = 'sb_publishable_-f0lT5SuVJ-TbFzlfMd7kA_hH6ZXp-N';
         if (!meDone && String(r.nickname).toLowerCase() === me && (res.online ? !!getNickname() : true)) { li.classList.add('alb-me'); meDone = true; }
         li.appendChild(el('span', 'alb-rk', i < 3 ? ['🥇', '🥈', '🥉'][i] : String(i + 1)));
         const nm = el('span', 'alb-nm', r.nickname);
-        const bits = []; if (r.time_seconds != null) bits.push(fmtTime(r.time_seconds)); if (r.moves != null) bits.push(r.moves + ' moves'); if (r.mode) bits.push(String(r.mode).replace('draw', 'Draw '));
+        const bits = []; if (r.time_seconds != null) bits.push(fmtTime(r.time_seconds)); if (r.moves != null) bits.push(r.moves + ' ' + (r.moves === 1 ? opts.movesLabel.replace(/e?s$/, '') : opts.movesLabel)); if (r.mode && !opts.hideMode) bits.push(String(r.mode).replace('draw', 'Draw '));
         const sub = el('span', 'alb-sub', bits.join(' · '));
         const box = el('span'); box.style.minWidth = '0'; box.appendChild(nm); box.appendChild(sub);
         li.appendChild(box);
         li.appendChild(el('span', 'alb-sc', String(r.score)));
         list.appendChild(li);
       });
-      note.textContent = res.online ? (opts.period === 'week' ? 'Best score per player since Monday.' : 'Top 50 · best score per player.') : res.note;
+      note.textContent = res.online ? (opts.period === 'week' ? 'Best score per player since Monday.' : opts.period === 'day' ? 'Today\'s best score per player (resets at midnight UK time).' : 'Top 50 · best score per player.') : res.note;
       container.dataset.state = res.online ? 'online' : 'local';
     }
-    bAll.onclick = () => { opts.period = 'all'; load(); };
-    bWeek.onclick = () => { opts.period = 'week'; load(); };
     paintYou(); load();
     return { reload: load };
   }
@@ -334,7 +349,7 @@ const SUPABASE_ANON_KEY = 'sb_publishable_-f0lT5SuVJ-TbFzlfMd7kA_hH6ZXp-N';
   }
 
   window.ANONLB = {
-    version: '1.1.0', isConfigured: configured, submit, fetchTop, renderBoard, openBoard, promptNickname,
-    getNickname, setNickname, validateNickname, isCleanName, randomNickname, seedLocal, sane, weekStart, _cfg: CFG
+    version: '1.2.0', isConfigured: configured, submit, fetchTop, renderBoard, openBoard, promptNickname,
+    getNickname, setNickname, validateNickname, isCleanName, randomNickname, seedLocal, sane, weekStart, ukDayStart, _cfg: CFG
   };
 })();
