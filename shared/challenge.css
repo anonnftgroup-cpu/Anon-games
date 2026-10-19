@@ -1,0 +1,22 @@
+/* ANON Arcade · Challenge a friend (challenge.js). Prefixed .ach- */
+.ach{margin:10px auto 4px;max-width:340px;text-align:center;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+.ach-btn{display:block;width:100%;min-height:44px;border-radius:12px;border:1px solid #2bff88;background:linear-gradient(180deg,#0f2b1c,#06120b);color:#2bff88;font:inherit;font-weight:800;font-size:15px;letter-spacing:.04em;cursor:pointer;box-shadow:0 0 14px rgba(43,255,136,.22)}
+.ach-btn:active{transform:scale(.98)}
+.ach-res{margin:0 0 8px;padding:8px 10px;border-radius:10px;font-size:14px;line-height:1.35;color:#e9e3cf;border:1px solid rgba(212,175,55,.45);background:rgba(212,175,55,.08)}
+.ach-res b{color:#f3d77a}
+.ach-res.win{border-color:#2bff88;background:rgba(43,255,136,.12)}
+.ach-res.win b{color:#2bff88}
+.ach-opts{margin-top:8px}
+.ach-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.ach-o{display:flex;align-items:center;justify-content:center;min-height:40px;padding:0 6px;border-radius:10px;border:1px solid rgba(212,175,55,.6);background:#0b0d10;color:#f3d77a;font:inherit;font-size:13px;font-weight:700;text-decoration:none;cursor:pointer;box-sizing:border-box}
+.ach-in{width:100%;box-sizing:border-box;margin-top:6px;padding:8px 10px;border-radius:9px;border:1px solid rgba(212,175,55,.4);background:#07080a;color:#b9a35c;font:inherit;font-size:12px}
+.ach-banner{position:fixed;left:50%;bottom:calc(12px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:4600;display:flex;align-items:center;gap:6px;max-width:calc(100% - 16px);width:max-content;padding:8px 6px 8px 12px;border-radius:14px;border:1px solid #2bff88;background:#06100b;color:#e9e3cf;font:600 14px/1.3 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;box-shadow:0 6px 24px rgba(0,0,0,.6),0 0 18px rgba(43,255,136,.25);animation:ach-in .35s ease;transition:opacity .3s}
+.ach-banner b{color:#f3d77a}
+.ach-bt{display:flex;align-items:center;gap:8px;min-width:0}
+.ach-ico{font-size:18px}
+.ach-banner.ach-out{opacity:0;pointer-events:none}
+@keyframes ach-in{from{opacity:0;transform:translate(-50%,12px)}to{opacity:1;transform:translate(-50%,0)}}
+.ach-bx{flex:none;width:30px;height:30px;border-radius:50%;border:1px solid rgba(212,175,55,.5);background:rgba(0,0,0,.4);color:#f3d77a;font-size:14px;cursor:pointer}
+.ach-float{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:4500;width:min(360px,calc(100% - 20px));box-sizing:border-box;padding:12px 12px 10px;border-radius:16px;border:1px solid #d4af37;background:rgba(6,8,11,.97);box-shadow:0 0 30px rgba(43,255,136,.2)}
+.ach-float>.ach-bx{position:absolute;right:6px;top:6px;width:28px;height:28px}
+.ach-float .ach{margin:14px 0 0}

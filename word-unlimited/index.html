@@ -340,10 +340,20 @@ function showResult() {
     if (done) { const sh = el('button', 'btn', 'Share 📤'); sh.id = 'shareBtn'; sh.onclick = share; row.appendChild(sh);
       const nx = el('button', 'btn pri', 'Next word ▶'); nx.id = 'nextBtn'; nx.onclick = nextWord; row.appendChild(nx); }
     p.appendChild(row);
+    if (done) { const cm = el('div'); p.appendChild(cm); challenge(cm); }
     const dl = el('div', 'dailylink'); dl.innerHTML = 'Also try today\'s <a href="' + DAILY_URL + '">Daily ANON Word</a> 📅'; p.appendChild(dl);
   });
 }
 
+/* Challenge a friend (shared/challenge.js): shares the win streak, emoji grid only */
+function challenge(mount) {
+  const C = window.ANONChallenge; if (!C) return setTimeout(() => { if (mount.isConnected) challenge(mount); }, 300);
+  const st = stats(), won = R.status === 'won', best = R.mode === 'server' && st.srv ? st.srv.best : st.max, n = won ? streakNow() : best;
+  if (!n) { C.manual(GAME); return; }
+  const E = { c: '🟨', p: '🟪', a: '⬛' }, grid = R.pats.map(p => p.split('').map(c => E[c]).join('')).join('\n');
+  const text = (won ? "I'm on a " + n + '-word win streak' : 'My best win streak is ' + n + ' words') + ' on ANON Word Unlimited 🔥 Think you can beat me? #ANONArcade\n\n' + grid;
+  C.onGameOver({ game: GAME, score: n, mount, text, label: 'Streak' });
+}
 /* ---------- share ---------- */
 function streakNow() { const st = stats(); return R && R.mode === 'server' && st.srv ? st.srv.cur : st.cur; }
 function shareText() {

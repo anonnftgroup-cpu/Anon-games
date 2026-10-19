@@ -366,3 +366,12 @@ const SUPABASE_ANON_KEY = 'sb_publishable_-f0lT5SuVJ-TbFzlfMd7kA_hH6ZXp-N';
     getNickname, setNickname, validateNickname, isCleanName, randomNickname, seedLocal, sane, weekStart, ukDayStart, _cfg: CFG
   };
 })();
+
+/* Challenge a friend: load shared/challenge.js next to this file (see shared/CHALLENGE.md). */
+(function () {
+  try {
+    if (window.ANONChallenge || document.querySelector('script[src*="shared/challenge.js"]')) return;
+    const me = document.currentScript && document.currentScript.src; if (!me) return;
+    const s = document.createElement('script'); s.src = me.replace(/leaderboard\.js(\?.*)?$/, 'challenge.js?v=1'); s.defer = true; document.head.appendChild(s);
+  } catch (e) {}
+})();

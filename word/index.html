@@ -282,8 +282,17 @@ function showResult() {
     if (done) { const sh = el('button', 'btn pri', 'Share 📤'); sh.id = 'shareBtn'; sh.onclick = share; row.appendChild(sh); }
     p.appendChild(row);
     if (done) { const m = el('div', 'lbmsg'); m.id = 'lbMsg'; p.appendChild(m); }
+    if (done) { const cm = el('div'); p.appendChild(cm); challenge(cm); }
   });
   paintLb();
+}
+/* Challenge a friend (shared/challenge.js): emoji grid only, never the answer */
+function challenge(mount) {
+  const C = window.ANONChallenge; if (!C) return setTimeout(() => { if (mount.isConnected) challenge(mount); }, 300);
+  if (S.status !== 'won') { C.manual(GAME); return; } // a lost word has no score to beat
+  const sc = S.lb && S.lb.score != null ? S.lb.score : score(solvedIn(), secsUsed());
+  const text = shareText().replace(/\n\nPlay free: [^\n]*$/, '') + '\n\nThink you can beat me? #ANONArcade';
+  C.onGameOver({ game: GAME, score: sc, mount, text });
 }
 
 /* ---------- share ---------- */
