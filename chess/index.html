@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05070a">
+<title>ANON Chess · ANON NFTs</title>
+<meta name="description" content="ANON Chess: free chess with the crowned hooded ANON king. Play the computer on three levels or a friend. No sign-up.">
+<link rel="icon" href="../assets/logo.webp">
+<link rel="stylesheet" href="../assets/nft/kit.css">
+<style>
+#play{align-items:center}
+.players{display:flex;justify-content:space-between;align-items:center;width:100%;padding:2px 10px;gap:6px}
+.pl{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:800;color:#d9d2bc;padding:3px 8px 3px 3px;border-radius:20px;border:1px solid transparent;min-width:0}
+.pl img{width:30px;height:30px;border-radius:50%;object-fit:cover}
+.pl.w img{box-shadow:0 0 0 2px #f6edd2}.pl.b img{box-shadow:0 0 0 2px var(--pink)}
+.pl.turn{border-color:var(--gold2);background:rgba(212,175,55,.15)}
+.caps{font-size:11px;color:#b9b19a;min-height:14px;letter-spacing:-1px}
+.bwrap{flex:1;min-height:0;width:100%;display:flex;align-items:center;justify-content:center;padding:2px}
+.board{--s:min(calc((100vw - 20px)/8),calc((100dvh - 215px)/8),62px);display:grid;grid-template-columns:repeat(8,var(--s));border:3px solid var(--gold);border-radius:6px;box-shadow:0 0 22px rgba(255,61,154,.25);background-size:cover;background-position:center;overflow:hidden}
+.sq{width:var(--s);height:var(--s);position:relative;display:flex;align-items:center;justify-content:center}
+.sq.l{background:linear-gradient(135deg,#ecd27c,#c09a3a)}
+.sq.d{background:rgba(8,30,18,.74)}
+.sq.last{box-shadow:inset 0 0 0 100px rgba(255,61,154,.22)}
+.sq.selq{box-shadow:inset 0 0 0 100px rgba(43,255,136,.25)}
+.sq.chk{background:radial-gradient(circle,#ff3d9a 0,#ff3d9a55 45%,transparent 75%)}
+.sq.tgt::after{content:"";position:absolute;width:30%;height:30%;border-radius:50%;background:rgba(255,61,154,.8);pointer-events:none}
+.sq.tgt.cap::after{width:88%;height:88%;background:transparent;border:3px solid rgba(255,61,154,.85)}
+.sq .co{position:absolute;font-size:9px;font-weight:800;opacity:.6;pointer-events:none}
+.sq .co.f{right:2px;bottom:1px}.sq .co.r{left:2px;top:1px}
+.sq.l .co{color:#3a2c08}.sq.d .co{color:#e9c858}
+.pc{width:92%;height:92%;position:relative;pointer-events:none}
+.pc svg{width:100%;height:100%;display:block;position:relative;z-index:1;filter:drop-shadow(0 2px 2px rgba(0,0,0,.55))}
+.pc .por{position:absolute;right:-4%;top:-4%;width:40%;height:40%;border-radius:50%;background-size:cover;background-position:center;z-index:2}
+.pc.w .por{box-shadow:0 0 0 2px #f6edd2}.pc.b .por{box-shadow:0 0 0 2px var(--pink)}
+.promo{display:flex;gap:8px;justify-content:center;margin:10px 0}
+.promo button{width:64px;height:64px;border-radius:12px;border:1px solid var(--gold);background:linear-gradient(135deg,#ecd27c,#c09a3a);padding:4px}
+.promo svg{width:100%;height:100%}
+</style>
+</head>
+<body>
+<header><div class="top">
+  <div class="brand"><a class="back-btn" href="../" aria-label="Back to ANON Arcade">&larr; Arcade</a><img src="../assets/logo.webp" alt=""><h1>ANON CHESS</h1></div>
+  <div class="top-r"><button class="icon-btn" id="lbBtn" aria-label="Leaderboard">🏆</button><button class="icon-btn" id="menuBtn" aria-label="New game">↻</button></div>
+</div></header>
+<section class="view on" id="setup">
+  <div class="lbl">Mode</div>
+  <div class="seg" id="modeSeg"><button data-v="cpu">vs Computer</button><button data-v="2p">2 Players</button></div>
+  <div id="diffBox"><div class="lbl">Computer level</div>
+  <div class="seg" id="diffSeg"><button data-v="easy">Easy</button><button data-v="medium">Medium</button><button data-v="hard">Hard</button></div></div>
+  <div class="lbl">Your army's ANON (white, you move first)</div><div class="chars" id="p1Pick"></div>
+  <div class="lbl">Opponent's ANON (black)</div><div class="chars" id="p2Pick"></div>
+  <button class="go" id="goBtn">PLAY</button>
+  <p class="lbl" style="text-transform:none;letter-spacing:0">Each king is the crowned hooded ANON. Queens carry your chosen ANON's art. Full rules: castling, en passant, promotion, checkmate, stalemate and draws.</p>
+  <div class="nick" id="nick"></div>
+</section>
+<section class="view" id="play">
+  <div class="players"><div class="pl b" id="plB"><img alt=""><div><span></span><div class="caps" id="capB"></div></div></div><div class="pl w" id="plW"><img alt=""><div><span></span><div class="caps" id="capW"></div></div></div></div>
+  <div class="status" id="status"></div>
+  <div class="bwrap"><div class="board" id="board"></div></div>
+  <div class="bar"><button id="undoBtn">Undo</button><button id="resignBtn">Resign</button><button id="newBtn">New game</button><button id="setBtn">Settings</button></div>
+</section>
+<script src="../shared/leaderboard.js"></script>
+<script src="../shared/newsletter.js"></script>
+<script src="../assets/nft/kit.js"></script>
+<script src="vendor/chess.js"></script>
+<script src="glyphs.js"></script>
+<script src="engine.js"></script>
+<script>
+'use strict';
+const { $, el, ls, toast, modal, post, openLB, gameOver, art } = AK;
+const GAME = 'chess', TITLE = 'ANON Chess', DN = { easy: 'Easy', medium: 'Medium', hard: 'Hard' };
+const pref = ls.get('anonCH.pref', { mode: 'cpu', diff: 'medium', p1: 'royals', p2: 'skulls' });
+const savePref = () => ls.set('anonCH.pref', pref);
+const score = (diff, m) => ({ easy: 200, medium: 500, hard: 1000 })[diff] + Math.max(0, 100 - m) * 3;
+const KING_ART = art('anon').img;
+let G = null, S = null, sel = null, busy = false;
+AK.seg($('#modeSeg'), pref.mode, v => { pref.mode = v; savePref(); $('#diffBox').style.display = v === 'cpu' ? '' : 'none'; });
+$('#diffBox').style.display = pref.mode === 'cpu' ? '' : 'none';
+AK.seg($('#diffSeg'), pref.diff, v => { pref.diff = v; savePref(); });
+AK.picker($('#p1Pick'), pref.p1, id => { pref.p1 = id; savePref(); });
+AK.picker($('#p2Pick'), pref.p2, id => { pref.p2 = id; savePref(); });
+AK.nickLine($('#nick'));
+const show = id => document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === id));
+function svg(type, color) {
+  const g = CH_GLYPHS[type];
+  const fill = color === 'w' ? '#fbf3dc' : '#16120a', line = color === 'w' ? '#20180a' : '#f3d77a';
+  const inner = color === 'w' ? `<path d="${g.s}" fill="${fill}" stroke="#20180a" stroke-width="30" stroke-linejoin="round"/>${type === 'k' ? '' : `<path d="${g.o}" fill="${line}"/>`}` : `<path d="${g.s}" fill="${fill}" stroke="${line}" stroke-width="46" stroke-linejoin="round"/>`;
+  return `<svg viewBox="118 -1580 1600 1660" aria-hidden="true"><g transform="scale(1,-1)">${inner}</g></svg>`;
+}
+const NAMES = { k: 'king', q: 'queen', r: 'rook', b: 'bishop', n: 'knight', p: 'pawn' };
+function pieceEl(p) {
+  const d = el('div', 'pc ' + p.color); d.dataset.p = p.color + p.type;
+  if (p.type === 'k' || p.type === 'q') { const por = el('div', 'por'); por.style.backgroundImage = 'url(' + (p.type === 'k' ? KING_ART : art(p.color === 'w' ? pref.p1 : pref.p2).img) + ')'; d.appendChild(por);
+  }
+  d.insertAdjacentHTML('beforeend', svg(p.type, p.color));
+  d.setAttribute('aria-label', (p.color === 'w' ? 'white ' : 'black ') + NAMES[p.type]); return d;
+}
+function newGame() {
+  if (pref.p1 === pref.p2) pref.p2 = AK.ART.find(a => a.id !== pref.p1).id;
+  G = new Chess(); S = { mode: pref.mode, diff: pref.diff, over: false, start: Date.now(), last: null }; sel = null; busy = false;
+  $('#plW img').src = art(pref.p1).img; $('#plW span').textContent = S.mode === 'cpu' ? 'You' : 'White';
+  $('#plB img').src = art(pref.p2).img; $('#plB span').textContent = S.mode === 'cpu' ? 'Computer · ' + DN[S.diff] : 'Black';
+  $('#board').style.backgroundImage = 'url(' + art(pref.p2).cover + ')';
+  show('play'); render();
+}
+const myMoves = () => G.history({ verbose: true }).filter(m => m.color === 'w').length;
+const humanTurn = () => S && !S.over && !busy && (S.mode === '2p' || G.turn() === 'w');
+function render() {
+  const bd = $('#board'); bd.innerHTML = ''; const b = G.board();
+  const tg = sel ? G.moves({ square: sel, verbose: true }) : [];
+  const tset = new Map(tg.map(m => [m.to, m]));
+  let chk = null; if (G.inCheck()) b.forEach((row, r) => row.forEach((p, c) => { if (p && p.type === 'k' && p.color === G.turn()) chk = p.square; }));
+  for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) {
+    const sq = 'abcdefgh'[c] + (8 - r), q = el('div', 'sq ' + ((r + c) % 2 ? 'd' : 'l')); q.dataset.sq = sq;
+    if (S.last && (S.last.from === sq || S.last.to === sq)) q.classList.add('last');
+    if (sel === sq) q.classList.add('selq'); if (chk === sq) q.classList.add('chk');
+    if (tset.has(sq)) { q.classList.add('tgt'); if (b[r][c] || tset.get(sq).flags.includes('e')) q.classList.add('cap'); }
+    if (c === 0) q.appendChild(el('span', 'co r', 8 - r)); if (r === 7) q.appendChild(el('span', 'co f', 'abcdefgh'[c]));
+    if (b[r][c]) q.appendChild(pieceEl(b[r][c]));
+    bd.appendChild(q);
+  }
+  const t = G.turn(); $('#plW').classList.toggle('turn', t === 'w' && !S.over); $('#plB').classList.toggle('turn', t === 'b' && !S.over);
+  const sym = { p: '♟', n: '♞', b: '♝', r: '♜', q: '♛' }; const cw = [], cb = [];
+  G.history({ verbose: true }).forEach(m => { if (m.captured) (m.color === 'w' ? cw : cb).push(sym[m.captured]); });
+  $('#capW').textContent = cw.join(''); $('#capB').textContent = cb.join('');
+  if (!S.over) $('#status').textContent = (S.mode === 'cpu' ? (t === 'w' ? 'Your move' : 'Computer thinking…') : (t === 'w' ? 'White to move' : 'Black to move')) + (G.inCheck() ? ' · CHECK!' : '');
+}
+function tap(sq) {
+  if (!humanTurn()) return;
+  if (sel) { const ms = G.moves({ square: sel, verbose: true }).filter(m => m.to === sq);
+    if (ms.length) { if (ms.length > 1 || ms[0].promotion) return choosePromo(sel, sq); return doMove({ from: sel, to: sq }); } }
+  const p = G.get(sq); if (p && p.color === G.turn()) { sel = sel === sq ? null : sq; } else sel = null; render();
+}
+function choosePromo(from, to) {
+  const m = modal({ title: 'Promote to…', text: '<div class="promo" id="promo"></div>', keep: true, buttons: [['Cancel', () => { AK.closeModal(); sel = null; render(); }, 1]] });
+  const box = $('#promo'); ['q', 'r', 'b', 'n'].forEach(t => { const b = el('button'); b.innerHTML = svg(t, G.turn()); b.setAttribute('aria-label', NAMES[t]); b.dataset.t = t; b.onclick = () => { AK.closeModal(); doMove({ from, to, promotion: t }); }; box.appendChild(b); });
+}
+function doMove(mv) {
+  let r; try { r = G.move(mv); } catch (e) { r = null; } if (!r) return;
+  S.last = r; sel = null; render();
+  if (G.isGameOver()) return finish();
+  if (S.mode === 'cpu' && G.turn() === 'b') cpu();
+}
+function cpu() {
+  busy = true; render();
+  setTimeout(() => { const t0 = Date.now(); const m = CHE.best(G.fen(), S.diff); setTimeout(() => { busy = false; if (S.over || !m) return; doMove(m); }, Math.max(0, 300 - (Date.now() - t0))); }, 40);
+}
+function finish(resigned) {
+  S.over = true; S.end = Date.now(); render();
+  let w = 0, why = '';
+  if (resigned) { w = resigned === 'w' ? -1 : 1; why = (resigned === 'w' ? 'White' : 'Black') + ' resigned.'; }
+  else if (G.isCheckmate()) { w = G.turn() === 'w' ? -1 : 1; why = 'Checkmate!'; }
+  else why = G.isStalemate() ? 'Stalemate.' : G.isInsufficientMaterial() ? 'Not enough pieces left to mate.' : G.isThreefoldRepetition() ? 'Threefold repetition.' : 'Fifty-move rule.';
+  const n = myMoves(), t = Math.max(n, Math.round((S.end - S.start) / 1000));
+  let title, a;
+  if (!w) { title = 'Draw'; a = KING_ART; }
+  else if (S.mode === '2p') { title = (w === 1 ? 'White' : 'Black') + ' wins! 👑'; a = art(w === 1 ? pref.p1 : pref.p2).img; }
+  else if (w === 1) { title = 'You win! 👑'; why += ` You beat the ${DN[S.diff]} computer in <b>${n}</b> moves.`; a = art(pref.p1).img; }
+  else { title = 'The computer wins'; a = art(pref.p2).img; }
+  $('#status').textContent = title;
+  const win = S.mode === 'cpu' && w === 1 && !resigned;
+  setTimeout(() => { modal({ art: a, title, text: why, lb: true, buttons: [['PLAY AGAIN', newGame], ['Leaderboard', () => openLB(GAME, TITLE, DN), 1], ['Settings', () => show('setup'), 1]] });
+    const b = $('#lbMsg'); if (win) post(GAME, score(S.diff, n), t, n, S.diff); else if (b) b.textContent = S.mode === 'cpu' ? 'Checkmate the computer to get on the leaderboard.' : '2-player games are just for fun.'; }, 900);
+  gameOver();
+}
+$('#board').addEventListener('click', e => { const q = e.target.closest('.sq'); if (q) tap(q.dataset.sq); });
+$('#undoBtn').onclick = () => { if (busy || !G || S.over) return; G.undo(); if (S.mode === 'cpu' && G.turn() === 'b') G.undo(); const h = G.history({ verbose: true }); S.last = h[h.length - 1] || null; sel = null; render(); };
+$('#resignBtn').onclick = () => { if (!G || S.over || busy) return; modal({ title: 'Resign this game?', buttons: [['Resign', () => finish(S.mode === 'cpu' ? 'w' : G.turn())], ['Keep playing', null, 1]] }); };
+$('#goBtn').onclick = newGame; $('#newBtn').onclick = newGame; $('#setBtn').onclick = $('#menuBtn').onclick = () => show('setup');
+$('#lbBtn').onclick = () => openLB(GAME, TITLE, DN);
+window.ANON_CH = { game: () => G, state: () => S, newGame, tap, score, busy: () => busy, setPref: o => Object.assign(pref, o), load: fen => { G.load(fen); S.last = null; S.over = false; sel = null; AK.closeModal(); render(); }, doMove };
+</script>
+</body>
+</html>
