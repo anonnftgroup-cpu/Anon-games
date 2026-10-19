@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05070a">
+<title>ANON Sea Battle · ANON NFTs</title>
+<meta name="description" content="ANON Sea Battle: find and sink the computer's hidden fleet before it sinks your ANON ships. Free, no sign-up.">
+<link rel="icon" href="../assets/logo.webp">
+<link rel="stylesheet" href="../assets/nft/kit.css">
+<link rel="stylesheet" href="../assets/play/play.css">
+<style>
+.pad{display:flex;gap:6px;justify-content:center;align-items:center;padding:4px 4px 2px;flex:none;user-select:none;-webkit-user-select:none;flex-wrap:wrap}
+.pad button{min-width:52px;min-height:44px;border-radius:12px;border:1px solid rgba(212,175,55,.6);background:rgba(0,0,0,.55);color:var(--gold2);font-size:17px;font-weight:900;touch-action:none;padding:0 8px}
+.pad button.on{background:rgba(255,61,154,.35)}.pad .big{min-width:84px;background:linear-gradient(180deg,#ff5aab,#c41f73);color:#fff;font-size:15px}
+.pad button:disabled{opacity:.35}
+.dpad{display:grid;grid-template-columns:repeat(3,48px);grid-template-rows:repeat(2,40px);gap:4px}.dpad button{min-width:0;min-height:0}
+.dpad [data-k=U]{grid-column:2}.dpad [data-k=L]{grid-column:1;grid-row:2}.dpad [data-k=D]{grid-column:2;grid-row:2}.dpad [data-k=R]{grid-column:3;grid-row:2}
+.seg.wrap{flex-wrap:wrap}.seg.wrap button{flex:1 1 22%}
+@media (max-height:700px){.pad button{min-height:38px}}
+</style>
+</head>
+<body>
+<header><div class="top">
+  <div class="brand"><a class="back-btn" href="../" aria-label="Back to ANON Arcade">&larr; Arcade</a><img src="../assets/logo.webp" alt=""><h1>SEA BATTLE</h1></div>
+  <div class="top-r"><button class="icon-btn" id="lbBtn" aria-label="Leaderboard">🏆</button><button class="icon-btn" id="menuBtn" aria-label="Menu">↻</button></div>
+</div></header>
+<section class="view on" id="setup">
+  <img class="hero" id="hero" alt="ANON NFTs artwork">
+  <div class="lbl">Choose your ANON</div>
+  <div class="chars five" id="artPick"></div>
+  <div class="lbl">Difficulty</div><div class="seg" id="diff"><button data-v="easy">Easy</button><button data-v="medium">Medium</button><button data-v="hard">Hard</button></div>
+  <button class="go" id="goBtn">PLAY</button>
+  <p class="howto">Both fleets hide 5 ships (Shogun 5, Ronin 4, Ninja 3, Shadow 3, Kunai 2). Tap the enemy grid to fire: ✕ is a hit, a dot is a miss. You take turns with the CPU. Sink all 5 enemy ships first to win. Fewer shots score more. Don't like your fleet? Tap 🔀 New fleet before your first shot.</p>
+  <div class="nick" id="nick"></div>
+</section>
+<section class="view" id="play">
+  <div class="hud"><span id="sh"></span><span id="yl"></span><span id="cl"></span></div>
+  <div class="stage"><canvas id="cv"></canvas><div class="tap" id="msg"></div></div>
+  <div class="pad"><button data-k="F">🔀 New fleet</button></div>
+  <div class="bar"><button id="againBtn">New battle</button><button id="setBtn">Change ANON</button></div>
+</section>
+<script src="../shared/leaderboard.js"></script>
+<script src="../shared/newsletter.js"></script>
+<script src="../assets/nft/kit.js"></script>
+<script src="../assets/play/play.js"></script>
+<script>
+const GAME = 'sea-battle', TITLE = 'ANON Sea Battle', PK = 'anonB.sea-battle', ASPECT = 0.62, MOVES = 'shots', DEFMODE = 'medium';
+'use strict';
+const { $, ls, modal, post, openLB, gameOver, art, ART } = AK;
+const NAMES = Object.fromEntries(ART.map(a => [a.id, a.name.replace(/^ANON /, '')]));
+const DIFFN = { easy: 'Easy', medium: 'Medium', hard: 'Hard' };
+const pref = ls.get(PK, { art: 'anon', diff: DEFMODE, best: 0 }); if (window.MODELIST && !MODELIST.includes(pref.diff)) pref.diff = DEFMODE;
+const show = id => document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === id));
+const setHero = () => $('#hero').src = art(pref.art).cover;
+AK.picker($('#artPick'), pref.art, id => { pref.art = id; ls.set(PK, pref); setHero(); });
+if ($('#diff') && ![...$('#diff').children].some(b => b.dataset.v === pref.diff)) pref.diff = DEFMODE;
+if ($('#diff')) AK.seg($('#diff'), pref.diff, v => { pref.diff = v; ls.set(PK, pref); });
+setHero(); AK.nickLine($('#nick'));
+// ---- sound: generated in the browser, nothing plays before the first tap/key ----
+let AC = null; window.__sfx = 0;
+const unlock = () => { if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } if (AC && AC.state === 'suspended') AC.resume(); };
+['pointerdown', 'keydown', 'touchstart'].forEach(t => window.addEventListener(t, unlock, { capture: true, passive: true }));
+function tone(f, d, type, vol, f2) { if (!AC || pref.mute) return; window.__sfx++; const t = AC.currentTime, o = AC.createOscillator(), g = AC.createGain();
+  o.type = type || 'square'; o.frequency.setValueAtTime(f, t); if (f2) o.frequency.exponentialRampToValueAtTime(Math.max(20, f2), t + d);
+  g.gain.setValueAtTime(vol || .08, t); g.gain.exponentialRampToValueAtTime(.0001, t + d); o.connect(g).connect(AC.destination); o.start(t); o.stop(t + d + .02); }
+function boom(d, vol) { if (!AC || pref.mute) return; window.__sfx++; const n = Math.floor(AC.sampleRate * d), b = AC.createBuffer(1, n, AC.sampleRate), c = b.getChannelData(0);
+  for (let i = 0; i < n; i++) c[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 2); const s = AC.createBufferSource(), g = AC.createGain(), fl = AC.createBiquadFilter();
+  fl.type = 'lowpass'; fl.frequency.value = 900; s.buffer = b; g.gain.value = vol || .25; s.connect(fl).connect(g).connect(AC.destination); s.start(); }
+// ---- shared loop, pause when hidden, game over ----
+let C = null, S = null;
+const imgs = {}; const IM = id => imgs[id];
+ART.forEach(a => { AP.img(a.img).then(i => { imgs[a.id] = i; dirty = true; }); AP.img(a.cover).then(i => { imgs['c-' + a.id] = i; dirty = true; }); });
+function ring(x, im, cx, cy, r, col) { x.save(); x.beginPath(); x.arc(cx, cy, r, 0, 7); x.closePath(); x.fillStyle = '#111'; x.fill(); x.clip(); if (im) AP.cover(x, im, cx - r, cy - r, r * 2, r * 2); x.restore();
+  x.lineWidth = Math.max(1.5, r * .16); x.strokeStyle = col || '#f3d77a'; x.beginPath(); x.arc(cx, cy, r, 0, 7); x.stroke(); }
+function bgArt(x, id, a) { const im = IM('c-' + id); if (!im) return; x.globalAlpha = a || .22; const k = Math.max(C.w / im.width, C.h / im.height); x.drawImage(im, (C.w - im.width * k) / 2, (C.h - im.height * k) / 2, im.width * k, im.height * k); x.globalAlpha = 1; }
+const L = AP.loop(dt => { if (S && !S.over && !S.paused) step(dt); }, () => draw());
+let paused = false;
+function pause() { if (!S || S.over || S.paused) return; S.paused = true; $('#msg').textContent = 'Paused\nTap to resume'; }
+function resume() { if (S && S.paused) { S.paused = false; $('#msg').textContent = ''; } }
+document.addEventListener('visibilitychange', () => { if (document.hidden) pause(); });
+$('#msg').parentElement.addEventListener('pointerdown', () => { if (S && S.paused) resume(); }, true);
+async function start() { show('play'); if (!C) C = AP.canvas($('#cv'), ASPECT, () => draw()); else C.fit(); $('#msg').textContent = ''; newRun(); L.start(); }
+function end(score, secs, moves, mode, title, text) {
+  if (!S || S.over) return; S.over = true; draw(); setTimeout(() => L.stop(), 50); if (navigator.vibrate) navigator.vibrate([40, 30, 70]);
+  const a = art(S.art || pref.art), pb = score > (pref.best || 0); if (pb) { pref.best = score; ls.set(PK, pref); }
+  S.final = { score, secs, moves, mode };
+  setTimeout(() => { modal({ art: a.img, title: pb && score > 0 ? 'New best! 🏆' : title, text, lb: score > 0,
+    buttons: [['PLAY AGAIN', () => start()], ['Leaderboard', () => lb(), 1], ['Change ANON', () => show('setup'), 1]] });
+    if (score > 0) post(GAME, score, Math.max(1, Math.round(secs)), moves, mode); }, 500);
+  gameOver();
+}
+const lb = () => openLB(GAME, TITLE, MODES, MOVES);
+$('#goBtn').onclick = () => start(); $('#againBtn').onclick = () => { if (S) S.over = true; start(); };
+$('#setBtn').onclick = $('#menuBtn').onclick = () => { if (S) S.over = true; L.stop(); show('setup'); };
+$('#lbBtn').onclick = lb;
+// hold-buttons for on-screen pads: data-k = key name
+const held = new Set(); window.__held = held;
+document.querySelectorAll('.pad [data-k]').forEach(b => { const k = b.dataset.k;
+  b.addEventListener('pointerdown', e => { e.preventDefault(); held.add(k); b.classList.add('on'); if (window.onPad) onPad(k); });
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach(t => b.addEventListener(t, () => { held.delete(k); b.classList.remove('on'); })); });
+const KM = { ArrowLeft: 'L', a: 'L', A: 'L', ArrowRight: 'R', d: 'R', D: 'R', ArrowUp: 'U', w: 'U', W: 'U', ArrowDown: 'D', s: 'D', S: 'D', ' ': 'B', Enter: 'B', x: 'B', z: 'B' };
+const playing = () => $('#play').classList.contains('on') && !document.querySelector('.modal.show,.alb-ov,.anw-ov');
+window.addEventListener('keydown', e => { const k = KM[e.key]; if (!k || !playing()) return; e.preventDefault(); if (S && S.paused) resume(); if (!held.has(k) && window.onPad) onPad(k); held.add(k); });
+window.addEventListener('keyup', e => { const k = KM[e.key]; if (k) held.delete(k); });
+
+// pointer -> canvas CSS coords (canvas has a 2px border)
+function P(e) { const r = $('#cv').getBoundingClientRect(); return { x: (e.clientX - r.left - 2) * C.w / (r.width - 4), y: (e.clientY - r.top - 2) * C.h / (r.height - 4) }; }
+const ukDay = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/London' }).format(new Date());
+function hashStr(s) { let h = 2166136261; for (const c of s) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
+function txt(x, s, X, Y, size, col, align, weight, font) { x.font = `${weight || 800} ${size}px ${font || 'system-ui,sans-serif'}`; x.fillStyle = col || '#f3d77a'; x.textAlign = align || 'center'; x.textBaseline = 'middle'; x.fillText(s, X, Y); }
+var dirty = true; window.addEventListener('resize', () => dirty = true); window.addEventListener('pointerup', () => dirty = true);
+const fmt = s => Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
+
+const MODES = {"easy": "Easy", "medium": "Medium", "hard": "Hard"};
+// ANON Sea Battle vs computer
+const BASE = { easy: 100, medium: 300, hard: 600 }, SHIPS = [['Shogun', 5], ['Ronin', 4], ['Ninja', 3], ['Shadow', 3], ['Kunai', 2]];
+function fleet() { const g = Array(100).fill(-1), ships = [];
+  SHIPS.forEach(([n, len], si) => { for (;;) { const h = AP.rnd() < .5, r = AP.ri(0, h ? 9 : 10 - len), c = AP.ri(0, h ? 10 - len : 9), cells = [];
+    for (let k = 0; k < len; k++) cells.push((r + (h ? 0 : k)) * 10 + c + (h ? k : 0)); if (cells.every(i => g[i] < 0)) { cells.forEach(i => g[i] = si); ships.push({ n, len, cells, h, hits: 0 }); break; } } });
+  return { g, ships, shot: Array(100).fill(0) }; } // shot: 0 none, 1 miss, 2 hit, 3 sunk
+function fire(B, i) { if (B.shot[i]) return null; const si = B.g[i]; if (si < 0) { B.shot[i] = 1; return 'miss'; } const s = B.ships[si]; s.hits++; B.shot[i] = 2;
+  if (s.hits === s.len) { s.cells.forEach(j => B.shot[j] = 3); return 'sunk'; } return 'hit'; }
+const alive = B => B.ships.filter(s => s.hits < s.len);
+function aiPick(B, lvl) { const free = []; for (let i = 0; i < 100; i++) if (!B.shot[i]) free.push(i);
+  if (lvl === 'easy') { if (!(B.shot.includes(2) && AP.rnd() < .6)) return AP.pick(free); lvl = 'medium'; }
+  const hits = []; for (let i = 0; i < 100; i++) if (B.shot[i] === 2) hits.push(i);
+  if (lvl === 'medium') { if (hits.length) { const nb = []; hits.forEach(i => { const r = Math.floor(i / 10), c = i % 10; [[r - 1, c], [r + 1, c], [r, c - 1], [r, c + 1]].forEach(([a, b]) => { if (a >= 0 && a < 10 && b >= 0 && b < 10 && !B.shot[a * 10 + b]) nb.push(a * 10 + b); }); });
+      if (hits.length > 1) { const line = nb.filter(j => hits.some(h => (Math.floor(h / 10) === Math.floor(j / 10) && hits.every(k => Math.floor(k / 10) === Math.floor(h / 10))) || (h % 10 === j % 10 && hits.every(k => k % 10 === h % 10)))); if (line.length) return AP.pick(line); }
+      if (nb.length) return AP.pick(nb); } const par = free.filter(i => (Math.floor(i / 10) + i % 10) % 2 === 0); return AP.pick(par.length ? par : free); }
+  // hard: probability density over remaining ships
+  const P = Array(100).fill(0); alive(B).forEach(s => { for (let r = 0; r < 10; r++) for (let c = 0; c < 10; c++) for (const h of [1, 0]) { const cells = []; let okk = true;
+      for (let k = 0; k < s.len; k++) { const rr = r + (h ? 0 : k), cc = c + (h ? k : 0); if (rr > 9 || cc > 9) { okk = false; break; } const j = rr * 10 + cc; if (B.shot[j] === 1 || B.shot[j] === 3) { okk = false; break; } cells.push(j); }
+      if (!okk) continue; const nh = cells.filter(j => B.shot[j] === 2).length; if (hits.length && !nh) { cells.forEach(j => P[j] += .02); continue; } cells.forEach(j => { if (!B.shot[j]) P[j] += 1 + nh * 30; }); } });
+  if (!hits.length && AP.rnd() < .12) return AP.pick(free);
+  let best = free[0]; free.forEach(i => { if (P[i] + AP.rnd() * .01 > P[best]) best = i; }); return best; }
+function newRun() { S = { art: pref.art, mode: pref.diff, me: fleet(), cpu: fleet(), turn: 1, moves: 0, cpuShots: 0, t: 0, wait: 0, flash: 0, lastMe: -1, lastCpu: -1 }; hud(); dirty = true; updBtn(); }
+const hud = () => { $('#sh').textContent = '🎯 Shots ' + S.moves; $('#yl').textContent = '⚓ You ' + alive(S.me).length + '/5'; $('#cl').textContent = '💀 CPU ' + alive(S.cpu).length + '/5'; };
+const updBtn = () => { const b = $('[data-k=F]'); if (b) b.disabled = !S || S.moves > 0; };
+function lay() { const W = C.w, H = C.h, q = Math.min(W / 10.6, (H - 58) / 15.2), ox = (W - q * 10) / 2, oy = 18, sq = q * .52, sy = oy + q * 10 + 26; return { W, H, q, ox, oy, sq, sy, sx: ox }; }
+$('#cv').addEventListener('pointerdown', e => { if (!S || S.paused || S.over || S.turn !== 1) return; const p = P(e), L = lay(); const c = Math.floor((p.x - L.ox) / L.q), r = Math.floor((p.y - L.oy) / L.q);
+  if (r < 0 || r > 9 || c < 0 || c > 9) return; shoot(r * 10 + c); });
+function shoot(i) { const res = fire(S.cpu, i); if (!res) return tone(150, .06, 'square', .04); S.moves++; S.lastMe = i; updBtn(); dirty = true; S.flash = .3;
+  if (res === 'miss') { tone(220, .12, 'triangle', .06); } else { boom(.25, .22); if (navigator.vibrate) navigator.vibrate(30); if (res === 'sunk') AK.toast('You sank their ' + S.cpu.ships[S.cpu.g[i]].n + '! ⚔️'); }
+  hud(); if (!alive(S.cpu).length) return finish(true); S.turn = -1; S.wait = .6; }
+function step(dt) { S.t += dt; if (S.flash > 0) { S.flash -= dt; dirty = true; } if (S.turn === -1) { S.wait -= dt; if (S.wait <= 0) { const i = aiPick(S.me, S.mode), res = fire(S.me, i); S.cpuShots++; S.lastCpu = i; dirty = true;
+    if (res !== 'miss') { boom(.18, .15); if (res === 'sunk') AK.toast('CPU sank your ' + S.me.ships[S.me.g[i]].n); } hud(); if (!alive(S.me).length) return finish(false); S.turn = 1; } } }
+function finish(win) { S.turn = 0; const sc = win ? BASE[S.mode] + (100 - S.moves) * 10 : 0; if (!win) { S.cpu.ships.forEach(s => s.cells.forEach(j => { if (!S.cpu.shot[j]) S.cpu.shot[j] = 4; })); dirty = true; }
+  end(sc, S.t, S.moves, S.mode, win ? 'Fleet sunk! ⚓🏆' : 'Your fleet sank 💀', win ? `<b>${art(S.art).name}</b> sank the ${MODES[S.mode]} CPU fleet in <b>${S.moves}</b> shots.<br>Score <b>${sc}</b>` : `The CPU found all your ships in ${S.cpuShots} shots. Their ships are shown. Try again!`); }
+function onPad(k) { if (k === 'F' && S && !S.moves) { S.me = fleet(); dirty = true; tone(500, .06, 'triangle', .05); } }
+function cell(x, X, Y, q, st, ship, show, hl) {
+  x.fillStyle = 'rgba(8,30,46,.78)'; x.fillRect(X, Y, q, q); x.strokeStyle = 'rgba(212,175,55,.3)'; x.lineWidth = 1; x.strokeRect(X + .5, Y + .5, q - 1, q - 1);
+  if (ship && (show || st === 3 || st === 4)) { x.fillStyle = st === 3 ? 'rgba(255,61,154,.55)' : st === 4 ? 'rgba(255,61,154,.25)' : 'rgba(212,175,55,.55)'; AP.rr(x, X + q * .1, Y + q * .1, q * .8, q * .8, q * .2); x.fill(); }
+  if (st === 1) { x.fillStyle = 'rgba(200,220,255,.6)'; x.beginPath(); x.arc(X + q / 2, Y + q / 2, q * .12, 0, 7); x.fill(); }
+  if (st === 2 || st === 3) { x.strokeStyle = '#ff3d9a'; x.lineWidth = Math.max(2, q * .12); x.beginPath(); x.moveTo(X + q * .25, Y + q * .25); x.lineTo(X + q * .75, Y + q * .75); x.moveTo(X + q * .75, Y + q * .25); x.lineTo(X + q * .25, Y + q * .75); x.stroke(); }
+  if (hl) { x.strokeStyle = '#2bff88'; x.lineWidth = 2; x.strokeRect(X + 1, Y + 1, q - 2, q - 2); } }
+function draw() { if (!C || !dirty) return; dirty = false; const x = C.x, L = lay(); x.fillStyle = '#04101a'; x.fillRect(0, 0, C.w, C.h); if (!S) return; bgArt(x, S.art, .12);
+  txt(x, S.turn === 1 ? 'ENEMY WATERS · tap to fire' : S.turn === -1 ? 'CPU is aiming…' : 'ENEMY WATERS', L.W / 2, 9, 12, S.turn === 1 ? '#2bff88' : '#ff8cc4');
+  for (let i = 0; i < 100; i++) cell(x, L.ox + (i % 10) * L.q, L.oy + Math.floor(i / 10) * L.q, L.q, S.cpu.shot[i], S.cpu.g[i] >= 0, false, i === S.lastMe && S.flash > 0);
+  S.cpu.ships.forEach(s => { if (s.hits === s.len) { const a = s.cells[0], b = s.cells[s.len - 1]; ring(x, IM(S.art === 'skulls' ? 'ghost' : 'skulls'), L.ox + ((a % 10 + b % 10) / 2 + .5) * L.q, L.oy + ((Math.floor(a / 10) + Math.floor(b / 10)) / 2 + .5) * L.q, L.q * .34, '#ff3d9a'); } });
+  txt(x, 'YOUR FLEET', L.sx + L.sq * 5, L.sy - 9, 11, '#f3d77a');
+  for (let i = 0; i < 100; i++) cell(x, L.sx + (i % 10) * L.sq, L.sy + Math.floor(i / 10) * L.sq, L.sq, S.me.shot[i], S.me.g[i] >= 0, true, i === S.lastCpu);
+  S.me.ships.forEach(s => { const a = s.cells[0], b = s.cells[s.len - 1]; if (s.hits < s.len) ring(x, IM(S.art), L.sx + ((a % 10 + b % 10) / 2 + .5) * L.sq, L.sy + ((Math.floor(a / 10) + Math.floor(b / 10)) / 2 + .5) * L.sq, L.sq * .38, '#f3d77a'); });
+  const lx = L.sx + L.sq * 10 + 12; txt(x, 'CPU SHIPS', lx, L.sy - 9, 11, '#ff8cc4', 'left');
+  S.cpu.ships.forEach((s, k) => { const y = L.sy + 8 + k * L.sq * 1.9, dead = s.hits === s.len; for (let j = 0; j < s.len; j++) { x.fillStyle = dead ? 'rgba(255,61,154,.7)' : 'rgba(212,175,55,.6)'; AP.rr(x, lx + j * (L.sq * .62), y, L.sq * .55, L.sq * .55, 3); x.fill(); }
+    txt(x, s.n + (dead ? ' ✕' : ''), lx, y + L.sq * 1.05, 10.5, dead ? '#ff8cc4' : '#d9d2bc', 'left', 700); }); }
+window.G = { state: () => S, shoot, fleet, fire, aiPick, alive, C: () => C, L };
+
+</script>
+</body>
+</html>

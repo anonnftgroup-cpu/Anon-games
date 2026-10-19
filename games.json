@@ -1321,6 +1321,35 @@
         "hard": "Hard"
       },
       "added": "2026-10-19"
+    },
+    {
+      "id": "sea-battle",
+      "name": "ANON Sea Battle",
+      "tagline": "Hunt the hidden fleet before it finds yours",
+      "path": "sea-battle/",
+      "thumb": "sea-battle/thumb.webp",
+      "category": "Strategy",
+      "tags": [
+        "sea battle",
+        "ships",
+        "grid",
+        "vs computer"
+      ],
+      "status": "live",
+      "leaderboard": true,
+      "scoreLabel": "Score",
+      "order": "desc",
+      "periods": [
+        "day",
+        "all"
+      ],
+      "movesLabel": "shots",
+      "modeLabels": {
+        "easy": "Easy",
+        "medium": "Medium",
+        "hard": "Hard"
+      },
+      "added": "2026-10-19"
     }
   ]
 }
