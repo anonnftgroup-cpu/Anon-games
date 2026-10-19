@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05070a">
+<title>ANON Shadow Maze · ANON NFTs</title>
+<meta name="description" content="ANON Shadow Maze: guide your ANON ninja through the Shadow Shrine, collect gold coins and turn the tables with pink power gems. Free, no sign-up.">
+<link rel="icon" href="../assets/logo.webp">
+<link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
+<link rel="stylesheet" href="../assets/nft/kit.css">
+<link rel="stylesheet" href="../assets/retro-c1/rk.css">
+</head>
+<body>
+<script src="../shared/leaderboard.js"></script>
+<script src="../shared/newsletter.js"></script>
+<script src="../assets/nft/kit.js"></script>
+<script src="../assets/retro-c1/rk.js"></script>
+<script src="game.js"></script>
+<script>
+'use strict';
+(function () {
+  const T = 20, G = SMGame, SHADES = [['#6b3fa0', 'skulls'], ['#1f8a5b', 'ghost'], ['#8a93a6', 'venge'], ['#2b3a7a', 'eyes']];
+  const TOKENS = ['royals', 'aces', 'apes', 'lake', 'grumpy', 'anon', 'img8142'];
+  let wallLayer = null;
+  function walls(S) { // pre-render the maze once
+    const c = document.createElement('canvas'), k = 2; c.width = S.W * T * k; c.height = S.H * T * k; const x = c.getContext('2d'); x.scale(k, k);
+    const g = x.createLinearGradient(0, 0, 0, S.H * T); g.addColorStop(0, '#0b0718'); g.addColorStop(1, '#03100a'); x.fillStyle = g; x.fillRect(0, 0, S.W * T, S.H * T);
+    RK.stars(x, S.W * T, S.H * T, 9, 70);
+    RK.cover(x, RK.C.anon, 7.5 * T, 8.5 * T, 4 * T, 3 * T, 0.18);
+    for (let y = 0; y < S.H; y++) for (let xx = 0; xx < S.W; xx++) {
+      const ch = S.MAZE[y][xx]; if (ch !== '#') continue; const X = xx * T, Y = y * T;
+      x.fillStyle = '#0f2a1a'; x.fillRect(X, Y, T, T);
+      x.strokeStyle = '#d4af37'; x.lineWidth = 2; x.beginPath();
+      const open = (dx, dy) => S.MAZE[y + dy] && S.MAZE[y + dy][xx + dx] !== undefined && S.MAZE[y + dy][xx + dx] !== '#';
+      if (open(0, -1)) { x.moveTo(X, Y + 1); x.lineTo(X + T, Y + 1); } if (open(0, 1)) { x.moveTo(X, Y + T - 1); x.lineTo(X + T, Y + T - 1); }
+      if (open(-1, 0)) { x.moveTo(X + 1, Y); x.lineTo(X + 1, Y + T); } if (open(1, 0)) { x.moveTo(X + T - 1, Y); x.lineTo(X + T - 1, Y + T); } x.stroke();
+      x.fillStyle = 'rgba(43,255,136,.08)'; x.fillRect(X + 4, Y + 4, T - 8, T - 8);
+    }
+    x.fillStyle = 'rgba(255,61,154,.75)'; x.fillRect(9 * T + 2, 8 * T + 8, T - 4, 4); // shrine door
+    x.font = '700 8px Georgia,serif'; x.fillStyle = 'rgba(243,215,122,.7)'; x.textAlign = 'center'; x.fillText('SHADOW SHRINE', 9.5 * T, 11.7 * T);
+    return c;
+  }
+  function cloak(x, cx, cy, r, col, im, fr, blink, t) {
+    x.save(); x.translate(cx, cy);
+    const c = fr ? (blink ? '#fff3c4' : '#d4af37') : col;
+    x.beginPath(); x.moveTo(0, -r * 1.15); x.quadraticCurveTo(r * 1.05, -r * 0.6, r * 0.95, r * 0.9);
+    for (let i = 0; i < 4; i++) { const xx = r * 0.95 - (i + 1) * r * 0.475; x.lineTo(xx + r * 0.24, r * (0.6 + 0.25 * Math.sin(t * 9 + i))); x.lineTo(xx, r * 0.95); }
+    x.quadraticCurveTo(-r * 1.05, -r * 0.6, 0, -r * 1.15); x.closePath();
+    x.fillStyle = c; x.globalAlpha = fr ? 0.75 : 0.95; x.fill(); x.globalAlpha = 1; x.strokeStyle = 'rgba(0,0,0,.6)'; x.lineWidth = 1; x.stroke(); x.restore();
+    if (!fr) RK.portrait(x, im, cx, cy - r * 0.15, r * 0.52, 'rgba(0,0,0,.7)'); else { x.fillStyle = '#120e02'; x.beginPath(); x.arc(cx - r * .25, cy - r * .2, r * .13, 0, 7); x.arc(cx + r * .25, cy - r * .2, r * .13, 0, 7); x.fill(); }
+  }
+  RK.shell({
+    game: 'shadow-maze', title: 'ANON Shadow Maze', h1: 'ANON SHADOW MAZE', W: 19 * T, H: 21 * T, movesLabel: 'level', swipe: true, controls: ['pad'],
+    pickLabel: 'Pick your ninja', startMsg: 'READY!',
+    how: '<b>Swipe</b>, use the pad or the arrow keys / WASD to steer your ninja through the Shadow Shrine. Collect every 🪙 gold coin to clear the level. A 💎 pink power gem spooks the shadows for a few seconds, so catch them for 200, 400, 800 and 1,600. Grab the ANON NFT tokens for bonus points. Each level gets faster.',
+    create: o => { wallLayer = null; const S = G.create(o); S.shades = SHADES.map(s => s.slice()); S.shades.forEach(s => { if (s[1] === o.art) s[1] = 'grumpy'; }); return S; },
+    hud: S => `<span>⭐ ${S.score.toLocaleString()}</span><span>LVL ${S.level}</span><span>${'❤️'.repeat(Math.max(0, Math.min(5, S.lives)))}</span>`,
+    result: S => ({ score: S.score, time: S.t, moves: S.level, text: `Level ${S.level} · ${S.ghostsEaten} shadows caught · ${Math.round(S.t)} s` }),
+    draw(x, S, t) {
+      if (!wallLayer) wallLayer = walls(S); x.drawImage(wallLayer, 0, 0, S.W * T, S.H * T);
+      for (let y = 0; y < S.H; y++) for (let xx = 0; xx < S.W; xx++) { const c = S.coins[y][xx]; if (!c) continue; const X = xx * T + T / 2, Y = y * T + T / 2;
+        if (c === 1) { x.fillStyle = '#e9c858'; x.beginPath(); x.arc(X, Y, 2.6, 0, 7); x.fill(); }
+        else { const p = 1 + 0.15 * Math.sin(t * 6); x.save(); x.translate(X, Y); x.scale(p, p); x.fillStyle = '#ff3d9a'; x.shadowColor = '#ff3d9a'; x.shadowBlur = 10; x.beginPath(); x.moveTo(0, -7); x.lineTo(6, -1); x.lineTo(0, 7); x.lineTo(-6, -1); x.closePath(); x.fill(); x.shadowBlur = 0; x.fillStyle = 'rgba(255,255,255,.6)'; x.fillRect(-2, -3, 3, 3); x.restore(); } }
+      if (S.token) { const a = TOKENS[S.token.art % TOKENS.length]; RK.portrait(x, RK.P[a], S.token.x * T + T / 2, S.token.y * T + T / 2, 9 + Math.sin(t * 5), '#f3d77a', '#f3d77a'); }
+      const blink = S.fright > 0 && S.fright < 2 && Math.floor(t * 6) % 2 === 0;
+      S.gh.forEach(g => { const p = S.pos(g), cx = p.x * T + T / 2, cy = p.y * T + T / 2;
+        if (g.state === 'eyes') { x.fillStyle = '#fff'; x.beginPath(); x.arc(cx - 4, cy - 1, 3, 0, 7); x.arc(cx + 4, cy - 1, 3, 0, 7); x.fill(); return; }
+        cloak(x, cx, cy, 9, S.shades[g.i][0], RK.P[S.shades[g.i][1]], g.fr, blink, t); });
+      const p = S.pos(S.pl), cx = p.x * T + T / 2, cy = p.y * T + T / 2, d = S.DIRS[S.pl.dir];
+      RK.portrait(x, RK.P[S.art], cx, cy, 9, '#f3d77a', 'rgba(243,215,122,.7)');
+      x.fillStyle = '#ff3d9a'; x.beginPath(); x.moveTo(cx + d[0] * 13, cy + d[1] * 13); x.lineTo(cx + d[0] * 9 - d[1] * 4, cy + d[1] * 9 + d[0] * 4); x.lineTo(cx + d[0] * 9 + d[1] * 4, cy + d[1] * 9 - d[0] * 4); x.fill();
+    }
+  });
+})();
+</script>
+</body>
+</html>

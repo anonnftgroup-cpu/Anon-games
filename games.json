@@ -806,6 +806,31 @@
         "hard": "Hard"
       },
       "added": "2026-10-19"
+    },
+    {
+      "id": "shadow-maze",
+      "name": "ANON Shadow Maze",
+      "tagline": "Collect gold coins, spook the shadows with pink gems",
+      "path": "shadow-maze/",
+      "thumb": "shadow-maze/thumb.webp",
+      "category": "Arcade",
+      "tags": [
+        "maze",
+        "chase",
+        "retro",
+        "coins"
+      ],
+      "status": "live",
+      "leaderboard": true,
+      "scoreLabel": "Score",
+      "order": "desc",
+      "periods": [
+        "day",
+        "all"
+      ],
+      "movesLabel": "level",
+      "hideMode": true,
+      "added": "2026-10-19"
     }
   ]
 }
