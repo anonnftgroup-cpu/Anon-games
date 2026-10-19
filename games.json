@@ -101,6 +101,32 @@
       "added": "2026-10-19"
     },
     {
+      "id": "tictactoe",
+      "name": "ANON Tic-Tac-Toe",
+      "tagline": "Best of 5 with your ANON. Three in a row wins.",
+      "path": "tictactoe/",
+      "thumb": "tictactoe/thumb.webp",
+      "category": "Strategy",
+      "tags": [
+        "tic tac toe",
+        "noughts and crosses",
+        "board game",
+        "2 players",
+        "vs computer"
+      ],
+      "status": "live",
+      "leaderboard": true,
+      "scoreLabel": "Series",
+      "order": "desc",
+      "periods": [
+        "day",
+        "all"
+      ],
+      "movesLabel": "moves",
+      "hideMode": true,
+      "added": "2026-10-19"
+    },
+    {
       "id": "minesweeper",
       "name": "ANON Minesweeper",
       "tagline": "Clear the field to reveal ANON art",

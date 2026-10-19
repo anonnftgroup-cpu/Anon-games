@@ -1,0 +1,438 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05070a">
+<title>ANON Tic-Tac-Toe · ANON NFTs</title>
+<meta name="description" content="ANON Tic-Tac-Toe: free noughts and crosses from ANON NFTs. Play as your favourite ANON character in a best-of-5 series against the computer, or with a friend. No sign-up.">
+<link rel="icon" href="../assets/logo.webp">
+<link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
+<style>
+
+:root{--gold:#d4af37;--gold2:#f3d77a;--pink:#ff3d9a;--pink2:#ff8cc4;--green:#2bff88;--cell:50px}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overflow:hidden;overscroll-behavior:none}
+body{display:flex;flex-direction:column;height:100vh;height:100dvh;color:#e9e3cf;
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  background:radial-gradient(ellipse at 50% 40%,rgba(255,61,154,.09),transparent 62%),
+    linear-gradient(rgba(3,5,8,.6),rgba(3,5,8,.9)),url(../word/forest.webp) center 30%/cover no-repeat,#030806;
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+button{font:inherit;cursor:pointer;color:inherit}
+header{padding:calc(6px + env(safe-area-inset-top)) 10px 2px;max-width:560px;width:100%;margin:0 auto;flex:none}
+.top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.brand{display:flex;align-items:center;gap:9px;min-width:0}
+.brand img{width:36px;height:36px;border-radius:50%;box-shadow:0 0 0 1px rgba(212,175,55,.6),0 0 12px rgba(255,61,154,.25);flex:none}
+h1{margin:0;font-family:Georgia,"Times New Roman",serif;font-weight:700;font-size:clamp(16px,5vw,26px);letter-spacing:.1em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  background:linear-gradient(180deg,#fff3c4 0%,#e9c858 45%,#b48a25 75%,#f5dc85 100%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 8px rgba(255,61,154,.2))}
+.icon-btn{width:36px;height:36px;border-radius:50%;border:1px solid rgba(212,175,55,.6);background:rgba(0,0,0,.45);color:var(--gold2);font-weight:800;font-size:16px;flex:none;padding:0}
+.top-r{display:flex;gap:6px;flex:none}
+.back-btn{display:none;align-items:center;gap:4px;height:36px;padding:0 12px 0 9px;border-radius:18px;border:1px solid rgba(212,175,55,.7);background:rgba(0,0,0,.55);color:var(--gold2);font-weight:800;font-size:13px;letter-spacing:.04em;text-decoration:none;flex:none;white-space:nowrap;box-shadow:0 0 10px rgba(43,255,136,.12)}
+.in-hub .back-btn{display:inline-flex}
+.in-hub .brand img{width:30px;height:30px}
+.in-hub h1{font-size:clamp(14px,4.3vw,24px);letter-spacing:.06em}
+.view{flex:1;min-height:0;display:none;flex-direction:column;width:100%;max-width:560px;margin:0 auto}
+.view.on{display:flex}
+/* setup */
+#setup{overflow:auto;-webkit-overflow-scrolling:touch;padding:4px 12px 12px}
+.lbl{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#9d9580;margin:12px 2px 6px;text-align:center}
+.seg{display:flex;gap:6px;padding:4px;border:1px solid rgba(212,175,55,.35);border-radius:14px;background:rgba(0,0,0,.4)}
+.seg button{flex:1;min-height:40px;border:0;border-radius:10px;background:transparent;color:#b9a35c;font-weight:800;font-size:14px;letter-spacing:.03em}
+.seg button.on{background:linear-gradient(180deg,#e9c858,#a47c1f);color:#120e02;box-shadow:0 0 12px rgba(243,215,122,.3)}
+.seg.pinkseg button.on{background:linear-gradient(180deg,#ff5aab,#c41f73);color:#fff;box-shadow:0 0 12px rgba(255,61,154,.35)}
+.picker-title{text-align:center;font-family:Georgia,serif;color:var(--gold2);font-size:17px;letter-spacing:.05em;margin:14px 0 2px}
+.picker-title.p2{color:var(--pink2)}
+.chars{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
+.ch{position:relative;display:flex;flex-direction:column;align-items:center;gap:5px;padding:8px 4px 7px;border-radius:14px;border:1px solid rgba(212,175,55,.3);background:rgba(0,0,0,.42);text-align:center;min-width:0}
+.ch .disc{width:min(68px,19vw);height:min(68px,19vw)}
+.ch span{font-size:11.5px;line-height:1.2;color:#d9d2bc;font-weight:700;min-height:28px;display:flex;align-items:center}
+.ch.sel1{border-color:var(--gold2);background:rgba(212,175,55,.14);box-shadow:0 0 14px rgba(243,215,122,.3)}
+.ch.sel2{border-color:var(--pink2);background:rgba(255,61,154,.12);box-shadow:0 0 14px rgba(255,61,154,.3)}
+.ch .tag{position:absolute;top:5px;left:5px;font-size:10px;font-weight:900;padding:2px 6px;border-radius:8px;background:var(--gold2);color:#140f02}
+.ch.sel2 .tag{background:var(--pink);color:#fff}
+.ch:disabled{opacity:.5}
+.vsline{display:flex;align-items:center;justify-content:center;gap:10px;margin:14px 0 4px;font-size:13px;color:#b9b19a}
+.vsline .disc{width:40px;height:40px}
+.vsline b{color:var(--pink2)}
+.dice{border:1px solid rgba(255,140,196,.5);background:rgba(0,0,0,.4);border-radius:16px;padding:4px 10px;font-size:12px;color:var(--pink2);font-weight:800}
+.go{display:block;width:100%;min-height:50px;margin-top:14px;border-radius:14px;border:1px solid #ff8cc4;background:linear-gradient(180deg,#ff5aab,#c41f73);color:#fff;font-weight:900;font-size:17px;letter-spacing:.08em;box-shadow:0 0 18px rgba(255,61,154,.35)}
+.go:active{transform:translateY(1px)}
+/* discs */
+.disc{border-radius:50%;background:#0b0d10 center/cover no-repeat;box-shadow:0 0 0 3px #e2bf52,0 0 0 4px #7a5d14,inset 0 0 0 2px rgba(255,240,180,.55),0 3px 6px rgba(0,0,0,.6)}
+.disc.p2{box-shadow:0 0 0 3px #ff5aab,0 0 0 4px #8c1450,inset 0 0 0 2px rgba(255,210,235,.6),0 3px 6px rgba(0,0,0,.6)}
+/* play */
+.players{display:flex;align-items:center;gap:8px;padding:6px 10px 2px}
+.pl{flex:1;display:flex;align-items:center;gap:8px;min-width:0;padding:6px 8px;border-radius:14px;border:1px solid rgba(212,175,55,.22);background:rgba(0,0,0,.45);transition:box-shadow .2s,border-color .2s}
+.pl.r{flex-direction:row-reverse;text-align:right}
+.pl .disc{width:34px;height:34px;flex:none}
+.pl .nm{min-width:0}
+.pl .nm b{display:block;font-size:13px;color:#f1ead4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pl .nm i{display:block;font-style:normal;font-size:10.5px;color:#9d9580;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pl .sc{margin-left:auto;font:800 20px Georgia,serif;color:var(--gold2);font-variant-numeric:tabular-nums}
+.pl.r .sc{margin-left:0;margin-right:auto;color:var(--pink2)}
+.pl.turn{border-color:var(--gold2);box-shadow:0 0 14px rgba(243,215,122,.35)}
+.pl.r.turn{border-color:var(--pink2);box-shadow:0 0 14px rgba(255,61,154,.35)}
+.vs{font-family:Georgia,serif;color:#9d9580;font-size:12px;text-align:center;line-height:1.15}
+.series{display:flex;justify-content:center;gap:6px;margin-top:6px}
+.series i{width:22px;height:22px;border-radius:50%;border:1px solid rgba(212,175,55,.45);background:rgba(0,0,0,.4);font:normal 800 11px/20px system-ui;text-align:center;color:#140f02}
+.series i.w{background:linear-gradient(180deg,#f0cf5f,#b8901f)}
+.series i.l{background:linear-gradient(180deg,#ff5aab,#c41f73);color:#fff}
+.series i.d{background:#5a5d66;color:#eee}
+.series i.cur{box-shadow:0 0 0 2px #fff3c4,0 0 10px rgba(243,215,122,.6)}
+.status{text-align:center;font-size:13px;color:var(--gold2);min-height:18px;margin-top:5px;letter-spacing:.03em}
+.status.p2{color:var(--pink2)}
+.boardwrap{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:6px 8px}
+#board{position:relative;width:var(--bs);height:var(--bs);padding:12px;border-radius:22px;
+  background:linear-gradient(rgba(2,6,4,.55),rgba(2,6,4,.75)),url(../word/forest.webp) center/cover;
+  border:2px solid var(--gold);box-shadow:0 0 0 5px rgba(212,175,55,.12),0 0 34px rgba(255,61,154,.16),inset 0 0 30px rgba(0,0,0,.85)}
+#board::before,#board::after{content:"";position:absolute;width:12px;height:12px;left:50%;margin-left:-6px;transform:rotate(45deg);border-radius:2px;
+  background:linear-gradient(135deg,#ffc2df,#ff3d9a 55%,#9c1458);box-shadow:0 0 0 2px #d4af37,0 0 12px rgba(255,61,154,.8)}
+#board::before{top:-7px}#board::after{bottom:-7px}
+.tgrid{position:relative;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);width:100%;height:100%;gap:0}
+.cell{position:relative;border:0;background:transparent;padding:0;display:flex;align-items:center;justify-content:center;touch-action:manipulation}
+.cell:nth-child(3n+1),.cell:nth-child(3n+2){border-right:3px solid rgba(212,175,55,.75)}
+.cell:nth-child(-n+6){border-bottom:3px solid rgba(212,175,55,.75)}
+.cell:focus-visible{outline:3px solid #ff8cc4;outline-offset:-6px;border-radius:8px}
+.cell .disc{width:76%;height:76%;animation:place .28s cubic-bezier(.2,.9,.3,1.3)}
+@keyframes place{from{transform:scale(.2) rotate(-25deg);opacity:0}to{transform:scale(1);opacity:1}}
+.disc.win{animation:glow 1s ease-in-out infinite alternate;z-index:2}
+@keyframes glow{from{box-shadow:0 0 0 3px #fff3c4,0 0 10px 4px rgba(243,215,122,.8)}to{box-shadow:0 0 0 3px #fff3c4,0 0 22px 9px rgba(255,61,154,.75);transform:scale(1.07)}}
+.tgrid.done .disc:not(.win){filter:brightness(.45) saturate(.6)}
+#wline{position:absolute;inset:12px;pointer-events:none;overflow:visible;z-index:3}
+#wline line{stroke:#fff3c4;stroke-width:7;stroke-linecap:round;filter:drop-shadow(0 0 6px #f3d77a) drop-shadow(0 0 12px #ff3d9a);stroke-dasharray:400;stroke-dashoffset:400;animation:draw .5s ease forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+.toolbar{display:flex;gap:7px;padding:4px 10px calc(8px + env(safe-area-inset-bottom));flex:none}
+.btn{flex:1;min-height:44px;border-radius:11px;border:1px solid rgba(212,175,55,.75);background:linear-gradient(180deg,#1d1a0d,#0a0905);color:var(--gold2);font-weight:800;letter-spacing:.05em;font-size:14px}
+.btn:disabled{opacity:.35}
+.btn.pri{background:linear-gradient(180deg,#ff5aab,#c41f73);border-color:#ff8cc4;color:#fff}
+.btn:active{transform:translateY(1px);filter:brightness(1.2)}
+footer{text-align:center;font-size:10.5px;color:#7d776a;padding:0 8px calc(4px + env(safe-area-inset-bottom));letter-spacing:.04em;flex:none}
+footer a{color:#b9a35c;text-decoration:none}
+#toast{position:fixed;left:50%;top:84px;transform:translateX(-50%);background:rgba(10,10,10,.92);border:1px solid var(--gold);color:var(--gold2);padding:9px 16px;border-radius:10px;font-size:14px;font-weight:700;opacity:0;transition:opacity .2s;pointer-events:none;z-index:4500;white-space:nowrap}
+#toast.show{opacity:1}
+.overlay{position:fixed;inset:0;z-index:2000;display:none;align-items:center;justify-content:center;padding:14px;background:rgba(0,0,0,.6)}
+.overlay.show{display:flex}
+.panel{position:relative;width:100%;max-width:360px;max-height:calc(100% - 8px);overflow:auto;background:rgba(6,8,11,.97);border:1px solid var(--gold);border-radius:16px;padding:16px;text-align:center;
+  box-shadow:0 0 0 4px rgba(212,175,55,.08),0 0 40px rgba(255,61,154,.16);animation:popin .3s ease}
+@keyframes popin{from{transform:scale(.88);opacity:0}to{transform:scale(1);opacity:1}}
+.panel h2{margin:4px 0 6px;font-family:Georgia,serif;color:var(--gold2);letter-spacing:.08em;font-size:21px}
+.panel p{margin:6px 0;font-size:14px;line-height:1.45;color:#d9d2bc;text-align:left}
+.x{position:absolute;right:8px;top:8px;width:34px;height:34px;border-radius:50%;border:1px solid rgba(212,175,55,.5);background:rgba(0,0,0,.4);color:var(--gold2);font-size:15px}
+.res-disc{width:92px;height:92px;margin:6px auto 4px}
+.res-sub{color:#b9b19a;font-size:13.5px;margin-bottom:8px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:6px}
+.stat{border:1px solid rgba(212,175,55,.3);border-radius:9px;padding:6px 2px;background:rgba(0,0,0,.4)}
+.stat b{display:block;font-size:19px;color:var(--gold2);font-variant-numeric:tabular-nums}
+.stat span{display:block;font-size:9.5px;letter-spacing:.08em;color:#9d9580;text-transform:uppercase}
+.row{display:flex;gap:8px;margin-top:12px}
+.lbmsg{margin-top:10px;font-size:12.5px;color:#9d9580;min-height:17px;line-height:1.35}
+.lbmsg.ok{color:var(--green)}
+.lbmsg button{background:none;border:0;color:var(--gold);text-decoration:underline;font-size:12.5px;padding:2px 4px}
+.rec{font-size:12px;color:#9d9580;margin-top:8px}
+.fx{position:fixed;inset:0;pointer-events:none;z-index:1900;overflow:hidden}
+.fx .crown{position:absolute;font-size:64px;line-height:1;transform:translate(-50%,-50%);filter:drop-shadow(0 0 14px rgba(243,215,122,.85));animation:crownin 1.5s cubic-bezier(.2,.9,.3,1.2) forwards}
+@keyframes crownin{0%{transform:translate(-50%,-160%) scale(.3) rotate(-20deg);opacity:0}35%{transform:translate(-50%,-50%) scale(1.15) rotate(6deg);opacity:1}55%{transform:translate(-50%,-50%) scale(1) rotate(0)}85%{opacity:1}100%{transform:translate(-50%,-70%) scale(1.05);opacity:0}}
+.fx i{position:absolute;font-style:normal;font-size:16px;color:#f3d77a;text-shadow:0 0 8px rgba(243,215,122,.9);animation:spark 1.3s ease-out forwards}
+.fx i.p{color:#ff8cc4;text-shadow:0 0 8px rgba(255,61,154,.9)}
+@keyframes spark{0%{transform:translate(0,0) scale(.4);opacity:0}15%{opacity:1}100%{transform:translate(var(--dx),var(--dy)) scale(1.1) rotate(160deg);opacity:0}}
+.fx.lose{background:radial-gradient(ellipse at 50% 45%,rgba(0,0,0,0),rgba(0,0,0,.55));animation:shadows 2s ease forwards}
+@keyframes shadows{0%{opacity:0}30%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.fx{display:none}}
+@media (max-width:430px){.in-hub h1 .d{display:none}}
+</style>
+</head>
+<body>
+<header>
+  <div class="top">
+    <a class="back-btn" id="backBtn" href="../" aria-label="Back to ANON Arcade">&larr; Arcade</a>
+    <div class="brand"><img src="../assets/logo.webp" alt="ANON NFTs logo"><h1><span class="d">ANON </span>TIC-TAC-TOE</h1></div>
+    <div class="top-r">
+      <button class="icon-btn" id="lbBtn" aria-label="Leaderboard">&#127942;</button>
+      <button class="icon-btn" id="helpBtn" aria-label="How to play">?</button>
+    </div>
+  </div>
+</header>
+
+<section class="view" id="setup" aria-label="Game setup">
+  <div class="lbl">Mode</div>
+  <div class="seg" id="modeSeg"><button data-mode="cpu" type="button">🤖 vs Computer</button><button data-mode="2p" type="button">👥 2 Players</button></div>
+  <div id="diffBox"><div class="lbl">Difficulty · best of 5 series</div>
+    <div class="seg pinkseg" id="diffSeg"><button data-diff="easy" type="button">Easy</button><button data-diff="medium" type="button">Medium</button><button data-diff="hard" type="button">Hard</button></div></div>
+  <div class="picker-title" id="pickTitle">Choose your ANON</div>
+  <div class="chars" id="chars"></div>
+  <div class="vsline" id="vsLine"></div>
+  <button class="go" id="goBtn" type="button">PLAY ▶</button>
+</section>
+
+<section class="view" id="play" aria-label="Game">
+  <div class="players">
+    <div class="pl" id="pl1"><div class="disc"></div><div class="nm"><b></b><i></i></div><span class="sc" id="sc1">0</span></div>
+    <span class="vs" id="vsTxt">vs</span>
+    <div class="pl r" id="pl2"><div class="disc p2"></div><div class="nm"><b></b><i></i></div><span class="sc" id="sc2">0</span></div>
+  </div>
+  <div class="series" id="series" aria-label="Series"></div>
+  <div class="status" id="status" role="status" aria-live="polite"></div>
+  <div class="boardwrap" id="bw">
+    <div id="board"><div class="tgrid" id="grid" role="grid" aria-label="Board"></div><svg id="wline" viewBox="0 0 300 300" preserveAspectRatio="none" aria-hidden="true"></svg></div>
+  </div>
+  <div class="toolbar">
+    <button class="btn" id="newBtn" type="button">New</button>
+    <button class="btn" id="againBtn" type="button">Restart series</button>
+  </div>
+</section>
+<footer>ANON NFTs · <a href="https://anonnfts.com" target="_blank" rel="noopener">anonnfts.com</a> · Art from ANON NFTs collections</footer>
+<div id="toast"></div>
+<div class="overlay" id="modal"><div class="panel" id="panel" role="dialog" aria-modal="true"></div></div>
+
+<script src="../shared/leaderboard.js"></script>
+<script src="../shared/newsletter.js"></script>
+<script src="../word/fx.js?v=2"></script>
+<script src="engine.js"></script>
+<script>
+(() => {
+'use strict';
+const GAME = 'tictactoe', TITLE = 'ANON Tic-Tac-Toe', GAMES = 5;
+const E = window.ANON_TTT_ENGINE;
+const C4 = '../connect4/';
+const CHARS = [
+  { id: 'anon',   name: 'ANON Revenue Share NFTs', img: C4 + 'chars/anon.webp' },
+  { id: 'apes',   name: 'ANON Apes',               img: C4 + 'chars/apes.webp' },
+  { id: 'royals', name: 'ANON Apes King & Queen',  img: C4 + 'chars/royals.webp' },
+  { id: 'aces',   name: 'Aces by BESC',            img: C4 + 'chars/aces.webp' },
+  { id: 'ghost',  name: 'Ghost Dead Hand Aces',    img: C4 + 'chars/ghost.webp' },
+  { id: 'skulls', name: 'ANON Skulls',             img: C4 + 'chars/skulls.webp' },
+  { id: 'eyes',   name: 'ANON Eyes',               img: C4 + 'chars/eyes.webp' },
+  { id: 'lake',   name: 'Lake District NFTs',      img: C4 + 'chars/lake.webp' },
+  { id: 'venge',  name: 'Vengeance',               img: C4 + 'chars/venge.webp' }
+];
+// Series score (vs computer, best of 5): points per difficulty x (3 per win + 1 per draw). Losses score 0.
+const MULT = { easy: 10, medium: 30, hard: 100 }, DIFF_NAME = { easy: 'Easy', medium: 'Medium', hard: 'Hard' };
+const seriesScore = (diff, w, d) => MULT[diff] * (3 * w + d);
+const K_SET = 'anonTTT.v1.setup', K_GAME = 'anonTTT.v1.series', K_STATS = 'anonTTT.v1.stats', K_SEEN = 'anonTTT.v1.seenHelp';
+const FAST = !!window.ANON_TTT_FAST, AI_MS = FAST ? 40 : 450;
+const $ = s => document.querySelector(s);
+const el = (t, c, x) => { const e = document.createElement(t); if (c) e.className = c; if (x != null) e.textContent = x; return e; };
+const ls = { get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+             set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} } };
+const charById = id => CHARS.find(c => c.id === id) || CHARS[0];
+const toast = (() => { let t; return (m, ms) => { const e = $('#toast'); e.textContent = m; e.classList.add('show'); clearTimeout(t); t = setTimeout(() => e.classList.remove('show'), ms || 1600); }; })();
+const IN_HUB = /[?&]hub=1\b/.test(location.search) || (function () { try { return window.self !== window.top; } catch (e) { return true; } })();
+if (IN_HUB) document.documentElement.classList.add('in-hub');
+const setDisc = (d, ch) => { d.style.backgroundImage = 'url(' + ch.img + ')'; d.setAttribute('role', 'img'); d.setAttribute('aria-label', ch.name); };
+
+/* ---------- setup (same character select as ANON Connect 4) ---------- */
+let setup = Object.assign({ mode: 'cpu', diff: 'medium', p1: 'anon', p2: 'venge' }, ls.get(K_SET, {}));
+let pickStep = 1;
+function randomOther(id) { const o = CHARS.filter(c => c.id !== id); return o[Math.floor(Math.random() * o.length)].id; }
+if (setup.p1 === setup.p2) setup.p2 = randomOther(setup.p1);
+function renderSetup() {
+  document.querySelectorAll('#modeSeg button').forEach(b => b.classList.toggle('on', b.dataset.mode === setup.mode));
+  document.querySelectorAll('#diffSeg button').forEach(b => b.classList.toggle('on', b.dataset.diff === setup.diff));
+  $('#diffBox').style.display = setup.mode === 'cpu' ? '' : 'none';
+  const t = $('#pickTitle'), two = setup.mode === '2p';
+  t.textContent = two ? (pickStep === 1 ? 'Player 1: choose your ANON' : 'Player 2: choose your ANON') : 'Choose your ANON';
+  t.classList.toggle('p2', two && pickStep === 2);
+  const box = $('#chars'); box.innerHTML = '';
+  CHARS.forEach(ch => {
+    const b = el('button', 'ch'); b.type = 'button'; b.dataset.id = ch.id;
+    const d = el('div', 'disc' + (ch.id === setup.p2 && two ? ' p2' : '')); setDisc(d, ch); b.appendChild(d); b.appendChild(el('span', '', ch.name));
+    if (ch.id === setup.p1) { b.classList.add('sel1'); b.appendChild(el('i', 'tag', two ? 'P1' : 'YOU')); }
+    if (ch.id === setup.p2) { b.classList.add('sel2'); b.appendChild(el('i', 'tag', two ? 'P2' : 'CPU')); }
+    b.setAttribute('aria-pressed', String(ch.id === setup.p1 || (two && ch.id === setup.p2)));
+    b.onclick = () => pick(ch.id); box.appendChild(b);
+  });
+  const v = $('#vsLine'); v.innerHTML = '';
+  if (!two) { const d = el('div', 'disc p2'); setDisc(d, charById(setup.p2));
+    v.appendChild(el('span', '', 'Computer plays as')); v.appendChild(d); v.appendChild(el('b', '', charById(setup.p2).name));
+    const r = el('button', 'dice', '🎲'); r.type = 'button'; r.setAttribute('aria-label', 'Give the computer another character'); r.onclick = () => { setup.p2 = randomOther(setup.p1); saveSetup(); renderSetup(); }; v.appendChild(r); }
+  else v.appendChild(el('span', '', pickStep === 1 ? 'Tap a character for Player 1, then one for Player 2.' : 'Player 2 picks a different ANON.'));
+  $('#goBtn').textContent = two && pickStep === 1 ? 'NEXT: PLAYER 2 ▶' : 'PLAY ▶';
+}
+function pick(id) {
+  if (setup.mode === 'cpu') { setup.p1 = id; if (setup.p2 === id) setup.p2 = randomOther(id); }
+  else if (pickStep === 1) { setup.p1 = id; if (setup.p2 === id) setup.p2 = randomOther(id); pickStep = 2; }
+  else { if (id === setup.p1) { toast('Player 1 has that one. Pick another ANON'); return; } setup.p2 = id; }
+  saveSetup(); renderSetup();
+}
+const saveSetup = () => ls.set(K_SET, { mode: setup.mode, diff: setup.diff, p1: setup.p1, p2: setup.p2 });
+$('#modeSeg').onclick = e => { const m = e.target.closest('button'); if (!m) return; setup.mode = m.dataset.mode; pickStep = 1; saveSetup(); renderSetup(); };
+$('#diffSeg').onclick = e => { const m = e.target.closest('button'); if (!m) return; setup.diff = m.dataset.diff; saveSetup(); renderSetup(); };
+$('#goBtn').onclick = () => { if (setup.mode === '2p' && pickStep === 1) { pickStep = 2; renderSetup(); return; } startSeries(); };
+function showView(v) { $('#setup').classList.toggle('on', v === 'setup'); $('#play').classList.toggle('on', v === 'play'); if (v === 'play') fit(); }
+
+/* ---------- board ---------- */
+const grid = $('#grid'), cellEls = [];
+for (let i = 0; i < 9; i++) { const b = el('button', 'cell'); b.type = 'button'; b.dataset.i = i; b.setAttribute('aria-label', 'Row ' + (Math.floor(i / 3) + 1) + ', column ' + (i % 3 + 1));
+  b.addEventListener('click', () => humanMove(i)); grid.appendChild(b); cellEls.push(b); }
+function fit() { const bw = $('#bw'); const s = Math.floor(Math.max(200, Math.min(bw.clientWidth - 20, bw.clientHeight - 14, 420)));
+  document.documentElement.style.setProperty('--bs', s + 'px'); }
+addEventListener('resize', fit);
+
+/* ---------- series state ---------- */
+let S = null, busy = false, aiToken = 0;
+const stats = () => Object.assign({ easy: [0, 0, 0], medium: [0, 0, 0], hard: [0, 0, 0], best: { easy: 0, medium: 0, hard: 0 }, twoP: 0 }, ls.get(K_STATS, {}));
+function newSeries() { return { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 7), mode: setup.mode, diff: setup.diff, p1: setup.p1, p2: setup.p2,
+  gi: 0, marks: [], w: 0, l: 0, d: 0, myMoves: 0, board: Array(9).fill(0), starter: 1, turn: 1, result: null, start: 0, end: 0, over: false, lb: null }; }
+const isCpuTurn = () => S && S.mode === 'cpu' && S.turn === -1 && !S.result;
+const canHumanMove = () => S && !S.result && !busy && !isCpuTurn() && !$('#modal').classList.contains('show');
+const save = () => ls.set(K_GAME, S);
+function startSeries() { aiToken++; busy = false; S = newSeries(); save(); renderPlay(); showView('play'); closeModal(); }
+function nextGame() {
+  if (!S || !S.result || S.over) return;
+  S.gi++; S.board = Array(9).fill(0); S.result = null; S.starter = S.gi % 2 ? -1 : 1; S.turn = S.starter; save(); closeModal(); renderPlay();
+  if (isCpuTurn()) aiTurn();
+}
+function renderPlay() {
+  const a = charById(S.p1), b = charById(S.p2), cpu = S.mode === 'cpu';
+  setDisc($('#pl1 .disc'), a); setDisc($('#pl2 .disc'), b);
+  $('#pl1 b').textContent = cpu ? 'You' : 'Player 1'; $('#pl1 i').textContent = a.name;
+  $('#pl2 b').textContent = cpu ? 'CPU' : 'Player 2'; $('#pl2 i').textContent = (cpu ? DIFF_NAME[S.diff] + ' · ' : '') + b.name;
+  $('#sc1').textContent = S.w; $('#sc2').textContent = S.l; $('#vsTxt').innerHTML = 'vs<br><small>' + S.d + ' drawn</small>';
+  const se = $('#series'); se.innerHTML = '';
+  for (let i = 0; i < GAMES; i++) { const m = S.marks[i], x = el('i', m ? m : '', m === 'w' ? (cpu ? '✓' : '1') : m === 'l' ? (cpu ? '✕' : '2') : m === 'd' ? '=' : String(i + 1)); if (i === S.gi && !S.over) x.classList.add('cur'); se.appendChild(x); }
+  cellEls.forEach((c, i) => { c.innerHTML = ''; const v = S.board[i]; if (v) c.appendChild(makeDisc(v)); c.setAttribute('aria-label', c.getAttribute('aria-label').replace(/:.*$/, '') + (v ? ': ' + charById(v === 1 ? S.p1 : S.p2).name : '')); });
+  grid.classList.remove('done'); $('#wline').innerHTML = '';
+  if (S.result && S.result.line) highlight(S.result.line, false);
+  paintTurn();
+}
+function makeDisc(p) { const d = el('div', 'disc' + (p === -1 ? ' p2' : '')); setDisc(d, charById(p === 1 ? S.p1 : S.p2)); return d; }
+function paintTurn() {
+  $('#pl1').classList.toggle('turn', !S.result && S.turn === 1); $('#pl2').classList.toggle('turn', !S.result && S.turn === -1);
+  const st = $('#status'), cpu = S.mode === 'cpu'; st.classList.toggle('p2', !S.result && S.turn === -1);
+  const g = 'Game ' + (S.gi + 1) + ' of ' + GAMES + ' · ';
+  if (S.result) st.textContent = g + (S.result.winner === 0 ? 'Draw' : cpu ? (S.result.winner === 1 ? 'You win! 👑' : 'Computer wins') : (S.result.winner === 1 ? 'Player 1 wins! 👑' : 'Player 2 wins! 👑'));
+  else if (isCpuTurn()) st.textContent = g + 'Computer is thinking…';
+  else st.textContent = g + (cpu ? 'Your move' : (S.turn === 1 ? 'Player 1' : 'Player 2') + "'s move");
+}
+function place(i) {
+  const p = S.turn; S.board[i] = p; if (!S.start) S.start = Date.now();
+  if (S.mode === 'cpu' && p === 1) S.myMoves++;
+  S.turn = -p; const d = makeDisc(p); cellEls[i].appendChild(d);
+  const r = E.result(S.board); if (r) finishGame(r); save(); paintTurn();
+}
+function humanMove(i) { if (!canHumanMove() || S.board[i]) return; place(i); if (isCpuTurn()) aiTurn(); }
+const lastAi = [];
+async function aiTurn() {
+  const tok = ++aiToken; busy = true; paintTurn();
+  await new Promise(r => setTimeout(r, AI_MS));
+  if (tok !== aiToken || !S || S.result) { busy = false; return; }
+  const m = E.chooseMove(S.board, -1, { level: S.diff }); lastAi.push(m);
+  busy = false; place(m.cell);
+}
+const CENTER = i => [50 + (i % 3) * 100, 50 + Math.floor(i / 3) * 100];
+function highlight(line, anim) {
+  grid.classList.add('done'); line.forEach(i => { const d = cellEls[i].querySelector('.disc'); if (d) d.classList.add('win'); });
+  const [x1, y1] = CENTER(line[0]), [x2, y2] = CENTER(line[2]), ex = (x2 - x1) * 0.18, ey = (y2 - y1) * 0.18;
+  $('#wline').innerHTML = '<line x1="' + (x1 - ex) + '" y1="' + (y1 - ey) + '" x2="' + (x2 + ex) + '" y2="' + (y2 + ey) + '"' + (anim ? '' : ' style="animation:none;stroke-dashoffset:0"') + '/>';
+}
+function finishGame(r) {
+  S.result = r; const cpu = S.mode === 'cpu';
+  const m = r.winner === 1 ? 'w' : r.winner === -1 ? 'l' : 'd'; S.marks[S.gi] = m; S[m]++;
+  if (r.line) highlight(r.line, true);
+  const FX = window.ANONWordFX;
+  if (r.winner === 1 || (!cpu && r.winner === -1)) { if (FX) setTimeout(() => FX.crown($('#board')), 250); }
+  else if (r.winner === -1 && FX) FX.shadows();
+  if (S.gi === GAMES - 1) {                                   // series over
+    S.over = true; S.end = Date.now();
+    const st = stats();
+    if (cpu) { st[S.diff][0] += S.w; st[S.diff][1] += S.l; st[S.diff][2] += S.d; st.best[S.diff] = Math.max(st.best[S.diff] || 0, seriesScore(S.diff, S.w, S.d)); } else st.twoP++;
+    ls.set(K_STATS, st); save();
+    setTimeout(() => { showSeries(); if (cpu) postScore(); }, FAST ? 200 : 1300);
+    if (window.ANONNews) window.ANONNews.gameOver({ delay: 4200 });
+  } else setTimeout(showGame, FAST ? 150 : (r.line ? 1100 : 700));
+  renderPlay();
+}
+const secs = () => Math.min(86400, Math.max(10, S.myMoves, Math.round(((S.end || Date.now()) - (S.start || Date.now())) / 1000)));
+
+/* ---------- leaderboard ---------- */
+async function postScore() {
+  if (!S.over || S.mode !== 'cpu' || (S.lb && S.lb.done)) return;
+  const sc = seriesScore(S.diff, S.w, S.d), t = secs();
+  if (sc <= 0) { S.lb = { done: true, msg: 'Win or draw a game to score.', score: 0 }; save(); return paintLb(); }
+  S.lb = { done: false, msg: 'Posting your score…', score: sc }; save(); paintLb();
+  let r;
+  try { r = window.ANONLB ? await window.ANONLB.submit({ game: GAME, score: sc, time: t, moves: S.myMoves, mode: S.diff + '-' + S.w + '-' + S.d }) : { status: 'local', message: 'Leaderboard unavailable.' }; }
+  catch (e) { r = { status: 'error', message: 'Could not reach the leaderboard.' }; }
+  const retry = r.status === 'error' || r.status === 'skipped' || (r.status === 'local' && window.ANONLB && window.ANONLB.isConfigured() && !window.ANONLB.getNickname());
+  S.lb = { done: !retry, ok: r.status === 'online', msg: r.message || '', score: sc, retry }; save(); paintLb();
+}
+function paintLb() {
+  const box = document.getElementById('lbMsg'); if (!box) return;
+  box.innerHTML = ''; box.className = 'lbmsg' + (S.lb && S.lb.ok ? ' ok' : '');
+  if (S.mode !== 'cpu') { box.textContent = '2-player series are just for fun (no leaderboard).'; return; }
+  const sc = S.lb ? S.lb.score : seriesScore(S.diff, S.w, S.d);
+  box.appendChild(document.createTextNode('Series score ' + sc + '. ' + (S.lb ? S.lb.msg : '')));
+  if (S.lb && S.lb.retry) { const b = el('button', '', 'Post score'); b.onclick = () => { S.lb = null; postScore(); }; box.appendChild(b); }
+}
+const openLB = () => { if (window.ANONLB) window.ANONLB.openBoard(GAME, { title: TITLE + ' · best of 5', periods: ['day', 'all'], movesLabel: 'moves', hideMode: true }); else toast('Leaderboard unavailable'); };
+$('#lbBtn').onclick = openLB;
+
+/* ---------- modals ---------- */
+function openModal(build) { const p = $('#panel'); p.innerHTML = ''; const x = el('button', 'x', '✕'); x.type = 'button'; x.setAttribute('aria-label', 'Close'); x.onclick = closeModal; p.appendChild(x); build(p); $('#modal').classList.add('show'); }
+function closeModal() { $('#modal').classList.remove('show'); $('#panel').innerHTML = ''; }
+$('#modal').addEventListener('click', e => { if (e.target.id === 'modal') closeModal(); });
+function tallyRow(p) { const g = el('div', 'stats'), cpu = S.mode === 'cpu';
+  [[S.w, cpu ? 'You won' : 'P1 won'], [S.d, 'Drawn'], [S.l, cpu ? 'CPU won' : 'P2 won']].forEach(([v, l]) => { const s = el('div', 'stat'); s.appendChild(el('b', '', String(v))); s.appendChild(el('span', '', l)); g.appendChild(s); });
+  p.appendChild(g); }
+function showGame() {
+  if (!S || !S.result || S.over) return;
+  const w = S.result.winner, cpu = S.mode === 'cpu';
+  openModal(p => {
+    if (w !== 0) { const d = el('div', 'disc res-disc' + (w === -1 ? ' p2' : '')); setDisc(d, charById(w === 1 ? S.p1 : S.p2)); p.appendChild(d); }
+    p.appendChild(el('h2', '', w === 0 ? 'Draw!' : cpu ? (w === 1 ? 'Crowned! 👑' : 'The shadows win this one') : (w === 1 ? 'Player 1 wins!' : 'Player 2 wins!')));
+    p.appendChild(el('div', 'res-sub', 'Game ' + (S.gi + 1) + ' of ' + GAMES + (cpu ? ' · ' + DIFF_NAME[S.diff] : '')));
+    tallyRow(p);
+    const row = el('div', 'row'), nx = el('button', 'btn pri', 'Next game ▶'); nx.type = 'button'; nx.id = 'nextGame'; nx.onclick = nextGame; row.appendChild(nx); p.appendChild(row);
+    setTimeout(() => { try { nx.focus({ preventScroll: true }); } catch (e) {} }, 50);
+  });
+}
+function showSeries() {
+  const cpu = S.mode === 'cpu', sc = seriesScore(S.diff, S.w, S.d), won = S.w > S.l;
+  openModal(p => {
+    const hero = S.w === S.l ? null : (S.w > S.l ? 1 : -1);
+    if (hero) { const d = el('div', 'disc res-disc' + (hero === -1 ? ' p2' : '')); setDisc(d, charById(hero === 1 ? S.p1 : S.p2)); p.appendChild(d); }
+    p.appendChild(el('h2', '', cpu ? (won ? 'Series crowned! 👑' : S.w === S.l ? 'Series tied' : 'The shadows take the series') : (hero === 1 ? 'Player 1 takes the series!' : hero === -1 ? 'Player 2 takes the series!' : 'Series tied!')));
+    p.appendChild(el('div', 'res-sub', 'Best of ' + GAMES + (cpu ? ' · ' + DIFF_NAME[S.diff] : ' · 2 players')));
+    tallyRow(p);
+    if (cpu) { const st = stats(); p.appendChild(el('div', 'rec', 'Score ' + sc + ' = ' + MULT[S.diff] + ' × (3 × ' + S.w + ' wins + ' + S.d + ' draws) · your best on ' + DIFF_NAME[S.diff] + ': ' + (st.best[S.diff] || 0))); }
+    const row = el('div', 'row');
+    if (cpu) { const lb = el('button', 'btn', '🏆 Board'); lb.type = 'button'; lb.onclick = openLB; row.appendChild(lb); }
+    const nw = el('button', 'btn', 'New'); nw.type = 'button'; nw.onclick = () => { closeModal(); $('#newBtn').click(); }; row.appendChild(nw);
+    const ag = el('button', 'btn pri', 'New series'); ag.type = 'button'; ag.id = 'rAgain'; ag.onclick = startSeries; row.appendChild(ag);
+    p.appendChild(row);
+    const m = el('div', 'lbmsg'); m.id = 'lbMsg'; p.appendChild(m);
+  });
+  paintLb();
+}
+function showHelp() {
+  openModal(p => {
+    p.appendChild(el('h2', '', 'How to play'));
+    p.appendChild(el('p', '', 'Pick your ANON, then take turns placing your character on the 3 × 3 board. Get three in a row (across, down or diagonally) to win the game.'));
+    p.appendChild(el('p', '', 'Each series is the best of 5 games and the first move swaps every game. Play the computer on Easy, Medium or Hard (tough, but beatable if you are sharp), or pass the phone to a friend.'));
+    p.appendChild(el('p', '', 'Leaderboard (vs computer): series score = 10 (Easy), 30 (Medium) or 100 (Hard) × (3 for each win + 1 for each draw). A perfect Hard series scores 1500.'));
+    const r = el('div', 'row'), b = el('button', 'btn pri', "Let's play"); b.type = 'button'; b.onclick = closeModal; r.appendChild(b); p.appendChild(r);
+  });
+  ls.set(K_SEEN, 1);
+}
+$('#helpBtn').onclick = showHelp;
+$('#newBtn').onclick = () => { aiToken++; busy = false; pickStep = 1; renderSetup(); showView('setup'); };
+$('#againBtn').onclick = startSeries;
+document.addEventListener('keydown', e => {
+  if (e.ctrlKey || e.metaKey || e.altKey || (e.target && /^(INPUT|TEXTAREA)$/.test(e.target.tagName))) return;
+  if (e.key === 'Escape' && $('#modal').classList.contains('show')) return closeModal();
+  if (/^[1-9]$/.test(e.key) && $('#play').classList.contains('on')) humanMove(+e.key - 1);
+});
+
+/* ---------- boot ---------- */
+renderSetup();
+const saved = ls.get(K_GAME, null);
+if (saved && Array.isArray(saved.board) && saved.board.length === 9 && !saved.over && CHARS.some(c => c.id === saved.p1) && (saved.start || saved.gi)) {
+  S = Object.assign(newSeries(), saved); renderPlay(); showView('play');
+  if (S.result) showGame(); else if (isCpuTurn()) aiTurn();
+} else showView('setup');
+if (!ls.get(K_SEEN, 0)) setTimeout(showHelp, 300);
+window.ANON_TTT = { version: '1.0.0', engine: E, chars: CHARS, seriesScore, state: () => JSON.parse(JSON.stringify(S)), busy: () => busy || isCpuTurn(), tap: i => humanMove(i), next: nextGame, aiLog: () => lastAi.slice() };
+})();
+</script>
+</body>
+</html>
