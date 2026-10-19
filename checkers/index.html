@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05070a">
+<title>ANON Checkers · ANON NFTs</title>
+<meta name="description" content="ANON Checkers: free English draughts with ANON NFT pieces and crowned kings. Play the computer or a friend.">
+<link rel="icon" href="../assets/logo.webp">
+<link rel="stylesheet" href="../assets/nft/kit.css">
+<style>
+#play{align-items:center}
+.players{display:flex;justify-content:space-between;align-items:center;width:100%;padding:2px 10px;gap:8px}
+.pl{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:800;color:#d9d2bc;padding:3px 8px 3px 3px;border-radius:20px;border:1px solid transparent;min-width:0}
+.pl img{width:30px;height:30px;border-radius:50%;object-fit:cover}
+.pl.p1 img{box-shadow:0 0 0 2px var(--gold2)}.pl.p2 img{box-shadow:0 0 0 2px var(--pink)}
+.pl.turn{border-color:var(--gold2);background:rgba(212,175,55,.15)}
+.pl span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bwrap{flex:1;min-height:0;width:100%;display:flex;align-items:center;justify-content:center;padding:4px}
+.board{--s:min(calc((100vw - 20px)/8),calc((100dvh - 200px)/8),62px);display:grid;grid-template-columns:repeat(8,var(--s));border:3px solid var(--gold);border-radius:6px;box-shadow:0 0 22px rgba(255,61,154,.25);background-size:cover;background-position:center;overflow:hidden}
+.sq{width:var(--s);height:var(--s);position:relative;display:flex;align-items:center;justify-content:center}
+.sq.l{background:linear-gradient(135deg,#ecd27c,#b8912f)}
+.sq.d{background:rgba(6,22,14,.72)}
+.sq.last{box-shadow:inset 0 0 0 100px rgba(243,215,122,.18)}
+.sq.tgt::after{content:"";position:absolute;width:32%;height:32%;border-radius:50%;background:rgba(255,61,154,.85);box-shadow:0 0 10px var(--pink)}
+.sq.must{box-shadow:inset 0 0 0 3px rgba(255,61,154,.8)}
+.pc{width:84%;height:84%;border-radius:50%;background-size:cover;background-position:center;position:relative;transition:transform .15s}
+.pc.p1{box-shadow:0 0 0 3px #f3d77a,0 3px 6px rgba(0,0,0,.6)}
+.pc.p2{box-shadow:0 0 0 3px #ff3d9a,0 3px 6px rgba(0,0,0,.6)}
+.pc.sel{transform:scale(1.1);box-shadow:0 0 0 3px #fff,0 0 16px var(--gold2)}
+.pc.k::after{content:"👑";position:absolute;left:50%;top:-22%;transform:translateX(-50%);font-size:calc(var(--s)*.46);filter:drop-shadow(0 1px 2px #000)}
+</style>
+</head>
+<body>
+<header><div class="top">
+  <div class="brand"><a class="back-btn" href="../" aria-label="Back to ANON Arcade">&larr; Arcade</a><img src="../assets/logo.webp" alt=""><h1>ANON CHECKERS</h1></div>
+  <div class="top-r"><button class="icon-btn" id="lbBtn" aria-label="Leaderboard">🏆</button><button class="icon-btn" id="menuBtn" aria-label="New game">↻</button></div>
+</div></header>
+<section class="view on" id="setup">
+  <div class="lbl">Mode</div>
+  <div class="seg" id="modeSeg"><button data-v="cpu">vs Computer</button><button data-v="2p">2 Players</button></div>
+  <div id="diffBox"><div class="lbl">Computer level</div>
+  <div class="seg" id="diffSeg"><button data-v="easy">Easy</button><button data-v="medium">Medium</button><button data-v="hard">Hard</button></div></div>
+  <div class="lbl">Your ANON pieces (gold, you move first)</div><div class="chars" id="p1Pick"></div>
+  <div class="lbl">Opponent pieces (pink)</div><div class="chars" id="p2Pick"></div>
+  <button class="go" id="goBtn">PLAY</button>
+  <p class="lbl" style="text-transform:none;letter-spacing:0">English draughts: captures are compulsory and multi-jumps must be finished. Reach the far row to be crowned 👑.</p>
+  <div class="nick" id="nick"></div>
+</section>
+<section class="view" id="play">
+  <div class="players"><div class="pl p2" id="pl2"><img alt=""><span></span></div><div class="pl p1" id="pl1"><img alt=""><span></span></div></div>
+  <div class="status" id="status"></div>
+  <div class="bwrap"><div class="board" id="board"></div></div>
+  <div class="bar"><button id="undoBtn">Undo</button><button id="newBtn">New game</button><button id="setBtn">Settings</button></div>
+</section>
+<script src="../shared/leaderboard.js"></script>
+<script src="../shared/newsletter.js"></script>
+<script src="../assets/nft/kit.js"></script>
+<script src="engine.js"></script>
+<script>
+'use strict';
+const { $, el, ls, toast, modal, post, openLB, gameOver, art } = AK;
+const GAME = 'checkers', TITLE = 'ANON Checkers', DN = { easy: 'Easy', medium: 'Medium', hard: 'Hard' };
+const pref = ls.get('anonCK.pref', { mode: 'cpu', diff: 'medium', p1: 'anon', p2: 'skulls' });
+const savePref = () => ls.set('anonCK.pref', pref);
+const score = (diff, m) => ({ easy: 100, medium: 300, hard: 600 })[diff] + Math.max(0, 60 - m) * 5;
+let S = null, sel = [], busy = false;
+AK.seg($('#modeSeg'), pref.mode, v => { pref.mode = v; savePref(); $('#diffBox').style.display = v === 'cpu' ? '' : 'none'; });
+$('#diffBox').style.display = pref.mode === 'cpu' ? '' : 'none';
+AK.seg($('#diffSeg'), pref.diff, v => { pref.diff = v; savePref(); });
+AK.picker($('#p1Pick'), pref.p1, id => { pref.p1 = id; savePref(); });
+AK.picker($('#p2Pick'), pref.p2, id => { pref.p2 = id; savePref(); });
+AK.nickLine($('#nick'));
+const show = id => document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === id));
+function newGame() {
+  if (pref.p1 === pref.p2) pref.p2 = AK.ART.find(a => a.id !== pref.p1).id;
+  S = { b: CKE.init(), side: 1, mode: pref.mode, diff: pref.diff, hist: [], quiet: 0, last: null, over: false, start: Date.now(), myMoves: 0 };
+  sel = []; busy = false;
+  const a1 = art(pref.p1), a2 = art(pref.p2);
+  $('#pl1 img').src = a1.img; $('#pl1 span').textContent = S.mode === 'cpu' ? 'You' : 'Gold';
+  $('#pl2 img').src = a2.img; $('#pl2 span').textContent = S.mode === 'cpu' ? 'Computer · ' + DN[S.diff] : 'Pink';
+  $('#board').style.backgroundImage = 'url(' + a2.cover + ')';
+  show('play'); render();
+}
+function legal() { return CKE.moves(S.b, S.side); }
+function render() {
+  const bd = $('#board'); bd.innerHTML = ''; const ms = S.over ? [] : legal();
+  const cand = ms.filter(m => sel.every((s, i) => m.path[i] === s));
+  const tg = new Set(sel.length ? cand.map(m => m.path[sel.length]) : []);
+  const must = new Set(!sel.length && ms.length && ms[0].caps.length && humanTurn() ? ms.map(m => m.path[0]) : []);
+  const a1 = art(pref.p1).img, a2 = art(pref.p2).img;
+  for (let i = 0; i < 64; i++) { const r = i >> 3, c = i & 7, d = (r + c) % 2 === 1; const q = el('div', 'sq ' + (d ? 'd' : 'l')); q.dataset.i = i;
+    if (S.last && S.last.includes(i)) q.classList.add('last'); if (tg.has(i)) q.classList.add('tgt'); if (must.has(i)) q.classList.add('must');
+    const p = S.b[i]; if (p) { const pc = el('div', 'pc ' + (p > 0 ? 'p1' : 'p2') + (Math.abs(p) === 2 ? ' k' : '') + (sel[0] === i ? ' sel' : '')); pc.style.backgroundImage = 'url(' + (p > 0 ? a1 : a2) + ')'; q.appendChild(pc); }
+    bd.appendChild(q); }
+  $('#pl1').classList.toggle('turn', S.side === 1 && !S.over); $('#pl2').classList.toggle('turn', S.side === -1 && !S.over);
+  if (!S.over) $('#status').textContent = (S.mode === 'cpu' ? (S.side === 1 ? 'Your move' : 'Computer thinking…') : (S.side === 1 ? 'Gold to move' : 'Pink to move')) + (ms.length && ms[0].caps.length ? ' · capture!' : '');
+}
+const humanTurn = () => !S.over && (S.mode === '2p' || S.side === 1) && !busy;
+function tap(i) {
+  if (!humanTurn()) return; const ms = legal();
+  if (sel.length) { const cand = ms.filter(m => sel.every((s, k) => m.path[k] === s) && m.path[sel.length] === i);
+    if (cand.length) { sel.push(i); const full = cand.find(m => m.path.length === sel.length); if (full && cand.length === 1) return play(full); render(); return; } }
+  if (S.b[i] && Math.sign(S.b[i]) === S.side) { if (ms.some(m => m.path[0] === i)) { sel = [i]; render(); } else { sel = []; render(); toast(ms[0] && ms[0].caps.length ? 'You must capture!' : 'That piece can\'t move'); } return; }
+  sel = []; render();
+}
+function play(m) {
+  S.hist.push({ b: S.b, side: S.side, quiet: S.quiet, last: S.last, myMoves: S.myMoves });
+  const man = Math.abs(S.b[m.path[0]]) === 1;
+  S.b = CKE.apply(S.b, m); S.last = m.path; sel = [];
+  S.quiet = (m.caps.length || man) ? 0 : S.quiet + 1;
+  if (S.mode === 'cpu' && S.side === 1) S.myMoves++;
+  S.side = -S.side; render();
+  if (!legal().length) return finish(-S.side);
+  if (S.quiet >= 80) return finish(0);
+  if (S.mode === 'cpu' && S.side === -1) cpu();
+}
+function cpu() {
+  busy = true; render();
+  setTimeout(() => { const t0 = Date.now(); const m = CKE.best(S.b, -1, S.diff); setTimeout(() => { busy = false; if (S.over || !m) return; play(m); }, Math.max(0, 350 - (Date.now() - t0))); }, 30);
+}
+function finish(w) {
+  S.over = true; S.end = Date.now(); render();
+  const t = Math.max(S.myMoves, Math.round((S.end - S.start) / 1000));
+  let title, text, a;
+  if (w === 0) { title = 'Draw'; text = '40 moves each with no captures or man moves.'; a = '../assets/logo.webp'; }
+  else if (S.mode === '2p') { title = (w === 1 ? 'Gold' : 'Pink') + ' wins! 👑'; text = art(w === 1 ? pref.p1 : pref.p2).name + ' take the board.'; a = art(w === 1 ? pref.p1 : pref.p2).img; }
+  else if (w === 1) { title = 'You win! 👑'; text = `You beat the ${DN[S.diff]} computer in <b>${S.myMoves}</b> moves.`; a = art(pref.p1).img; }
+  else { title = 'The computer wins'; text = 'No moves left. Have another go!'; a = art(pref.p2).img; }
+  $('#status').textContent = title;
+  const win = S.mode === 'cpu' && w === 1;
+  setTimeout(() => { modal({ art: a, title, text, lb: true, buttons: [['PLAY AGAIN', newGame], ['Leaderboard', () => openLB(GAME, TITLE, DN), 1], ['Settings', () => show('setup'), 1]] });
+    const b = $('#lbMsg'); if (win) post(GAME, score(S.diff, S.myMoves), t, S.myMoves, S.diff); else if (b) b.textContent = S.mode === 'cpu' ? 'Beat the computer to get on the leaderboard.' : '2-player games are just for fun.'; }, 900);
+  gameOver();
+}
+$('#board').addEventListener('click', e => { const q = e.target.closest('.sq'); if (q) tap(+q.dataset.i); });
+$('#undoBtn').onclick = () => { if (busy || !S || !S.hist.length || S.over) return; let h = S.hist.pop(); if (S.mode === 'cpu' && h.side === -1 && S.hist.length) h = S.hist.pop(); if (S.mode === 'cpu' && h.side === -1) { S.hist.push(h); return; } Object.assign(S, h); sel = []; render(); };
+$('#goBtn').onclick = newGame; $('#newBtn').onclick = newGame; $('#setBtn').onclick = $('#menuBtn').onclick = () => show('setup');
+$('#lbBtn').onclick = () => openLB(GAME, TITLE, DN);
+window.ANON_CK = { state: () => S, newGame, tap, play, score, busy: () => busy, setPref: o => Object.assign(pref, o), finish };
+</script>
+</body>
+</html>

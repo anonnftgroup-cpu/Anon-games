@@ -74,6 +74,36 @@
       "added": "2026-10-19"
     },
     {
+      "id": "checkers",
+      "name": "ANON Checkers",
+      "tagline": "Draughts with ANON NFT pieces and crowned kings",
+      "path": "checkers/",
+      "thumb": "checkers/thumb.webp",
+      "category": "Strategy",
+      "tags": [
+        "checkers",
+        "draughts",
+        "board game",
+        "2 players",
+        "vs computer"
+      ],
+      "status": "live",
+      "leaderboard": true,
+      "scoreLabel": "Score",
+      "order": "desc",
+      "periods": [
+        "day",
+        "all"
+      ],
+      "movesLabel": "moves",
+      "modeLabels": {
+        "easy": "Easy",
+        "medium": "Medium",
+        "hard": "Hard"
+      },
+      "added": "2026-10-19"
+    },
+    {
       "id": "ninja-memory",
       "name": "Ninja Memory",
       "tagline": "Find the hidden ANON pairs",
