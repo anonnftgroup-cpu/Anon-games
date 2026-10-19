@@ -546,6 +546,80 @@
       "movesLabel": "missions",
       "hideMode": true,
       "added": "2026-10-19"
+    },
+    {
+      "id": "anon-2048",
+      "name": "ANON 2048",
+      "tagline": "Merge tiles up through the ANON characters",
+      "path": "anon-2048/",
+      "thumb": "anon-2048/thumb.webp",
+      "category": "Puzzle",
+      "tags": [
+        "2048",
+        "merge",
+        "numbers",
+        "swipe"
+      ],
+      "status": "live",
+      "leaderboard": true,
+      "scoreLabel": "Score",
+      "order": "desc",
+      "periods": [
+        "day",
+        "all"
+      ],
+      "movesLabel": "swipes",
+      "hideMode": true,
+      "added": "2026-10-19"
+    },
+    {
+      "id": "block-drop",
+      "name": "ANON Block Drop",
+      "tagline": "Stack the falling blocks and clear lines",
+      "path": "block-drop/",
+      "thumb": "block-drop/thumb.webp",
+      "category": "Puzzle",
+      "tags": [
+        "falling blocks",
+        "lines",
+        "classic"
+      ],
+      "status": "live",
+      "leaderboard": true,
+      "scoreLabel": "Score",
+      "order": "desc",
+      "periods": [
+        "day",
+        "all"
+      ],
+      "movesLabel": "rows",
+      "hideMode": true,
+      "added": "2026-10-19"
+    },
+    {
+      "id": "gem-match",
+      "name": "Gem Match",
+      "tagline": "Match 3 gems and crowns in 90 seconds",
+      "path": "gem-match/",
+      "thumb": "gem-match/thumb.webp",
+      "category": "Puzzle",
+      "tags": [
+        "match 3",
+        "gems",
+        "swap",
+        "timed"
+      ],
+      "status": "live",
+      "leaderboard": true,
+      "scoreLabel": "Score",
+      "order": "desc",
+      "periods": [
+        "day",
+        "all"
+      ],
+      "movesLabel": "swaps",
+      "hideMode": true,
+      "added": "2026-10-19"
     }
   ]
 }

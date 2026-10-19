@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05070a">
+<title>Gem Match · ANON NFTs</title>
+<meta name="description" content="Gem Match: swap pink gems, gold crowns and ANON icons to match 3 in 90 seconds. Free, no sign-up.">
+<link rel="icon" href="../assets/logo.webp">
+<link rel="stylesheet" href="../assets/nft/kit.css">
+<link rel="stylesheet" href="../assets/play/play.css">
+</head>
+<body>
+<header><div class="top">
+  <div class="brand"><a class="back-btn" href="../" aria-label="Back to ANON Arcade">&larr; Arcade</a><img src="../assets/logo.webp" alt=""><h1>GEM MATCH</h1></div>
+  <div class="top-r"><button class="icon-btn" id="lbBtn" aria-label="Leaderboard">🏆</button><button class="icon-btn" id="menuBtn" aria-label="Menu">↻</button></div>
+</div></header>
+<section class="view on" id="setup">
+  <img class="hero" src="../assets/nft/c-royals.webp" alt="ANON NFTs artwork" style="object-position:50% 40%">
+  <p class="howto"><b>Swipe</b> a tile (or tap two neighbours) to swap them. Line up 3 or more matching gems, crowns or ANON icons to clear them. Each tile is 10 points × your combo, and chain reactions raise the combo (up to ×5). You have <b>90 seconds</b>!</p>
+  <button class="go" id="goBtn">START</button>
+  <div class="nick" id="nick"></div>
+</section>
+<section class="view" id="play">
+  <div class="hud"><span id="sc">⭐ 0</span><span id="clock">⏱ 90</span><span id="cb">×1</span></div>
+  <div class="stage"><canvas id="cv"></canvas><div class="tap" id="msg"></div></div>
+  <div class="bar"><button id="againBtn">Restart</button><button id="setBtn">Menu</button></div>
+</section>
+<script src="../shared/leaderboard.js"></script>
+<script src="../shared/newsletter.js"></script>
+<script src="../assets/nft/kit.js"></script>
+<script src="../assets/play/play.js"></script>
+<script>
+'use strict';
+const { $, ls, modal, post, openLB, gameOver, art } = AK;
+const GAME = 'gem-match', TITLE = 'Gem Match', N = 8, K = 6, ROUND = 90, CAP = 1500;
+AK.nickLine($('#nick'));
+const show = id => document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === id));
+let C = null, S = null, cs = 40, ox = 0, oy = 0; const SPR = [];
+// tile art: pink gem, gold crown, ANON logo coin, Grumpy Cat, King & Queen Apes, Vengeance
+function mkTiles(ims) { const s = 96;
+  const base = (f) => { const c = document.createElement('canvas'); c.width = c.height = s; const x = c.getContext('2d'); f(x); return c; };
+  SPR[0] = base(x => AP.gem(x, s / 2, s / 2 + 3, s * .4));
+  SPR[1] = base(x => AP.crown(x, s / 2, s / 2 + 4, s * .4));
+  [ims[0], ims[1], ims[2], ims[3]].forEach((im, k) => SPR[2 + k] = base(x => { x.save(); x.beginPath(); x.arc(s / 2, s / 2, s * .4, 0, 7); x.clip(); if (im) AP.cover(x, im, s * .1, s * .1, s * .8, s * .8); x.restore();
+    x.lineWidth = s * .06; x.strokeStyle = ['#f3d77a', '#2bff88', '#ff8cc4', '#7fd4ff'][k]; x.beginPath(); x.arc(s / 2, s / 2, s * .41, 0, 7); x.stroke(); }));
+}
+const ready = AP.load(['../assets/logo.webp', art('grumpy').img, art('royals').img, art('venge').img]).then(mkTiles);
+function fit() { cs = Math.floor(Math.min(C.w, C.h) / N); ox = Math.floor((C.w - cs * N) / 2); oy = Math.floor((C.h - cs * N) / 2); }
+const rnd = () => Math.floor(AP.rnd() * K);
+function fresh() { const g = []; for (let r = 0; r < N; r++) { g.push([]); for (let c = 0; c < N; c++) { let v; do v = rnd(); while ((c >= 2 && g[r][c - 1] === v && g[r][c - 2] === v) || (r >= 2 && g[r - 1][c] === v && g[r - 2][c] === v)); g[r].push(v); } } return g; }
+function matches(g) { const m = new Set();
+  for (let r = 0; r < N; r++) for (let c = 0; c < N - 2; c++) { const v = g[r][c]; if (v >= 0 && g[r][c + 1] === v && g[r][c + 2] === v) { m.add(r * N + c); m.add(r * N + c + 1); m.add(r * N + c + 2); } }
+  for (let c = 0; c < N; c++) for (let r = 0; r < N - 2; r++) { const v = g[r][c]; if (v >= 0 && g[r + 1][c] === v && g[r + 2][c] === v) { m.add(r * N + c); m.add((r + 1) * N + c); m.add((r + 2) * N + c); } }
+  return m; }
+function hasMove(g) { for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) for (const [dr, dc] of [[0, 1], [1, 0]]) { const R = r + dr, Cc = c + dc; if (R >= N || Cc >= N) continue;
+  [g[r][c], g[R][Cc]] = [g[R][Cc], g[r][c]]; const ok = matches(g).size > 0; [g[r][c], g[R][Cc]] = [g[R][Cc], g[r][c]]; if (ok) return [[r, c], [R, Cc]]; } return null; }
+function newGame(grid) {
+  show('play'); if (!C) C = AP.canvas($('#cv'), 1, () => { fit(); draw(); }); else C.fit(); fit();
+  let g = grid || fresh(); while (!grid && !hasMove(g)) g = fresh();
+  S = { g, off: g.map(r => r.map(() => 0)), fade: null, left: ROUND, score: 0, moves: 0, combo: 0, best: 0, phase: 'idle', pt: 0, sel: null, sw: null, over: false, run: false, swapPts: 0, fx: [] };
+  hud(); $('#msg').textContent = 'Tap or swipe to start'; L.start();
+}
+function hud() { $('#sc').textContent = '⭐ ' + S.score; $('#clock').textContent = '⏱ ' + Math.ceil(S.left); $('#cb').textContent = '×' + Math.max(1, S.combo); }
+const adj = (a, b) => Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]) === 1;
+function swap(a, b) {
+  if (!S || S.over || S.phase !== 'idle' || !adj(a, b) || S.left <= 0) return false; start();
+  const g = S.g; [g[a[0]][a[1]], g[b[0]][b[1]]] = [g[b[0]][b[1]], g[a[0]][a[1]]]; S.sel = null;
+  const ok = matches(g).size > 0; S.sw = { a, b, ok }; S.phase = 'swap'; S.pt = 0;
+  if (!ok) [g[a[0]][a[1]], g[b[0]][b[1]]] = [g[b[0]][b[1]], g[a[0]][a[1]]];
+  else { S.moves++; S.combo = 0; S.swapPts = 0; }
+  return ok;
+}
+function start() { if (!S.run) { S.run = true; $('#msg').textContent = ''; } }
+function clearStep() { const m = matches(S.g); if (!m.size) { S.phase = 'idle'; S.combo = 0; if (!hasMove(S.g)) shuffle(); hud(); if (S.left <= 0) end(); return; }
+  S.combo = Math.min(5, S.combo + 1); let pts = m.size * 10 * S.combo; pts = Math.max(0, Math.min(pts, CAP - S.swapPts)); S.swapPts += pts; S.score += pts;
+  S.fade = m; S.phase = 'clear'; S.pt = 0; const cells = [...m]; const r = cells.reduce((a, i) => a + ((i / N) | 0), 0) / cells.length, c = cells.reduce((a, i) => a + i % N, 0) / cells.length;
+  S.fx.push({ r, c, a: 0, t: '+' + pts + (S.combo > 1 ? ' ×' + S.combo : '') }); hud(); if (navigator.vibrate) navigator.vibrate(10); }
+function collapse() { const g = S.g;
+  S.fade.forEach(i => g[(i / N) | 0][i % N] = -1); S.fade = null;
+  for (let c = 0; c < N; c++) { let w = N - 1; for (let r = N - 1; r >= 0; r--) if (g[r][c] >= 0) { const v = g[r][c]; g[r][c] = -1; g[w][c] = v; S.off[w][c] = w - r; w--; }
+    const empty = w + 1; for (let r = w; r >= 0; r--) { g[r][c] = rnd(); S.off[r][c] = empty; } }
+  S.phase = 'fall'; }
+function shuffle() { let g; do { const flat = AP.shuffle(S.g.flat()); g = []; for (let r = 0; r < N; r++) g.push(flat.slice(r * N, r * N + N)); } while (matches(g).size || !hasMove(g)); S.g = g; S.fx.push({ r: 3.5, c: 3.5, a: 0, t: 'Shuffle!' }); }
+function step(dt) {
+  if (!S || S.over) return; if (S.run && S.left > 0) { S.left = Math.max(0, S.left - dt); if (S.left <= 0 && S.phase === 'idle') return end(); }
+  S.pt += dt; S.fx = S.fx.filter(f => (f.a += dt) < .8);
+  if (S.phase === 'swap' && S.pt >= .14) { if (S.sw.ok) { S.sw = null; clearStep(); } else { S.phase = 'back'; S.pt = 0; } }
+  else if (S.phase === 'back' && S.pt >= .14) { S.sw = null; S.phase = 'idle'; }
+  else if (S.phase === 'clear' && S.pt >= .2) collapse();
+  else if (S.phase === 'fall') { let moving = false; for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) if (S.off[r][c] > 0) { S.off[r][c] = Math.max(0, S.off[r][c] - dt * 14); moving = true; } if (!moving) clearStep(); }
+  hud();
+}
+function settle() { for (let k = 0; k < 2000 && S.phase !== 'idle' && !S.over; k++) step(1 / 30); }
+function draw() {
+  if (!C || !S) return; const x = C.x; x.fillStyle = '#05070a'; x.fillRect(0, 0, C.w, C.h);
+  for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) { x.fillStyle = (r + c) % 2 ? 'rgba(20,28,18,.92)' : 'rgba(30,40,24,.92)'; x.fillRect(ox + c * cs, oy + r * cs, cs, cs); }
+  x.strokeStyle = '#d4af37'; x.lineWidth = 2; x.strokeRect(ox - 1, oy - 1, cs * N + 2, cs * N + 2);
+  x.save(); x.beginPath(); x.rect(ox, oy, cs * N, cs * N); x.clip();
+  const sw = S.sw && (S.phase === 'swap' || S.phase === 'back') ? S.sw : null, p = sw ? Math.min(1, S.pt / .14) : 0;
+  for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) { const v = S.g[r][c]; if (v < 0 || !SPR[v]) continue; let X = ox + c * cs, Y = oy + (r - S.off[r][c]) * cs, a = 1, sc = 1;
+    if (sw) { const isA = sw.a[0] === r && sw.a[1] === c, isB = sw.b[0] === r && sw.b[1] === c; if (isA || isB) { const o = isA ? sw.b : sw.a, k = sw.ok ? 1 - p : (S.phase === 'swap' ? 1 - p : p); X += (o[1] - c) * cs * k; Y += (o[0] - r) * cs * k; } }
+    if (S.fade && S.fade.has(r * N + c)) { const q = Math.min(1, S.pt / .2); a = 1 - q; sc = 1 + q * .4; }
+    x.globalAlpha = a; const m = cs * (1 - sc) / 2; x.drawImage(SPR[v], X + m + cs * .04, Y + m + cs * .04, cs * sc * .92, cs * sc * .92); x.globalAlpha = 1; }
+  x.restore();
+  if (S.sel) { x.strokeStyle = '#ff3d9a'; x.lineWidth = 3; x.strokeRect(ox + S.sel[1] * cs + 2, oy + S.sel[0] * cs + 2, cs - 4, cs - 4); }
+  x.textAlign = 'center'; x.font = '900 20px system-ui'; for (const f of S.fx) { x.globalAlpha = 1 - f.a / .8; x.lineWidth = 4; x.strokeStyle = '#000'; x.fillStyle = '#f3d77a'; const X = ox + (f.c + .5) * cs, Y = oy + (f.r + .5) * cs - f.a * 40; x.strokeText(f.t, X, Y); x.fillText(f.t, X, Y); } x.globalAlpha = 1;
+}
+const L = AP.loop(step, draw); L.onHide = () => { if (S && S.run && !S.over) { L.stop(); S.paused = true; $('#msg').textContent = 'Paused. Tap to carry on'; } };
+function end() {
+  if (S.over) return; S.over = true; L.stop(); draw(); const best = ls.get('anonGem.best', 0), pb = S.score > best; if (pb) ls.set('anonGem.best', S.score);
+  modal({ art: '../assets/nft/p-royals.webp', title: pb && S.score ? 'New best! 🏆' : "Time's up! 💎", text: `<b>${S.score}</b> points from ${S.moves} swaps.`, lb: S.score > 0,
+    buttons: [['PLAY AGAIN', () => newGame()], ['Leaderboard', () => openLB(GAME, TITLE, null, 'swaps'), 1], ['Menu', () => show('setup'), 1]] });
+  if (S.score > 0) post(GAME, S.score, ROUND, S.moves, null);
+  gameOver();
+}
+const cv = $('#cv'); let tp = null;
+const cellAt = e => { const r = cv.getBoundingClientRect(), X = e.clientX - r.left - ox, Y = e.clientY - r.top - oy, c = Math.floor(X / cs), rr = Math.floor(Y / cs); return c >= 0 && rr >= 0 && c < N && rr < N ? [rr, c] : null; };
+cv.addEventListener('pointerdown', e => { if (S && S.paused) { S.paused = false; $('#msg').textContent = ''; L.start(); return; } if (!S || S.over) return; start(); const a = cellAt(e); if (!a) return; tp = { a, x: e.clientX, y: e.clientY, done: false }; cv.setPointerCapture(e.pointerId); });
+cv.addEventListener('pointermove', e => { if (!tp || tp.done) return; const dx = e.clientX - tp.x, dy = e.clientY - tp.y; if (Math.max(Math.abs(dx), Math.abs(dy)) < cs * .35) return;
+  const b = Math.abs(dx) > Math.abs(dy) ? [tp.a[0], tp.a[1] + Math.sign(dx)] : [tp.a[0] + Math.sign(dy), tp.a[1]]; tp.done = true; if (b[0] >= 0 && b[1] >= 0 && b[0] < N && b[1] < N) swap(tp.a, b); });
+cv.addEventListener('pointerup', () => { if (tp && !tp.done) { const a = tp.a; if (S.sel && adj(S.sel, a)) swap(S.sel, a); else S.sel = S.sel && S.sel[0] === a[0] && S.sel[1] === a[1] ? null : a; } tp = null; });
+let kc = [3, 3]; const kmove = (dr, dc) => { if (!S) return; start(); kc = [Math.max(0, Math.min(N - 1, kc[0] + dr)), Math.max(0, Math.min(N - 1, kc[1] + dc))]; if (S.sel && S.sel.held) { const a = S.sel; S.sel = null; swap(a, kc); } else S.sel = kc.slice(); };
+AP.keys({ ArrowUp: () => kmove(-1, 0), ArrowDown: () => kmove(1, 0), ArrowLeft: () => kmove(0, -1), ArrowRight: () => kmove(0, 1), ' ': () => { if (S && S.sel) S.sel.held = !S.sel.held; }, Enter: () => { if (S && S.sel) S.sel.held = !S.sel.held; } });
+$('#goBtn').onclick = () => ready.then(() => newGame()); $('#againBtn').onclick = () => { L.stop(); newGame(); };
+$('#setBtn').onclick = $('#menuBtn').onclick = () => { L.stop(); if (S) S.over = true; show('setup'); };
+$('#lbBtn').onclick = () => openLB(GAME, TITLE, null, 'swaps');
+window.G = { state: () => S, newGame, swap, step, settle, matches, hasMove, fresh, L, draw, N, ready };
+</script>
+</body>
+</html>

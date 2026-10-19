@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05070a">
+<title>ANON 2048 · ANON NFTs</title>
+<meta name="description" content="ANON 2048: merge tiles up through the ANON NFT characters to reach the crowned ANON. Free, no sign-up.">
+<link rel="icon" href="../assets/logo.webp">
+<link rel="stylesheet" href="../assets/nft/kit.css">
+<link rel="stylesheet" href="../assets/play/play.css">
+<style>
+.b48{position:relative;margin:auto;border-radius:12px;border:2px solid var(--gold);background:rgba(8,12,10,.85);box-shadow:0 0 20px rgba(255,61,154,.25);touch-action:none}
+.cell{position:absolute;border-radius:9px;background:rgba(212,175,55,.08);box-shadow:inset 0 0 0 1px rgba(212,175,55,.18)}
+.tile{position:absolute;left:0;top:0;border-radius:9px;background:#120e04 center/cover no-repeat;transition:transform .1s ease-out;box-shadow:0 0 0 2px #d4af37,0 3px 8px rgba(0,0,0,.5);overflow:hidden}
+.tile b{position:absolute;right:3px;bottom:3px;padding:1px 6px;border-radius:8px;background:rgba(0,0,0,.72);color:#f3d77a;font-weight:900;font-size:var(--fs);line-height:1.25;border:1px solid rgba(243,215,122,.5)}
+.tile.new{animation:appear .16s ease-out}.tile.pop{animation:pop .18s ease-out}
+.tile.top{box-shadow:0 0 0 3px #fff3c4,0 0 18px rgba(255,61,154,.8)}
+@keyframes appear{from{opacity:0;scale:.3}to{opacity:1;scale:1}}@keyframes pop{50%{scale:1.14}}
+.ladder{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin-top:6px}.ladder div{display:flex;flex-direction:column;align-items:center;font-size:10px;font-weight:800;color:#d9d2bc;width:46px}.ladder img{width:40px;height:40px;border-radius:8px;object-fit:cover;box-shadow:0 0 0 1.5px #d4af37}
+</style>
+</head>
+<body>
+<header><div class="top">
+  <div class="brand"><a class="back-btn" href="../" aria-label="Back to ANON Arcade">&larr; Arcade</a><img src="../assets/logo.webp" alt=""><h1>ANON 2048</h1></div>
+  <div class="top-r"><button class="icon-btn" id="lbBtn" aria-label="Leaderboard">🏆</button><button class="icon-btn" id="menuBtn" aria-label="Menu">↻</button></div>
+</div></header>
+<section class="view on" id="setup">
+  <div class="lbl">Merge your way up the ANON ladder</div>
+  <div class="ladder" id="ladder"></div>
+  <p class="howto"><b>Swipe</b> (or use the arrow keys / WASD) to slide every tile. Two matching ANONs merge into the next character and add its number to your score. Reach <b>2048</b> for the crowned ANON, then keep going!</p>
+  <button class="go" id="goBtn">PLAY</button>
+  <div class="nick" id="nick"></div>
+</section>
+<section class="view" id="play">
+  <div class="hud"><span id="sc">⭐ 0</span><span id="best">🏆 0</span><span id="mv">↔ 0</span></div>
+  <div class="stage" id="stage"><div class="b48" id="board"></div></div>
+  <div class="bar"><button id="undoBtn">↶ Undo (1)</button><button id="newBtn">New game</button><button id="setBtn">Menu</button></div>
+</section>
+<script src="../shared/leaderboard.js"></script>
+<script src="../shared/newsletter.js"></script>
+<script src="../assets/nft/kit.js"></script>
+<script src="../assets/play/play.js"></script>
+<script>
+'use strict';
+const { $, el, ls, modal, post, openLB, gameOver, art, B } = AK;
+const GAME = 'anon-2048', TITLE = 'ANON 2048', N = 4;
+const LAD = ['aces', 'eyes', 'lake', 'ghost', 'skulls', 'apes', 'grumpy', 'venge', 'royals', 'anon'];
+const artFor = v => { const k = Math.log2(v) - 1; return k < LAD.length ? art(LAD[k]).img : '../assets/logo.webp'; };
+const nameFor = v => { const k = Math.log2(v) - 1; return k < LAD.length ? art(LAD[k]).name : 'The crowned ANON'; };
+[...Array(11)].forEach((_, i) => { const v = 2 ** (i + 1), d = el('div'); const im = el('img'); im.src = artFor(v); im.alt = nameFor(v); d.appendChild(im); d.appendChild(el('span', '', v)); $('#ladder').appendChild(d); });
+AK.nickLine($('#nick'));
+const show = id => document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === id));
+let S = null, T = 0, GAP = 8, uid = 0;
+function newGame(grid) {
+  S = { tiles: [], score: 0, moves: 0, start: Date.now(), over: false, won: false, undo: null, undos: 1 };
+  show('play'); size();
+  if (grid) grid.forEach((v, i) => { if (v) S.tiles.push({ id: ++uid, v, r: (i / N) | 0, c: i % N, n: true }); }); else { spawn(); spawn(); }
+  render(); hud();
+}
+function size() { const st = $('#stage'); const s = Math.floor(Math.min(st.clientWidth - 12, st.clientHeight - 12, 480)); GAP = Math.max(6, Math.round(s * .025)); T = (s - GAP * (N + 1)) / N;
+  const b = $('#board'); b.style.width = b.style.height = s + 'px'; b.style.setProperty('--fs', Math.max(11, Math.round(T * .2)) + 'px'); b.innerHTML = '';
+  for (let i = 0; i < N * N; i++) { const c = el('div', 'cell'); c.style.cssText = `width:${T}px;height:${T}px;left:${GAP + (i % N) * (T + GAP)}px;top:${GAP + ((i / N) | 0) * (T + GAP)}px`; b.appendChild(c); } }
+const at = (r, c) => S.tiles.find(t => t.r === r && t.c === c && !t.dead);
+function spawn() { const f = []; for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) if (!at(r, c)) f.push([r, c]); if (!f.length) return; const [r, c] = AP.pick(f); S.tiles.push({ id: ++uid, v: AP.rnd() < .9 ? 2 : 4, r, c, n: true }); }
+function move(dir) {
+  if (!S || S.over) return false;
+  const snap = JSON.stringify({ t: S.tiles.filter(t => !t.dead).map(t => [t.v, t.r, t.c]), s: S.score, m: S.moves });
+  S.tiles = S.tiles.filter(t => !t.dead); S.tiles.forEach(t => { t.n = false; t.pop = false; });
+  const vec = { left: [0, -1], right: [0, 1], up: [-1, 0], down: [1, 0] }[dir]; let moved = false, gain = 0;
+  for (let k = 0; k < N; k++) {
+    const line = []; for (let j = 0; j < N; j++) { const jj = vec[0] + vec[1] > 0 ? N - 1 - j : j; const r = vec[0] ? jj : k, c = vec[0] ? k : jj; const t = at(r, c); if (t) line.push(t); }
+    let pos = 0, last = null;
+    for (const t of line) { const tr = vec[0] ? (vec[0] > 0 ? N - 1 - pos : pos) : k, tc = vec[0] ? k : (vec[1] > 0 ? N - 1 - pos : pos);
+      if (last && last.v === t.v && !last.merged) { const lr = last.r, lc = last.c; t.dead = true; if (t.r !== lr || t.c !== lc) moved = true; t.r = lr; t.c = lc; last.v *= 2; last.merged = true; last.pop = true; gain += last.v; moved = true; continue; }
+      if (t.r !== tr || t.c !== tc) moved = true; t.r = tr; t.c = tc; last = t; pos++; }
+  }
+  S.tiles.forEach(t => delete t.merged);
+  if (!moved) { S.tiles.forEach(t => t.dead = false); return false; }
+  S.undo = snap; S.score += gain; S.moves++; spawn(); render(); hud(); setTimeout(() => { S.tiles = S.tiles.filter(t => !t.dead); render(); }, 110);
+  const top = Math.max(...S.tiles.filter(t => !t.dead).map(t => t.v));
+  if (top >= 2048 && !S.won) { S.won = true; setTimeout(() => modal({ art: '../assets/logo.webp', title: 'The crowned ANON! 👑', text: 'You reached <b>2048</b>. Keep going for an even higher score!', buttons: [['KEEP GOING']] }), 250); }
+  if (!canMove()) setTimeout(end, 350);
+  return true;
+}
+function canMove() { const live = S.tiles.filter(t => !t.dead); if (live.length < N * N) return true; for (const t of live) { const r = at(t.r, t.c + 1), d = at(t.r + 1, t.c); if (r && r.v === t.v || d && d.v === t.v) return true; } return false; }
+function render() {
+  const b = $('#board'), have = new Map([...b.querySelectorAll('.tile')].map(e => [+e.dataset.id, e])), top = Math.max(...S.tiles.map(t => t.v));
+  for (const t of S.tiles) { let e = have.get(t.id); if (!e) { e = el('div', 'tile'); e.dataset.id = t.id; e.appendChild(el('b')); e.style.width = e.style.height = T + 'px'; b.appendChild(e); }
+    have.delete(t.id); e.style.transform = `translate(${GAP + t.c * (T + GAP)}px,${GAP + t.r * (T + GAP)}px)`; e.style.zIndex = t.dead ? 1 : 2;
+    if (e.dataset.v != t.v) { e.style.backgroundImage = `url(${artFor(t.v)})`; e.firstChild.textContent = t.v; e.dataset.v = t.v; e.setAttribute('aria-label', t.v + ' ' + nameFor(t.v)); }
+    e.classList.toggle('new', !!t.n); e.classList.toggle('pop', !!t.pop); e.classList.toggle('top', t.v === top && t.v >= 64); }
+  have.forEach(e => e.remove());
+}
+function hud() { $('#sc').textContent = '⭐ ' + S.score; $('#mv').textContent = '↔ ' + S.moves; $('#best').textContent = '🏆 ' + Math.max(S.score, ls.get('anon2048.best', 0)); $('#undoBtn').textContent = '↶ Undo (' + S.undos + ')'; $('#undoBtn').disabled = !S.undo || !S.undos; }
+function undo() { if (!S || !S.undo || !S.undos || S.over) return; const u = JSON.parse(S.undo); S.tiles = u.t.map(([v, r, c]) => ({ id: ++uid, v, r, c })); S.score = u.s; S.moves = u.m; S.undo = null; S.undos--; $('#board').querySelectorAll('.tile').forEach(e => e.remove()); render(); hud(); }
+function end() {
+  if (S.over) return; S.over = true; const top = Math.max(...S.tiles.filter(t => !t.dead).map(t => t.v)), t = Math.max(1, Math.ceil((Date.now() - S.start) / 1000));
+  const best = ls.get('anon2048.best', 0); if (S.score > best) ls.set('anon2048.best', S.score);
+  modal({ art: artFor(top), title: 'No moves left!', text: `Top tile <b>${top}</b>: ${nameFor(top)}.<br>${S.moves} swipes.`, lb: S.score > 0,
+    buttons: [['PLAY AGAIN', () => newGame()], ['Leaderboard', () => openLB(GAME, TITLE, null, 'swipes'), 1], ['Menu', () => show('setup'), 1]] });
+  if (S.score > 0) post(GAME, S.score, Math.max(t, Math.ceil(S.moves / 5)), S.moves, null);
+  gameOver();
+}
+AP.swipe($('#board'), d => { if (d !== 'tap') move(d); }, 20);
+AP.keys({ ArrowUp: () => move('up'), ArrowDown: () => move('down'), ArrowLeft: () => move('left'), ArrowRight: () => move('right'), w: () => move('up'), s: () => move('down'), a: () => move('left'), d: () => move('right') });
+$('#goBtn').onclick = () => newGame(); $('#newBtn').onclick = () => { if (S && S.score > 0 && !S.over) end(); else newGame(); };
+$('#undoBtn').onclick = undo;
+$('#setBtn').onclick = $('#menuBtn').onclick = () => show('setup');
+$('#lbBtn').onclick = () => openLB(GAME, TITLE, null, 'swipes');
+window.addEventListener('resize', () => { if (S && $('#play').classList.contains('on')) { size(); render(); } });
+window.G = { state: () => S, newGame, move, canMove, end, undo, grid: () => { const g = Array(16).fill(0); S.tiles.filter(t => !t.dead).forEach(t => g[t.r * 4 + t.c] = t.v); return g; } };
+</script>
+</body>
+</html>
