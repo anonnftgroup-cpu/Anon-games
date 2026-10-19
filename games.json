@@ -1203,6 +1203,37 @@
       "movesLabel": "trades",
       "hideMode": true,
       "added": "2026-10-19"
+    },
+    {
+      "id": "sudoku",
+      "name": "ANON Sudoku",
+      "tagline": "Daily ANON Sudoku plus unlimited puzzles",
+      "path": "sudoku/",
+      "thumb": "sudoku/thumb.webp",
+      "category": "Puzzle",
+      "tags": [
+        "sudoku",
+        "numbers",
+        "logic",
+        "daily",
+        "puzzle"
+      ],
+      "status": "live",
+      "leaderboard": true,
+      "scoreLabel": "Score",
+      "order": "desc",
+      "periods": [
+        "day",
+        "all"
+      ],
+      "movesLabel": "entries",
+      "modeLabels": {
+        "daily": "Daily",
+        "easy": "Easy",
+        "medium": "Medium",
+        "hard": "Hard"
+      },
+      "added": "2026-10-19"
     }
   ]
 }

@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05070a">
+<title>ANON Sudoku · ANON NFTs</title>
+<meta name="description" content="ANON Sudoku: a new Daily ANON Sudoku for everyone each day plus unlimited easy, medium and hard puzzles over ANON NFT art. Free, no sign-up.">
+<link rel="icon" href="../assets/logo.webp">
+<link rel="stylesheet" href="../assets/nft/kit.css">
+<link rel="stylesheet" href="../assets/play/play.css">
+<style>
+.pad{display:flex;gap:6px;justify-content:center;align-items:center;padding:4px 4px 2px;flex:none;user-select:none;-webkit-user-select:none;flex-wrap:wrap}
+.pad button{min-width:52px;min-height:44px;border-radius:12px;border:1px solid rgba(212,175,55,.6);background:rgba(0,0,0,.55);color:var(--gold2);font-size:17px;font-weight:900;touch-action:none;padding:0 8px}
+.pad button.on{background:rgba(255,61,154,.35)}.pad .big{min-width:84px;background:linear-gradient(180deg,#ff5aab,#c41f73);color:#fff;font-size:15px}
+.pad button:disabled{opacity:.35}
+.dpad{display:grid;grid-template-columns:repeat(3,48px);grid-template-rows:repeat(2,40px);gap:4px}.dpad button{min-width:0;min-height:0}
+.dpad [data-k=U]{grid-column:2}.dpad [data-k=L]{grid-column:1;grid-row:2}.dpad [data-k=D]{grid-column:2;grid-row:2}.dpad [data-k=R]{grid-column:3;grid-row:2}
+.seg.wrap{flex-wrap:wrap}.seg.wrap button{flex:1 1 22%}
+@media (max-height:700px){.pad button{min-height:38px}}
+</style>
+</head>
+<body>
+<header><div class="top">
+  <div class="brand"><a class="back-btn" href="../" aria-label="Back to ANON Arcade">&larr; Arcade</a><img src="../assets/logo.webp" alt=""><h1>SUDOKU</h1></div>
+  <div class="top-r"><button class="icon-btn" id="lbBtn" aria-label="Leaderboard">🏆</button><button class="icon-btn" id="menuBtn" aria-label="Menu">↻</button></div>
+</div></header>
+<section class="view on" id="setup">
+  <img class="hero" id="hero" alt="ANON NFTs artwork">
+  <div class="lbl">Choose your ANON</div>
+  <div class="chars five" id="artPick"></div>
+  <div class="lbl">Puzzle</div><div class="seg wrap" id="diff"><button data-v="daily">Daily</button><button data-v="easy">Easy</button><button data-v="medium">Medium</button><button data-v="hard">Hard</button></div>
+  <button class="go" id="goBtn">PLAY</button>
+  <p class="howto">Fill the grid so every row, column and 3×3 box has 1 to 9 once. Tap a square, then a number. ✏️ Notes adds pencil marks. Daily: one puzzle for everyone, new at midnight UK time. Easy/Medium/Hard: unlimited new puzzles. Mistakes allowed: Easy unlimited, Medium 5, Hard and Daily 3. Faster solves score more.</p>
+  <div class="nick" id="nick"></div>
+</section>
+<section class="view" id="play">
+  <div class="hud"><span id="md"></span><span id="tm"></span><span id="ms"></span></div>
+  <div class="stage"><canvas id="cv"></canvas><div class="tap" id="msg"></div></div>
+  <div class="pad" style="max-width:440px;margin:0 auto;gap:4px"><style>.pad button{min-width:34px;padding:0 4px}</style><button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button><button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button><button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button><button data-k="N">✏️ Notes</button><button data-k="X">⌫ Erase</button></div>
+  <div class="bar"><button id="againBtn">New puzzle</button><button id="setBtn">Change ANON</button></div>
+</section>
+<script src="../shared/leaderboard.js"></script>
+<script src="../shared/newsletter.js"></script>
+<script src="../assets/nft/kit.js"></script>
+<script src="../assets/play/play.js"></script>
+<script>
+const GAME = 'sudoku', TITLE = 'ANON Sudoku', PK = 'anonB.sudoku', ASPECT = 1, MOVES = 'entries', DEFMODE = 'daily';
+'use strict';
+const { $, ls, modal, post, openLB, gameOver, art, ART } = AK;
+const NAMES = Object.fromEntries(ART.map(a => [a.id, a.name.replace(/^ANON /, '')]));
+const DIFFN = { easy: 'Easy', medium: 'Medium', hard: 'Hard' };
+const pref = ls.get(PK, { art: 'anon', diff: DEFMODE, best: 0 }); if (window.MODELIST && !MODELIST.includes(pref.diff)) pref.diff = DEFMODE;
+const show = id => document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === id));
+const setHero = () => $('#hero').src = art(pref.art).cover;
+AK.picker($('#artPick'), pref.art, id => { pref.art = id; ls.set(PK, pref); setHero(); });
+if ($('#diff') && ![...$('#diff').children].some(b => b.dataset.v === pref.diff)) pref.diff = DEFMODE;
+if ($('#diff')) AK.seg($('#diff'), pref.diff, v => { pref.diff = v; ls.set(PK, pref); });
+setHero(); AK.nickLine($('#nick'));
+// ---- sound: generated in the browser, nothing plays before the first tap/key ----
+let AC = null; window.__sfx = 0;
+const unlock = () => { if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } if (AC && AC.state === 'suspended') AC.resume(); };
+['pointerdown', 'keydown', 'touchstart'].forEach(t => window.addEventListener(t, unlock, { capture: true, passive: true }));
+function tone(f, d, type, vol, f2) { if (!AC || pref.mute) return; window.__sfx++; const t = AC.currentTime, o = AC.createOscillator(), g = AC.createGain();
+  o.type = type || 'square'; o.frequency.setValueAtTime(f, t); if (f2) o.frequency.exponentialRampToValueAtTime(Math.max(20, f2), t + d);
+  g.gain.setValueAtTime(vol || .08, t); g.gain.exponentialRampToValueAtTime(.0001, t + d); o.connect(g).connect(AC.destination); o.start(t); o.stop(t + d + .02); }
+function boom(d, vol) { if (!AC || pref.mute) return; window.__sfx++; const n = Math.floor(AC.sampleRate * d), b = AC.createBuffer(1, n, AC.sampleRate), c = b.getChannelData(0);
+  for (let i = 0; i < n; i++) c[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 2); const s = AC.createBufferSource(), g = AC.createGain(), fl = AC.createBiquadFilter();
+  fl.type = 'lowpass'; fl.frequency.value = 900; s.buffer = b; g.gain.value = vol || .25; s.connect(fl).connect(g).connect(AC.destination); s.start(); }
+// ---- shared loop, pause when hidden, game over ----
+let C = null, S = null;
+const imgs = {}; const IM = id => imgs[id];
+ART.forEach(a => { AP.img(a.img).then(i => { imgs[a.id] = i; dirty = true; }); AP.img(a.cover).then(i => { imgs['c-' + a.id] = i; dirty = true; }); });
+function ring(x, im, cx, cy, r, col) { x.save(); x.beginPath(); x.arc(cx, cy, r, 0, 7); x.closePath(); x.fillStyle = '#111'; x.fill(); x.clip(); if (im) AP.cover(x, im, cx - r, cy - r, r * 2, r * 2); x.restore();
+  x.lineWidth = Math.max(1.5, r * .16); x.strokeStyle = col || '#f3d77a'; x.beginPath(); x.arc(cx, cy, r, 0, 7); x.stroke(); }
+function bgArt(x, id, a) { const im = IM('c-' + id); if (!im) return; x.globalAlpha = a || .22; const k = Math.max(C.w / im.width, C.h / im.height); x.drawImage(im, (C.w - im.width * k) / 2, (C.h - im.height * k) / 2, im.width * k, im.height * k); x.globalAlpha = 1; }
+const L = AP.loop(dt => { if (S && !S.over && !S.paused) step(dt); }, () => draw());
+let paused = false;
+function pause() { if (!S || S.over || S.paused) return; S.paused = true; $('#msg').textContent = 'Paused\nTap to resume'; }
+function resume() { if (S && S.paused) { S.paused = false; $('#msg').textContent = ''; } }
+document.addEventListener('visibilitychange', () => { if (document.hidden) pause(); });
+$('#msg').parentElement.addEventListener('pointerdown', () => { if (S && S.paused) resume(); }, true);
+async function start() { show('play'); if (!C) C = AP.canvas($('#cv'), ASPECT, () => draw()); else C.fit(); $('#msg').textContent = ''; newRun(); L.start(); }
+function end(score, secs, moves, mode, title, text) {
+  if (!S || S.over) return; S.over = true; draw(); setTimeout(() => L.stop(), 50); if (navigator.vibrate) navigator.vibrate([40, 30, 70]);
+  const a = art(S.art || pref.art), pb = score > (pref.best || 0); if (pb) { pref.best = score; ls.set(PK, pref); }
+  S.final = { score, secs, moves, mode };
+  setTimeout(() => { modal({ art: a.img, title: pb && score > 0 ? 'New best! 🏆' : title, text, lb: score > 0,
+    buttons: [['PLAY AGAIN', () => start()], ['Leaderboard', () => lb(), 1], ['Change ANON', () => show('setup'), 1]] });
+    if (score > 0) post(GAME, score, Math.max(1, Math.round(secs)), moves, mode); }, 500);
+  gameOver();
+}
+const lb = () => openLB(GAME, TITLE, MODES, MOVES);
+$('#goBtn').onclick = () => start(); $('#againBtn').onclick = () => { if (S) S.over = true; start(); };
+$('#setBtn').onclick = $('#menuBtn').onclick = () => { if (S) S.over = true; L.stop(); show('setup'); };
+$('#lbBtn').onclick = lb;
+// hold-buttons for on-screen pads: data-k = key name
+const held = new Set(); window.__held = held;
+document.querySelectorAll('.pad [data-k]').forEach(b => { const k = b.dataset.k;
+  b.addEventListener('pointerdown', e => { e.preventDefault(); held.add(k); b.classList.add('on'); if (window.onPad) onPad(k); });
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach(t => b.addEventListener(t, () => { held.delete(k); b.classList.remove('on'); })); });
+const KM = { ArrowLeft: 'L', a: 'L', A: 'L', ArrowRight: 'R', d: 'R', D: 'R', ArrowUp: 'U', w: 'U', W: 'U', ArrowDown: 'D', s: 'D', S: 'D', ' ': 'B', Enter: 'B', x: 'B', z: 'B' };
+const playing = () => $('#play').classList.contains('on') && !document.querySelector('.modal.show,.alb-ov,.anw-ov');
+window.addEventListener('keydown', e => { const k = KM[e.key]; if (!k || !playing()) return; e.preventDefault(); if (S && S.paused) resume(); if (!held.has(k) && window.onPad) onPad(k); held.add(k); });
+window.addEventListener('keyup', e => { const k = KM[e.key]; if (k) held.delete(k); });
+
+// pointer -> canvas CSS coords (canvas has a 2px border)
+function P(e) { const r = $('#cv').getBoundingClientRect(); return { x: (e.clientX - r.left - 2) * C.w / (r.width - 4), y: (e.clientY - r.top - 2) * C.h / (r.height - 4) }; }
+const ukDay = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/London' }).format(new Date());
+function hashStr(s) { let h = 2166136261; for (const c of s) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
+function txt(x, s, X, Y, size, col, align, weight, font) { x.font = `${weight || 800} ${size}px ${font || 'system-ui,sans-serif'}`; x.fillStyle = col || '#f3d77a'; x.textAlign = align || 'center'; x.textBaseline = 'middle'; x.fillText(s, X, Y); }
+var dirty = true; window.addEventListener('resize', () => dirty = true); window.addEventListener('pointerup', () => dirty = true);
+const fmt = s => Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
+
+const MODES = {"daily": "Daily", "easy": "Easy", "medium": "Medium", "hard": "Hard"};
+// ANON Sudoku: daily puzzle (same for everyone, UK day) + unlimited easy/medium/hard
+const BASE = { daily: 500, easy: 200, medium: 400, hard: 700 }, CLUES = { daily: 29, easy: 40, medium: 32, hard: 25 }, MIST = { daily: 3, easy: 99, medium: 5, hard: 3 };
+const RC = i => [Math.floor(i / 9), i % 9], BX = i => Math.floor(i / 27) * 3 + Math.floor(i % 9 / 3);
+function cands(g, i) { let m = 0; const [r, c] = RC(i), b = BX(i); for (let j = 0; j < 81; j++) if (g[j] && (Math.floor(j / 9) === r || j % 9 === c || BX(j) === b)) m |= 1 << g[j]; return (~m) & 0x3FE; }
+function solve(g, limit, rand) { let n = 0; const rec = () => { let bi = -1, bm = 0, bc = 10;
+    for (let i = 0; i < 81; i++) if (!g[i]) { const m = cands(g, i); let c = 0; for (let v = m; v; v &= v - 1) c++; if (c < bc) { bc = c; bi = i; bm = m; if (c <= 1) break; } }
+    if (bi < 0) { n++; return n >= limit; } if (!bc) return false; let ds = []; for (let v = 1; v <= 9; v++) if (bm >> v & 1) ds.push(v); if (rand) AP.shuffle(ds);
+    for (const v of ds) { g[bi] = v; if (rec()) return true; } g[bi] = 0; return false; };
+  rec(); return n; }
+function make(mode) { const g = Array(81).fill(0); solve(g, 1, true); const sol = g.slice(), p = g.slice(), ord = AP.shuffle([...Array(81).keys()]); let clues = 81;
+  for (const i of ord) { if (clues <= CLUES[mode]) break; const v = p[i]; p[i] = 0; if (solve(p.slice(), 2, false) !== 1) p[i] = v; else clues--; } return { sol, p }; }
+function newRun() { const m = pref.diff; if (m === 'daily') AP.seed(hashStr('anon-sudoku-' + ukDay())); const { sol, p } = make(m); if (m === 'daily') AP.seed(Date.now() >>> 0);
+  S = { art: pref.art, mode: m, sol, giv: p.map(v => v > 0), g: p.slice(), notes: Array(81).fill(0), sel: p.indexOf(0), mist: 0, moves: 0, t: 0, noteMode: false, wrong: -1, day: ukDay() }; hud(); dirty = true; }
+const hud = () => { $('#tm').textContent = '⏱ ' + fmt(S.t); $('#ms').textContent = '❌ ' + S.mist + (MIST[S.mode] < 99 ? '/' + MIST[S.mode] : ''); $('#md').textContent = S.mode === 'daily' ? '📅 ' + S.day.slice(5) : MODES[S.mode];
+  document.querySelectorAll('.pad [data-k]').forEach(b => { if (/^[1-9]$/.test(b.dataset.k)) b.disabled = S.g.filter((v, i) => v === +b.dataset.k && v === S.sol[i]).length >= 9; if (b.dataset.k === 'N') b.classList.toggle('on', S.noteMode); }); };
+function put(v) { if (!S || S.over || S.sel < 0 || S.giv[S.sel]) return; const i = S.sel; dirty = true;
+  if (v === 0) { if (S.g[i] !== S.sol[i]) { S.g[i] = 0; S.notes[i] = 0; } return hud(); }
+  if (S.noteMode) { if (!S.g[i]) S.notes[i] ^= 1 << v; return hud(); }
+  if (S.g[i] === S.sol[i]) return; S.moves++; S.g[i] = v;
+  if (v !== S.sol[i]) { S.mist++; S.wrong = i; tone(140, .2, 'sawtooth', .07); if (navigator.vibrate) navigator.vibrate(60); hud();
+    if (S.mist > MIST[S.mode]) end(0, S.t, S.moves, S.mode, 'Too many mistakes 💥', `<b>${art(S.art).name}</b> ran out of tries. Have another go!`); return; }
+  tone(520 + v * 30, .07, 'triangle', .06); S.notes[i] = 0; const [r, c] = RC(i), b = BX(i); for (let j = 0; j < 81; j++) if (Math.floor(j / 9) === r || j % 9 === c || BX(j) === b) S.notes[j] &= ~(1 << v);
+  hud(); if (S.g.every((x, k) => x === S.sol[k])) { const sc = Math.max(Math.round(BASE[S.mode] / 2), BASE[S.mode] + Math.max(0, 1200 - Math.round(S.t)) - 50 * S.mist); tone(880, .5, 'triangle', .1);
+    end(sc, S.t, S.moves, S.mode, 'Solved! 🎉', `<b>${art(S.art).name}</b> solved the ${S.mode === 'daily' ? 'Daily ANON Sudoku (' + S.day + ')' : MODES[S.mode] + ' puzzle'} in <b>${fmt(S.t)}</b> with ${S.mist} mistake${S.mist === 1 ? '' : 's'}.<br>Score <b>${sc}</b>`); } }
+function lay() { const s = Math.min(C.w, C.h) - 6; return { s, ox: (C.w - s) / 2, oy: (C.h - s) / 2, q: s / 9 }; }
+$('#cv').addEventListener('pointerdown', e => { if (!S || S.paused || S.over) return; const p = P(e), L = lay(); const c = Math.floor((p.x - L.ox) / L.q), r = Math.floor((p.y - L.oy) / L.q); if (r >= 0 && r < 9 && c >= 0 && c < 9) { S.sel = r * 9 + c; dirty = true; } });
+function onPad(k) { if (/^[1-9]$/.test(k)) put(+k); else if (k === 'X') put(0); else if (k === 'N') { S.noteMode = !S.noteMode; hud(); }
+  else if (k === 'U' || k === 'D' || k === 'L' || k === 'R') { const [r, c] = RC(Math.max(0, S.sel)); S.sel = ((r + (k === 'D') - (k === 'U') + 9) % 9) * 9 + (c + (k === 'R') - (k === 'L') + 9) % 9; dirty = true; } }
+window.addEventListener('keydown', e => { if (!playing() || !S) return; if (/^[1-9]$/.test(e.key)) put(+e.key); else if (e.key === 'Backspace' || e.key === 'Delete' || e.key === '0') put(0); else if (e.key === 'n') onPad('N'); });
+let lastSec = -1; function step(dt) { S.t += dt; if (Math.floor(S.t) !== lastSec) { lastSec = Math.floor(S.t); hud(); } }
+function draw() { if (!C || !dirty) return; dirty = false; const x = C.x; x.fillStyle = '#05070a'; x.fillRect(0, 0, C.w, C.h); if (!S) return; const { s, ox, oy, q } = lay();
+  x.save(); AP.rr(x, ox, oy, s, s, 6); x.clip(); const im = IM('c-' + S.art); if (im) { const k = Math.max(s / im.width, s / im.height); x.globalAlpha = .28; x.drawImage(im, ox + s / 2 - im.width * k / 2, oy + s / 2 - im.height * k / 2, im.width * k, im.height * k); x.globalAlpha = 1; }
+  x.fillStyle = 'rgba(5,7,10,.55)'; x.fillRect(ox, oy, s, s); const sv = S.sel >= 0 ? S.g[S.sel] : 0, [sr, sc] = RC(Math.max(0, S.sel));
+  for (let i = 0; i < 81; i++) { const [r, c] = RC(i), X = ox + c * q, Y = oy + r * q;
+    const hl = i === S.sel ? 'rgba(255,61,154,.45)' : sv && S.g[i] === sv ? 'rgba(243,215,122,.28)' : (S.sel >= 0 && (r === sr || c === sc || BX(i) === BX(S.sel))) ? 'rgba(255,255,255,.07)' : '';
+    if (hl) { x.fillStyle = hl; x.fillRect(X, Y, q, q); }
+    const v = S.g[i]; if (v) txt(x, String(v), X + q / 2, Y + q / 2 + 1, q * .62, S.giv[i] ? '#f3d77a' : v === S.sol[i] ? '#ffffff' : '#ff4d6d', 'center', S.giv[i] ? 900 : 700, S.giv[i] ? 'Georgia,serif' : 'system-ui');
+    else if (S.notes[i]) for (let n = 1; n <= 9; n++) if (S.notes[i] >> n & 1) txt(x, String(n), X + ((n - 1) % 3 + .5) * q / 3, Y + (Math.floor((n - 1) / 3) + .5) * q / 3, q * .26, '#ff8cc4', 'center', 700); }
+  for (let k = 0; k <= 9; k++) { x.strokeStyle = k % 3 ? 'rgba(212,175,55,.35)' : '#d4af37'; x.lineWidth = k % 3 ? 1 : 2.4; x.beginPath(); x.moveTo(ox + k * q, oy); x.lineTo(ox + k * q, oy + s); x.moveTo(ox, oy + k * q); x.lineTo(ox + s, oy + k * q); x.stroke(); }
+  x.restore(); }
+window.G = { state: () => S, put, make, solve, C: () => C, L };
+
+</script>
+</body>
+</html>
