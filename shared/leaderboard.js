@@ -10,8 +10,8 @@
                          service_role key.
    Leave them as they are and the games fall back to on-device scores.
    --------------------------------------------------------------------- */
-const SUPABASE_URL = 'PASTE_SUPABASE_URL_HERE';
-const SUPABASE_ANON_KEY = 'PASTE_SUPABASE_PUBLISHABLE_KEY_HERE';
+const SUPABASE_URL = 'https://dcbgxhpwrfqbwldpclbq.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_-f0lT5SuVJ-TbFzlfMd7kA_hH6ZXp-N';
 /* ------------------------- end of config ----------------------------- */
 
 (function () {
