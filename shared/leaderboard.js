@@ -63,22 +63,39 @@ const SUPABASE_ANON_KEY = 'sb_publishable_-f0lT5SuVJ-TbFzlfMd7kA_hH6ZXp-N';
     }
     return 'Shadow-Ninja-42';
   }
-  // Simple filter: catches common slurs/swears incl. leetspeak. Not perfect, by design small.
-  const BAD = ['fuck', 'fuk', 'shit', 'cunt', 'bitch', 'nigg', 'nigga', 'fag', 'slut', 'whore', 'dick', 'cock', 'pussy', 'wank', 'twat', 'bastard',
-    'rape', 'nazi', 'hitler', 'kike', 'spic', 'chink', 'retard', 'porn', 'penis', 'vagina', 'asshole', 'arsehole', 'bollock', 'prick', 'jizz', 'cum',
-    'sex', 'tits', 'boob', 'paki', 'coon', 'tranny', 'dyke', 'kkk', 'isis'];
-  const RESERVED = ['admin', 'moderator', 'official', 'support', 'anonnft', 'system'];
-  function normalise(s) {
-    return s.toLowerCase().replace(/[0@4]/g, m => ({ 0: 'o', '@': 'a', 4: 'a' })[m]).replace(/[1!|]/g, 'i').replace(/3/g, 'e')
-      .replace(/[5$]/g, 's').replace(/7/g, 't').replace(/8/g, 'b').replace(/[^a-z]/g, '');
+  /* NF-START: name filter (generated from name-filter/words.json by name-filter/gen.js; mirror of public.nickname_is_clean) */
+  const NF = {'substring':'fuck,fck,fcuk,fvck,phuck,phuk,motherf,shit,cunt,kunt,bitch,biatch,biotch,bastard,asshole,arsehole,asswipe,assclown,dumbass,jackass,bigass,fatass,kissmyass,bollock,bellend,wank,twat,douche,tosser,jerkoff,jizz,cumshot,cumslut,cocksuck,dickhead,dicksuck,blowjob,handjob,rimjob,footjob,dildo,porn,penis,vagina,pussy,clitoris,orgasm,masturbat,ejaculat,erection,horny,hentai,milf,boob,titties,tittie,nipple,scrotum,testicle,ballsack,nutsack,buttplug,creampie,gangbang,deepthroat,bukkake,queef,smegma,felch,fellat,cunnilin,prostitut,sex,rape,rapist,incest,pedophil,paedophil,paedo,zoophil,bestiality,necrophil,slut,whore,skank,nigg,niqq,jigaboo,porchmonkey,junglebunny,darkie,golliwog,gollywog,wetback,beaner,kike,raghead,towelhead,cameljockey,zipperhead,slanteye,chinky,faggot,tranny,shemale,poofter,retard,spastic,pikey,nazi,hitler,siegheil,kkk,kluxklan,klansm,whitepower,whitepride,aryannation,aryanbrother,jihad,taliban,alqaeda,alqaida,goebbels,himmler,swastika,holohoax,rahowa,binladen,1488,14words,hh88,88hh,admin,moderator,official,anonnft,anonteam,anonstaff,anonsupport', 'token':'ass,arse,anal,anus,cum,tit,titty,cock,dick,dik,prick,knob,clit,boner,spunk,cuck,fag,homo,dyke,lesbo,poof,spic,spick,chink,gook,jap,coon,wog,negro,sambo,kaffir,kafir,paki,gypo,gyppo,yid,heeb,hymie,mong,spaz,tard,nonce,pedo,thot,slag,minge,turd,piss,nude,orgy,loli,heil,klan,adolf,zog,isis,stfu,gtfo,wtf,fuk,kys,puta,puto', 'exact':'anon,mod,mods,staff,owner,dev,team,root,system,support,null,undefined', 'allow':'scunthorpe,shiitake,shitake,sussex,essex,wessex,middlesex,sextant,sexton,unisex,grape,drape,scrape,trapez,parapet,rapeseed,therapist,ashkenazi,nazir,badminton,penistone,thorny,swank,booboo'};
+  const NFW = {}; Object.keys(NF).forEach(k => { NFW[k] = NF[k].split(','); });
+  const nfC1 = s => s.replace(/(.)\1+/g, '$1'), nfC2 = s => s.replace(/(.)\1\1+/g, '$1$1'), nfId = s => s;
+  const NF_LEET = { 0: 'o', 3: 'e', 4: 'a', 5: 's', 7: 't', 8: 'b', 9: 'g', '@': 'a', $: 's', '!': 'i' };
+  // three spellings of a piece: 1 read as i, 1 read as l, digits dropped
+  const nfBases = s => { const l = s.toLowerCase();
+    return ['i', 'l', ''].map(one => (one ? l.replace(/[0-9@$!]/g, c => c === '1' ? one : NF_LEET[c] || '') : l).replace(/[^a-z]/g, '')); };
+  function nfHit(piece, words, whole) {
+    for (const b of nfBases(piece)) for (const [f, k] of [[b, nfId], [nfC2(b), nfId], [nfC1(b), nfC1]]) {
+      let g = f; NFW.allow.forEach(a => { g = g.split(k(a)).join('#'); });
+      for (const [w, m] of words) {
+        if (/\d/.test(w)) continue;
+        const kw = k(w); if (k === nfC1 && kw !== w && kw.length < 4) continue;
+        if (whole && m === 'substring' ? g.includes(kw) : (g === kw || g === kw + 's')) return true;
+      }
+    }
+    return false;
   }
+  function isCleanName(raw) {
+    const s = String(raw == null ? '' : raw), d = s.toLowerCase().replace(/[^a-z0-9]/g, '');
+    if (NFW.substring.some(w => /\d/.test(w) && d.includes(w)) || NFW.exact.some(w => /\d/.test(w) && d === w)) return false;
+    const whole = [...NFW.substring.map(w => [w, 'substring']), ...NFW.exact.map(w => [w, 'exact'])], tok = NFW.token.map(w => [w, 'token']);
+    if (nfHit(s, whole, true)) return false;
+    return !s.replace(/([a-z])([A-Z])/g, '$1 $2').split(/[\s_-]+/).some(t => t && nfHit(t, tok, false));
+  }
+  /* NF-END */
+  const NAME_ERR = 'That name isn\'t allowed. Try another 🥷';
   function validateNickname(raw) {
     const v = String(raw == null ? '' : raw).replace(/\s+/g, ' ').trim();
     if (v.length < 3 || v.length > 16) return { ok: false, value: v, error: 'Use 3 to 16 characters.' };
     if (!/^[A-Za-z0-9][A-Za-z0-9 _-]*[A-Za-z0-9]$/.test(v)) return { ok: false, value: v, error: 'Letters, numbers, spaces, - and _ only.' };
-    const n = normalise(v), plain = v.toLowerCase().replace(/[^a-z]/g, '');
-    if (BAD.some(w => n.includes(w) || plain.includes(w))) return { ok: false, value: v, error: 'Keep it clean, ninja. Try another name.' };
-    if (RESERVED.some(w => n.includes(w))) return { ok: false, value: v, error: 'That name is reserved. Try another.' };
+    if (!isCleanName(v)) return { ok: false, value: v, error: NAME_ERR };
     return { ok: true, value: v, error: '' };
   }
   const getNickname = () => { const n = ls.get(K_NICK, ''); return validateNickname(n).ok ? n : ''; };
@@ -175,6 +192,7 @@ const SUPABASE_ANON_KEY = 'sb_publishable_-f0lT5SuVJ-TbFzlfMd7kA_hH6ZXp-N';
   function localTop(game, opts) {
     const since = opts.period === 'week' ? weekStart().getTime() : 0, asc = opts.order === 'asc';
     return ls.get(K_LOCAL(game), [])
+      .filter(r => r && isCleanName(r.nickname))
       .filter(r => !since || (r.created_at && Date.parse(r.created_at) >= since))
       .sort((a, b) => asc ? a.score - b.score : b.score - a.score || (a.time_seconds || 1e9) - (b.time_seconds || 1e9))
       .slice(0, opts.limit || 50);
@@ -213,6 +231,7 @@ const SUPABASE_ANON_KEY = 'sb_publishable_-f0lT5SuVJ-TbFzlfMd7kA_hH6ZXp-N';
         body: JSON.stringify({ game, nickname: nick, score, time_seconds: time, moves, mode }) });
       if (r.ok) { ls.set(K_LAST(game), Date.now()); return { status: 'online', nickname: nick, message: 'Posted to the global leaderboard as ' + nick + '.' }; }
       const code = r.body && r.body.code, msg = (r.body && r.body.message) || '';
+      if (/nickname not allowed/i.test(msg)) { ls.set(K_NICK, ''); return { status: 'rejected', message: NAME_ERR }; }
       if (/rate/i.test(msg)) return { status: 'rejected', message: 'Slow down, ninja. Try again in a minute.' };
       if (code === '23514' || r.status === 400) return { status: 'rejected', message: 'The server did not accept this score.' };
       return { status: 'error', message: 'Could not reach the leaderboard. Saved on this device.' };
@@ -242,7 +261,7 @@ const SUPABASE_ANON_KEY = 'sb_publishable_-f0lT5SuVJ-TbFzlfMd7kA_hH6ZXp-N';
         r = await req(q, { method: 'GET', headers: headers() });
         if (r.ok && Array.isArray(r.body)) r.body = dedupe(r.body, asc).slice(0, opts.limit);
       }
-      if (r.ok && Array.isArray(r.body)) return { online: true, rows: r.body.slice(0, opts.limit) };
+      if (r.ok && Array.isArray(r.body)) return { online: true, rows: r.body.filter(x => x && isCleanName(x.nickname)).slice(0, opts.limit) };
       throw new Error('bad response ' + r.status);
     } catch (e) {
       return { online: false, error: true, rows: localTop(game, opts), note: 'Could not reach the global leaderboard. Showing scores on this device.' };
@@ -276,7 +295,9 @@ const SUPABASE_ANON_KEY = 'sb_publishable_-f0lT5SuVJ-TbFzlfMd7kA_hH6ZXp-N';
       list.innerHTML = '';
       const me = (getNickname() || 'You').toLowerCase(); let meDone = false;
       if (!res.rows.length) list.appendChild(el('div', 'alb-empty', opts.period === 'week' ? 'No scores yet this week. Be the first ninja on the board!' : 'No scores yet. Win a game to claim #1!'));
-      res.rows.forEach((r, i) => {
+      const rows = res.rows.filter(r => r && isCleanName(r.nickname)); // safety net: never show a blocked name
+      if (!rows.length && res.rows.length) list.appendChild(el('div', 'alb-empty', 'No scores yet. Win a game to claim #1!'));
+      rows.forEach((r, i) => {
         const li = el('li', 'alb-li'); li.dataset.rank = i + 1;
         if (!meDone && String(r.nickname).toLowerCase() === me && (res.online ? !!getNickname() : true)) { li.classList.add('alb-me'); meDone = true; }
         li.appendChild(el('span', 'alb-rk', i < 3 ? ['🥇', '🥈', '🥉'][i] : String(i + 1)));
@@ -313,7 +334,7 @@ const SUPABASE_ANON_KEY = 'sb_publishable_-f0lT5SuVJ-TbFzlfMd7kA_hH6ZXp-N';
   }
 
   window.ANONLB = {
-    version: '1.0.0', isConfigured: configured, submit, fetchTop, renderBoard, openBoard, promptNickname,
-    getNickname, setNickname, validateNickname, randomNickname, seedLocal, sane, weekStart, _cfg: CFG
+    version: '1.1.0', isConfigured: configured, submit, fetchTop, renderBoard, openBoard, promptNickname,
+    getNickname, setNickname, validateNickname, isCleanName, randomNickname, seedLocal, sane, weekStart, _cfg: CFG
   };
 })();
