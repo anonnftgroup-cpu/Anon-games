@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05070a">
+<title>ANON Hangman · ANON NFTs</title>
+<meta name="description" content="ANON Hangman: guess the hidden word letter by letter before the lanterns go out, and reveal the ANON NFT art. Free, no sign-up.">
+<link rel="icon" href="../assets/logo.webp">
+<link rel="stylesheet" href="../assets/nft/kit.css">
+<link rel="stylesheet" href="../assets/play/play.css">
+<style>
+.pad{display:flex;gap:6px;justify-content:center;align-items:center;padding:4px 4px 2px;flex:none;user-select:none;-webkit-user-select:none;flex-wrap:wrap}
+.pad button{min-width:52px;min-height:44px;border-radius:12px;border:1px solid rgba(212,175,55,.6);background:rgba(0,0,0,.55);color:var(--gold2);font-size:17px;font-weight:900;touch-action:none;padding:0 8px}
+.pad button.on{background:rgba(255,61,154,.35)}.pad .big{min-width:84px;background:linear-gradient(180deg,#ff5aab,#c41f73);color:#fff;font-size:15px}
+.pad button:disabled{opacity:.35}
+.dpad{display:grid;grid-template-columns:repeat(3,48px);grid-template-rows:repeat(2,40px);gap:4px}.dpad button{min-width:0;min-height:0}
+.dpad [data-k=U]{grid-column:2}.dpad [data-k=L]{grid-column:1;grid-row:2}.dpad [data-k=D]{grid-column:2;grid-row:2}.dpad [data-k=R]{grid-column:3;grid-row:2}
+.seg.wrap{flex-wrap:wrap}.seg.wrap button{flex:1 1 22%}
+@media (max-height:700px){.pad button{min-height:38px}}
+</style>
+</head>
+<body>
+<header><div class="top">
+  <div class="brand"><a class="back-btn" href="../" aria-label="Back to ANON Arcade">&larr; Arcade</a><img src="../assets/logo.webp" alt=""><h1>HANGMAN</h1></div>
+  <div class="top-r"><button class="icon-btn" id="lbBtn" aria-label="Leaderboard">🏆</button><button class="icon-btn" id="menuBtn" aria-label="Menu">↻</button></div>
+</div></header>
+<section class="view on" id="setup">
+  <img class="hero" id="hero" alt="ANON NFTs artwork">
+  <div class="lbl">Choose your ANON</div>
+  <div class="chars five" id="artPick"></div>
+  <div class="lbl">Difficulty</div><div class="seg" id="diff"><button data-v="easy">Easy</button><button data-v="medium">Medium</button><button data-v="hard">Hard</button></div>
+  <button class="go" id="goBtn">PLAY</button>
+  <p class="howto">Guess the word one letter at a time (tap the keys or type). Every right letter reveals more of the hidden ANON NFT. Every wrong letter blows out a lantern. Solve the word to move on to the next one. The run ends when all the lanterns are out. Easy: 8 lanterns, shorter words. Medium: 6. Hard: 5 lanterns, long words, triple points.</p>
+  <div class="nick" id="nick"></div>
+</section>
+<section class="view" id="play">
+  <div class="hud"><span id="sc"></span><span id="wd"></span><span id="lv"></span></div>
+  <div class="stage"><canvas id="cv"></canvas><div class="tap" id="msg"></div></div>
+  
+  <div class="bar"><button id="againBtn">Restart</button><button id="setBtn">Change ANON</button></div>
+</section>
+<script src="../shared/leaderboard.js"></script>
+<script src="../shared/newsletter.js"></script>
+<script src="../assets/nft/kit.js"></script>
+<script src="../assets/play/play.js"></script>
+<script>
+const GAME = 'hangman', TITLE = 'ANON Hangman', PK = 'anonB.hangman', ASPECT = 0.62, MOVES = 'words', DEFMODE = 'medium';
+'use strict';
+const { $, ls, modal, post, openLB, gameOver, art, ART } = AK;
+const NAMES = Object.fromEntries(ART.map(a => [a.id, a.name.replace(/^ANON /, '')]));
+const DIFFN = { easy: 'Easy', medium: 'Medium', hard: 'Hard' };
+const pref = ls.get(PK, { art: 'anon', diff: DEFMODE, best: 0 }); if (window.MODELIST && !MODELIST.includes(pref.diff)) pref.diff = DEFMODE;
+const show = id => document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === id));
+const setHero = () => $('#hero').src = art(pref.art).cover;
+AK.picker($('#artPick'), pref.art, id => { pref.art = id; ls.set(PK, pref); setHero(); });
+if ($('#diff') && ![...$('#diff').children].some(b => b.dataset.v === pref.diff)) pref.diff = DEFMODE;
+if ($('#diff')) AK.seg($('#diff'), pref.diff, v => { pref.diff = v; ls.set(PK, pref); });
+setHero(); AK.nickLine($('#nick'));
+// ---- sound: generated in the browser, nothing plays before the first tap/key ----
+let AC = null; window.__sfx = 0;
+const unlock = () => { if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } if (AC && AC.state === 'suspended') AC.resume(); };
+['pointerdown', 'keydown', 'touchstart'].forEach(t => window.addEventListener(t, unlock, { capture: true, passive: true }));
+function tone(f, d, type, vol, f2) { if (!AC || pref.mute) return; window.__sfx++; const t = AC.currentTime, o = AC.createOscillator(), g = AC.createGain();
+  o.type = type || 'square'; o.frequency.setValueAtTime(f, t); if (f2) o.frequency.exponentialRampToValueAtTime(Math.max(20, f2), t + d);
+  g.gain.setValueAtTime(vol || .08, t); g.gain.exponentialRampToValueAtTime(.0001, t + d); o.connect(g).connect(AC.destination); o.start(t); o.stop(t + d + .02); }
+function boom(d, vol) { if (!AC || pref.mute) return; window.__sfx++; const n = Math.floor(AC.sampleRate * d), b = AC.createBuffer(1, n, AC.sampleRate), c = b.getChannelData(0);
+  for (let i = 0; i < n; i++) c[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 2); const s = AC.createBufferSource(), g = AC.createGain(), fl = AC.createBiquadFilter();
+  fl.type = 'lowpass'; fl.frequency.value = 900; s.buffer = b; g.gain.value = vol || .25; s.connect(fl).connect(g).connect(AC.destination); s.start(); }
+// ---- shared loop, pause when hidden, game over ----
+let C = null, S = null;
+const imgs = {}; const IM = id => imgs[id];
+ART.forEach(a => { AP.img(a.img).then(i => { imgs[a.id] = i; dirty = true; }); AP.img(a.cover).then(i => { imgs['c-' + a.id] = i; dirty = true; }); });
+function ring(x, im, cx, cy, r, col) { x.save(); x.beginPath(); x.arc(cx, cy, r, 0, 7); x.closePath(); x.fillStyle = '#111'; x.fill(); x.clip(); if (im) AP.cover(x, im, cx - r, cy - r, r * 2, r * 2); x.restore();
+  x.lineWidth = Math.max(1.5, r * .16); x.strokeStyle = col || '#f3d77a'; x.beginPath(); x.arc(cx, cy, r, 0, 7); x.stroke(); }
+function bgArt(x, id, a) { const im = IM('c-' + id); if (!im) return; x.globalAlpha = a || .22; const k = Math.max(C.w / im.width, C.h / im.height); x.drawImage(im, (C.w - im.width * k) / 2, (C.h - im.height * k) / 2, im.width * k, im.height * k); x.globalAlpha = 1; }
+const L = AP.loop(dt => { if (S && !S.over && !S.paused) step(dt); }, () => draw());
+let paused = false;
+function pause() { if (!S || S.over || S.paused) return; S.paused = true; $('#msg').textContent = 'Paused\nTap to resume'; }
+function resume() { if (S && S.paused) { S.paused = false; $('#msg').textContent = ''; } }
+document.addEventListener('visibilitychange', () => { if (document.hidden) pause(); });
+$('#msg').parentElement.addEventListener('pointerdown', () => { if (S && S.paused) resume(); }, true);
+async function start() { show('play'); if (!C) C = AP.canvas($('#cv'), ASPECT, () => draw()); else C.fit(); $('#msg').textContent = ''; newRun(); L.start(); }
+function end(score, secs, moves, mode, title, text) {
+  if (!S || S.over) return; S.over = true; draw(); setTimeout(() => L.stop(), 50); if (navigator.vibrate) navigator.vibrate([40, 30, 70]);
+  const a = art(S.art || pref.art), pb = score > (pref.best || 0); if (pb) { pref.best = score; ls.set(PK, pref); }
+  S.final = { score, secs, moves, mode };
+  setTimeout(() => { modal({ art: a.img, title: pb && score > 0 ? 'New best! 🏆' : title, text, lb: score > 0,
+    buttons: [['PLAY AGAIN', () => start()], ['Leaderboard', () => lb(), 1], ['Change ANON', () => show('setup'), 1]] });
+    if (score > 0) post(GAME, score, Math.max(1, Math.round(secs)), moves, mode); }, 500);
+  gameOver();
+}
+const lb = () => openLB(GAME, TITLE, MODES, MOVES);
+$('#goBtn').onclick = () => start(); $('#againBtn').onclick = () => { if (S) S.over = true; start(); };
+$('#setBtn').onclick = $('#menuBtn').onclick = () => { if (S) S.over = true; L.stop(); show('setup'); };
+$('#lbBtn').onclick = lb;
+// hold-buttons for on-screen pads: data-k = key name
+const held = new Set(); window.__held = held;
+document.querySelectorAll('.pad [data-k]').forEach(b => { const k = b.dataset.k;
+  b.addEventListener('pointerdown', e => { e.preventDefault(); held.add(k); b.classList.add('on'); if (window.onPad) onPad(k); });
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach(t => b.addEventListener(t, () => { held.delete(k); b.classList.remove('on'); })); });
+const KM = { ArrowLeft: 'L', a: 'L', A: 'L', ArrowRight: 'R', d: 'R', D: 'R', ArrowUp: 'U', w: 'U', W: 'U', ArrowDown: 'D', s: 'D', S: 'D', ' ': 'B', Enter: 'B', x: 'B', z: 'B' };
+const playing = () => $('#play').classList.contains('on') && !document.querySelector('.modal.show,.alb-ov,.anw-ov');
+window.addEventListener('keydown', e => { const k = KM[e.key]; if (!k || !playing()) return; e.preventDefault(); if (S && S.paused) resume(); if (!held.has(k) && window.onPad) onPad(k); held.add(k); });
+window.addEventListener('keyup', e => { const k = KM[e.key]; if (k) held.delete(k); });
+
+// pointer -> canvas CSS coords (canvas has a 2px border)
+function P(e) { const r = $('#cv').getBoundingClientRect(); return { x: (e.clientX - r.left - 2) * C.w / (r.width - 4), y: (e.clientY - r.top - 2) * C.h / (r.height - 4) }; }
+const ukDay = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/London' }).format(new Date());
+function hashStr(s) { let h = 2166136261; for (const c of s) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
+function txt(x, s, X, Y, size, col, align, weight, font) { x.font = `${weight || 800} ${size}px ${font || 'system-ui,sans-serif'}`; x.fillStyle = col || '#f3d77a'; x.textAlign = align || 'center'; x.textBaseline = 'middle'; x.fillText(s, X, Y); }
+var dirty = true; window.addEventListener('resize', () => dirty = true); window.addEventListener('pointerup', () => dirty = true);
+const fmt = s => Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
+
+const MODES = {"easy": "Easy", "medium": "Medium", "hard": "Hard"};
+const WORDS = {
+ 'Ninja & Japan': 'KATANA SHURIKEN DOJO SAMURAI SHOGUN RONIN KIMONO BONSAI SUSHI LANTERN TEMPLE PAGODA BAMBOO KUNAI SHADOW STEALTH ORIGAMI SAKURA DRAGON TATAMI NOODLE SHRINE MONK ARCHER ARROW SCROLL MASK HOOD BLADE SILENCE ROOFTOP',
+ 'Lakes & Mountains': 'MOUNTAIN WATERFALL LAKE MEADOW FOREST VALLEY BOULDER HEATHER SHEEP BRIDGE CASTLE RIVER ISLAND CANYON GLACIER VOLCANO SUNSET THUNDER RAINBOW BLIZZARD LIGHTHOUSE HARBOUR MOORLAND WOODLAND SUMMIT CAVERN STREAM PEBBLE',
+ 'Animals': 'TIGER FALCON RAVEN PANTHER GORILLA OCTOPUS PENGUIN DOLPHIN JAGUAR COBRA VIPER KITTEN HEDGEHOG BADGER SQUIRREL BUTTERFLY CHAMELEON FLAMINGO CROCODILE ELEPHANT GIRAFFE KANGAROO LEOPARD PARROT OWL WOLF FOX MONKEY',
+ 'Gems & Treasure': 'DIAMOND EMERALD SAPPHIRE RUBY AMETHYST CRYSTAL CROWN GOLDEN TREASURE JEWEL PEARL TOPAZ GARNET OPAL SCEPTRE THRONE CHALICE TIARA AMULET RELIC COMPASS LOCKET',
+ 'Space': 'GALAXY PLANET COMET ASTEROID NEBULA ROCKET ORBIT METEOR SATELLITE ECLIPSE JUPITER SATURN TELESCOPE ASTRONAUT STARDUST UNIVERSE COSMOS LUNAR MARTIAN SPACESHIP',
+ 'Art & Digital': 'ARTWORK PIXEL CANVAS GALLERY PORTRAIT SKETCH PALETTE COLLECTION CREATOR ARTIST MASTERPIECE BLOCKCHAIN WALLET AVATAR DIGITAL SIGNATURE EDITION ANIMATION HOLOGRAM NETWORK KEYBOARD BRUSH EASEL MURAL',
+ 'Games': 'ARCADE JOYSTICK PINBALL PUZZLE CHESS DOMINO LEVEL HIGHSCORE CHAMPION LEADERBOARD CONTROLLER QUEST DUNGEON WIZARD POTION KNIGHT DICE CHECKMATE BOSS RESPAWN',
+ 'Spooky': 'GHOST SKELETON PHANTOM VAMPIRE CAULDRON GOBLIN SPECTRE MIDNIGHT HAUNTED PUMPKIN MUMMY WEREWOLF SPIDER COBWEB SKULL GRAVEYARD BROOMSTICK',
+ 'Cats': 'WHISKERS TABBY PURRING CATNIP GRUMPY MITTENS PAWPRINT KITTY TOMCAT SIAMESE PERSIAN FURBALL'
+};
+
+// ANON Hangman (lantern version): guess the word before the lanterns go out
+const LIVES = { easy: 8, medium: 6, hard: 5 }, MULT = { easy: 1, medium: 2, hard: 3 };
+const POOL = []; Object.entries(WORDS).forEach(([cat, s]) => s.split(' ').forEach(w => POOL.push({ w, cat })));
+const fits = (w, m) => m === 'easy' ? w.length <= 7 : m === 'hard' ? w.length >= 7 : w.length >= 5;
+function nextWord() { const used = S.used; let c; for (let k = 0; k < 200; k++) { c = AP.pick(POOL); if (fits(c.w, S.mode) && !used.has(c.w)) break; } used.add(c.w);
+  S.word = c.w; S.cat = c.cat; S.guess = new Set(); S.lives = LIVES[S.mode]; S.state = 'play'; S.wordArt = AP.pick(ART).id; hud(); dirty = true; }
+function newRun() { S = { art: pref.art, mode: pref.diff, used: new Set(), score: 0, moves: 0, t: 0, wait: 0 }; nextWord(); }
+const hud = () => { $('#sc').textContent = '⭐ ' + S.score; $('#wd').textContent = 'Words ' + S.moves; $('#lv').textContent = '🏮 ' + S.lives; };
+const solved = () => [...S.word].every(ch => S.guess.has(ch));
+function guess(ch) { if (!S || S.over || S.state !== 'play' || S.guess.has(ch)) return; S.guess.add(ch); dirty = true;
+  if (S.word.includes(ch)) { tone(600 + S.guess.size * 10, .07, 'triangle', .07); if (solved()) { const pts = MULT[S.mode] * (10 * S.word.length + 15 * S.lives); S.score += pts; S.moves++; S.state = 'won'; S.wait = 1.3; S.last = '+' + pts; tone(880, .3, 'triangle', .1); } }
+  else { S.lives--; tone(160, .2, 'sawtooth', .07); if (navigator.vibrate) navigator.vibrate(40); if (S.lives <= 0) { S.state = 'lost'; S.wait = 1.6; } } hud(); }
+const ROWS = ['QWERTYUIOP', 'ASDFGHJKL', 'ZXCVBNM'];
+function lay() { const W = C.w, H = C.h, kw = W / 10.4, kh = Math.min(kw * 1.3, H * .085), ky = H - kh * 3 - 16; return { W, H, kw, kh, ky }; }
+$('#cv').addEventListener('pointerdown', e => { if (!S || S.paused) return; const p = P(e), L = lay();
+  ROWS.forEach((r, ri) => { const ox = (L.W - r.length * L.kw) / 2; [...r].forEach((ch, i) => { const X = ox + i * L.kw, Y = L.ky + ri * (L.kh + 5); if (p.x >= X && p.x < X + L.kw && p.y >= Y && p.y < Y + L.kh) guess(ch); }); }); });
+window.addEventListener('keydown', e => { if (playing() && /^[a-z]$/i.test(e.key)) guess(e.key.toUpperCase()); });
+function step(dt) { S.t += dt; if (S.state !== 'play') { S.wait -= dt; if (S.wait <= 0) { if (S.state === 'won') nextWord(); else if (S.state === 'lost') { S.state = 'done';
+  end(S.score, S.t, S.moves, S.mode, S.moves ? 'The lanterns went out 🏮' : 'Out of lanterns 🏮', `The word was <b>${S.word}</b>.<br><b>${art(S.art).name}</b> solved <b>${S.moves}</b> word${S.moves === 1 ? '' : 's'} on ${MODES[S.mode]}.<br>Score <b>${S.score}</b>`); } } } }
+function lantern(x, cx, cy, r, lit) { x.save(); x.translate(cx, cy); if (lit) { x.shadowColor = '#ffb347'; x.shadowBlur = r * 1.6; }
+  x.fillStyle = lit ? '#ff7a1a' : '#2a2a2a'; x.beginPath(); x.ellipse(0, 0, r * .7, r, 0, 0, 7); x.fill(); x.shadowBlur = 0; x.fillStyle = lit ? '#ffd27a' : '#444'; x.beginPath(); x.ellipse(0, 0, r * .3, r * .55, 0, 0, 7); x.fill();
+  x.fillStyle = '#d4af37'; x.fillRect(-r * .45, -r * 1.12, r * .9, r * .2); x.fillRect(-r * .45, r * .92, r * .9, r * .2); x.restore(); }
+function draw() { if (!C || !dirty) return; dirty = false; const x = C.x, L = lay(); x.fillStyle = '#05070a'; x.fillRect(0, 0, C.w, C.h); if (!S) return; bgArt(x, S.art, .12);
+  const n = LIVES[S.mode], lr = Math.min(L.W / (n * 3), 16); for (let i = 0; i < n; i++) lantern(x, L.W / 2 + (i - (n - 1) / 2) * lr * 2.6, 26, lr, i < S.lives);
+  const ar = Math.min(L.W * .26, L.H * .17), acy = 60 + ar; const fr = [...new Set(S.word)].filter(c => S.guess.has(c)).length / new Set(S.word).size;
+  ring(x, IM(S.state === 'won' || S.state === 'lost' || S.state === 'done' ? S.wordArt : S.wordArt), L.W / 2, acy, ar, '#d4af37'); x.fillStyle = `rgba(5,7,10,${S.state === 'play' ? .88 * (1 - fr) : 0})`; x.beginPath(); x.arc(L.W / 2, acy, ar - 2, 0, 7); x.fill();
+  if (S.state === 'won') txt(x, S.last + ' ✨', L.W / 2, acy, ar * .4, '#2bff88', 'center', 900);
+  txt(x, S.cat.toUpperCase(), L.W / 2, acy + ar + 18, 13, '#ff8cc4', 'center', 800);
+  const len = S.word.length, bw = Math.min(L.W / (len + 1), 36), by = acy + ar + 54;
+  [...S.word].forEach((ch, i) => { const X = L.W / 2 + (i - (len - 1) / 2) * bw; x.fillStyle = '#d4af37'; x.fillRect(X - bw * .38, by + bw * .42, bw * .76, 3);
+    const show = S.guess.has(ch) || S.state === 'lost' || S.state === 'done'; if (show) txt(x, ch, X, by + 6, bw * .78, S.guess.has(ch) ? '#fff3c4' : '#ff4d6d', 'center', 900, 'Georgia,serif'); });
+  ROWS.forEach((r, ri) => { const ox = (L.W - r.length * L.kw) / 2; [...r].forEach((ch, i) => { const X = ox + i * L.kw + 2, Y = L.ky + ri * (L.kh + 5), u = S.guess.has(ch), hit = u && S.word.includes(ch);
+    AP.rr(x, X, Y, L.kw - 4, L.kh, 7); x.fillStyle = hit ? 'rgba(43,255,136,.35)' : u ? 'rgba(80,80,80,.5)' : 'rgba(0,0,0,.55)'; x.fill(); x.strokeStyle = u ? 'rgba(212,175,55,.25)' : 'rgba(212,175,55,.7)'; x.lineWidth = 1; x.stroke();
+    txt(x, ch, X + (L.kw - 4) / 2, Y + L.kh / 2 + 1, L.kh * .45, u ? '#777' : '#f3d77a', 'center', 900); }); }); }
+window.G = { state: () => S, guess, nextWord, POOL, C: () => C, L };
+
+</script>
+</body>
+</html>

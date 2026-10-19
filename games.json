@@ -1409,6 +1409,35 @@
         "hard": "Hard · 120"
       },
       "added": "2026-10-19"
+    },
+    {
+      "id": "hangman",
+      "name": "ANON Hangman",
+      "tagline": "Guess the word before the lanterns go out",
+      "path": "hangman/",
+      "thumb": "hangman/thumb.webp",
+      "category": "Word",
+      "tags": [
+        "hangman",
+        "word",
+        "letters",
+        "guess"
+      ],
+      "status": "live",
+      "leaderboard": true,
+      "scoreLabel": "Score",
+      "order": "desc",
+      "periods": [
+        "day",
+        "all"
+      ],
+      "movesLabel": "words",
+      "modeLabels": {
+        "easy": "Easy",
+        "medium": "Medium",
+        "hard": "Hard"
+      },
+      "added": "2026-10-19"
     }
   ]
 }
