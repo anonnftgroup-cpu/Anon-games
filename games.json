@@ -1,0 +1,34 @@
+{
+  "games": [
+    {
+      "id": "solitaire",
+      "name": "ANON Solitaire",
+      "tagline": "Classic Klondike with ANON card backs",
+      "path": "solitaire/",
+      "thumb": "solitaire/thumb.webp",
+      "category": "Cards",
+      "tags": ["klondike", "patience", "cards"],
+      "status": "live",
+      "leaderboard": true,
+      "scoreLabel": "Score",
+      "order": "desc",
+      "added": "2026-10-19"
+    },
+    {
+      "id": "ninja-memory",
+      "name": "Ninja Memory",
+      "tagline": "Find the hidden ANON pairs",
+      "thumb": "assets/coming-soon.webp",
+      "category": "Puzzle",
+      "status": "soon"
+    },
+    {
+      "id": "shadow-runner",
+      "name": "Shadow Runner",
+      "tagline": "Dash through the forest, dodge the guards",
+      "thumb": "assets/coming-soon.webp",
+      "category": "Arcade",
+      "status": "soon"
+    }
+  ]
+}
