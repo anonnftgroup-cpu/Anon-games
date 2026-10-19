@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05070a">
+<title>ANON Snake · ANON NFTs</title>
+<meta name="description" content="ANON Snake: steer the crowned ANON snake and collect pink gems. Free, no sign-up.">
+<link rel="icon" href="../assets/logo.webp">
+<link rel="stylesheet" href="../assets/nft/kit.css">
+<link rel="stylesheet" href="../assets/play/play.css">
+<style>.pad{display:grid;grid-template-columns:repeat(3,46px);grid-template-rows:repeat(2,38px);gap:4px}.pad button{min-height:0!important;padding:0!important;font-size:18px!important}</style>
+</head>
+<body>
+<header><div class="top">
+  <div class="brand"><a class="back-btn" href="../" aria-label="Back to ANON Arcade">&larr; Arcade</a><img src="../assets/logo.webp" alt=""><h1>ANON SNAKE</h1></div>
+  <div class="top-r"><button class="icon-btn" id="lbBtn" aria-label="Leaderboard">🏆</button><button class="icon-btn" id="menuBtn" aria-label="Menu">↻</button></div>
+</div></header>
+<section class="view on" id="setup">
+  <img class="hero" src="../assets/nft/c-eyes.webp" alt="ANON NFTs artwork" style="object-position:50% 50%">
+  <div class="lbl">Speed</div>
+  <div class="seg" id="diffSeg"><button data-v="slow">Slow ×1</button><button data-v="normal">Normal ×2</button><button data-v="fast">Fast ×3</button></div>
+  <button class="go" id="goBtn">PLAY</button>
+  <p class="howto"><b>Swipe</b>, use the arrow pad, or the arrow keys / WASD to steer your crowned snake. Each 💎 pink gem is worth 10 × the speed bonus. Grab the spinning ANON NFT coin for 3 gems at once. Don't hit the walls or your own tail!</p>
+  <div class="nick" id="nick"></div>
+</section>
+<section class="view" id="play">
+  <div class="hud"><span id="gm">💎 0</span><span id="sc">⭐ 0</span></div>
+  <div class="stage"><canvas id="cv"></canvas><div class="tap" id="msg"></div></div>
+  <div class="bar" style="align-items:center"><div class="pad"><span></span><button data-d="up" aria-label="Up">▲</button><span></span><button data-d="left" aria-label="Left">◀</button><button data-d="down" aria-label="Down">▼</button><button data-d="right" aria-label="Right">▶</button></div><div style="display:flex;flex-direction:column;gap:4px"><button id="againBtn">Restart</button><button id="setBtn">Menu</button></div></div>
+</section>
+<script src="../shared/leaderboard.js"></script>
+<script src="../shared/newsletter.js"></script>
+<script src="../assets/nft/kit.js"></script>
+<script src="../assets/play/play.js"></script>
+<script>
+'use strict';
+const { $, ls, modal, post, openLB, gameOver, art, ART } = AK;
+const GAME = 'anon-snake', TITLE = 'ANON Snake', COLS = 15;
+const SP = { slow: { v: 7, m: 1 }, normal: { v: 10, m: 2 }, fast: { v: 14, m: 3 } }, NAMES = { slow: 'Slow', normal: 'Normal', fast: 'Fast' };
+const pref = ls.get('anonSnake.pref', { diff: 'normal' });
+AK.seg($('#diffSeg'), pref.diff, v => { pref.diff = v; ls.set('anonSnake.pref', pref); }); AK.nickLine($('#nick'));
+const show = id => document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === id));
+let C = null, S = null, cs = 20, BG = null; const IM = {};
+ART.forEach(a => AP.img(a.img).then(i => IM[a.id] = i)); AP.img('../assets/nft/c-eyes.webp').then(i => BG = i);
+const DIR = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
+function grid() { cs = Math.floor(C.w / COLS); S.cols = COLS; S.rows = Math.max(12, Math.floor(C.h / cs)); S.ox = (C.w - cs * S.cols) / 2; S.oy = (C.h - cs * S.rows) / 2; }
+function newGame() {
+  show('play'); if (!C) C = AP.canvas($('#cv'), 0, () => { if (S) { const r = S.rows; grid(); if (S.rows < r) S.rows = r; } draw(); }); else C.fit();
+  S = { diff: pref.diff, body: [], dir: 'right', q: [], acc: 0, gems: 0, score: 0, t: 0, over: false, food: null, coin: null, live: false, fx: [] };
+  grid(); const y = Math.floor(S.rows / 2); S.body = [[4, y], [3, y], [2, y]]; placeFood(); hud(); $('#msg').textContent = 'Swipe or press an arrow to start'; L.start();
+}
+const free = () => { const occ = new Set(S.body.map(p => p.join())); if (S.food) occ.add(S.food.join()); if (S.coin) occ.add(S.coin.x + ',' + S.coin.y); const f = []; for (let x = 0; x < S.cols; x++) for (let y = 0; y < S.rows; y++) if (!occ.has(x + ',' + y)) f.push([x, y]); return f; };
+function placeFood() { const f = free(); S.food = f.length ? AP.pick(f) : null; }
+function turn(d) { if (!S || S.over) return; if (!S.live) { S.live = true; $('#msg').textContent = ''; }
+  const last = S.q.length ? S.q[S.q.length - 1] : S.dir; const a = DIR[last], b = DIR[d]; if (a[0] + b[0] === 0 && a[1] + b[1] === 0) return; if (d === last) return; if (S.q.length < 2) S.q.push(d); }
+function hud() { $('#gm').textContent = '💎 ' + S.gems; $('#sc').textContent = '⭐ ' + S.score; }
+function tick() {
+  if (S.q.length) S.dir = S.q.shift(); const d = DIR[S.dir], h = S.body[0], n = [h[0] + d[0], h[1] + d[1]];
+  if (n[0] < 0 || n[1] < 0 || n[0] >= S.cols || n[1] >= S.rows) return end('wall');
+  const eat = S.food && n[0] === S.food[0] && n[1] === S.food[1];
+  const tail = eat ? S.body.length : S.body.length - 1;
+  for (let i = 0; i < tail; i++) if (S.body[i][0] === n[0] && S.body[i][1] === n[1]) return end('tail');
+  S.body.unshift(n); let grow = eat ? 1 : 0;
+  if (eat) { add(1, n); placeFood(); if (!S.coin && AP.rnd() < .18) { const f = free(); if (f.length) { const c = AP.pick(f); S.coin = { x: c[0], y: c[1], id: AP.pick(ART).id, life: 6 }; } } }
+  if (S.coin && n[0] === S.coin.x && n[1] === S.coin.y) { add(3, n); grow += 2; S.coin = null; }
+  if (!grow) S.body.pop(); else for (let k = 1; k < grow; k++) S.body.push(S.body[S.body.length - 1].slice());
+}
+function add(g, at) { S.gems += g; S.score += g * 10 * SP[S.diff].m; S.fx.push({ x: at[0], y: at[1], a: 0, t: '+' + g * 10 * SP[S.diff].m }); hud(); if (navigator.vibrate) navigator.vibrate(10); }
+function step(dt) {
+  if (!S || S.over || !S.live) return; S.t += dt; S.acc += dt; const iv = 1 / SP[S.diff].v;
+  if (S.coin) { S.coin.life -= dt; if (S.coin.life <= 0) S.coin = null; }
+  while (S.acc >= iv && !S.over) { S.acc -= iv; tick(); }
+  S.fx = S.fx.filter(f => (f.a += dt) < .6);
+}
+function draw() {
+  if (!C || !S) return; const x = C.x, W = C.w, H = C.h, ox = S.ox, oy = S.oy;
+  x.fillStyle = '#05070a'; x.fillRect(0, 0, W, H); if (BG) { x.globalAlpha = .22; AP.cover(x, BG, 0, 0, W, H); x.globalAlpha = 1; }
+  x.fillStyle = 'rgba(6,14,10,.55)'; x.fillRect(ox, oy, cs * S.cols, cs * S.rows);
+  x.strokeStyle = 'rgba(212,175,55,.07)'; x.lineWidth = 1; x.beginPath(); for (let i = 0; i <= S.cols; i++) { x.moveTo(ox + i * cs, oy); x.lineTo(ox + i * cs, oy + cs * S.rows); } for (let j = 0; j <= S.rows; j++) { x.moveTo(ox, oy + j * cs); x.lineTo(ox + cs * S.cols, oy + j * cs); } x.stroke();
+  x.strokeStyle = '#d4af37'; x.lineWidth = 2; x.strokeRect(ox, oy, cs * S.cols, cs * S.rows);
+  if (S.food) AP.gem(x, ox + (S.food[0] + .5) * cs, oy + (S.food[1] + .52) * cs, cs * .38);
+  if (S.coin) { const c = S.coin, im = IM[c.id], cx = ox + (c.x + .5) * cs, cy = oy + (c.y + .5) * cs, sx = Math.abs(Math.cos(performance.now() / 300)) * .9 + .1;
+    x.save(); x.translate(cx, cy); x.scale(sx, 1); x.beginPath(); x.arc(0, 0, cs * .48, 0, 7); x.fillStyle = '#d4af37'; x.fill(); x.save(); x.beginPath(); x.arc(0, 0, cs * .4, 0, 7); x.clip(); if (im) AP.cover(x, im, -cs * .4, -cs * .4, cs * .8, cs * .8); x.restore(); x.restore(); }
+  const n = S.body.length;
+  for (let i = n - 1; i >= 1; i--) { const [bx, by] = S.body[i], k = 1 - i / (n + 4) * .5, pad = cs * (.12 + (1 - k) * .1);
+    const g = x.createLinearGradient(0, oy + by * cs, 0, oy + (by + 1) * cs); g.addColorStop(0, '#fff3c4'); g.addColorStop(.5, '#d4af37'); g.addColorStop(1, '#7a5a12');
+    x.fillStyle = g; AP.rr(x, ox + bx * cs + pad, oy + by * cs + pad, cs - pad * 2, cs - pad * 2, cs * .25); x.fill(); if (i % 3 === 0) { x.fillStyle = '#ff3d9a'; x.beginPath(); x.arc(ox + (bx + .5) * cs, oy + (by + .5) * cs, cs * .1, 0, 7); x.fill(); } }
+  const [hx, hy] = S.body[0], d = DIR[S.dir], cx = ox + (hx + .5) * cs, cy = oy + (hy + .5) * cs;
+  x.fillStyle = '#0d1420'; x.beginPath(); x.arc(cx, cy, cs * .46, 0, 7); x.fill(); x.strokeStyle = '#f3d77a'; x.lineWidth = 2; x.stroke();
+  x.fillStyle = '#ff3d9a'; const ex = -d[1] * cs * .16, ey = d[0] * cs * .16; x.beginPath(); x.arc(cx + d[0] * cs * .15 + ex, cy + d[1] * cs * .15 + ey, cs * .07, 0, 7); x.arc(cx + d[0] * cs * .15 - ex, cy + d[1] * cs * .15 - ey, cs * .07, 0, 7); x.fill();
+  AP.crown(x, cx - d[0] * cs * .05, cy - cs * .5, cs * .42);
+  x.textAlign = 'center'; x.font = '900 14px system-ui'; for (const f of S.fx) { x.globalAlpha = 1 - f.a / .6; x.fillStyle = '#2bff88'; x.fillText(f.t, ox + (f.x + .5) * cs, oy + f.y * cs - f.a * 30); } x.globalAlpha = 1;
+  if (S.over) { x.fillStyle = 'rgba(255,61,154,.15)'; x.fillRect(0, 0, W, H); }
+}
+const L = AP.loop(step, draw); L.onHide = () => { if (S && S.live && !S.over) { S.live = false; $('#msg').textContent = 'Paused. Swipe to carry on'; } };
+function end(why) {
+  S.over = true; L.stop(); draw(); if (navigator.vibrate) navigator.vibrate([40, 30, 70]);
+  const t = Math.max(1, Math.ceil(S.t)), best = ls.get('anonSnake.best', 0), pb = S.score > best; if (pb) ls.set('anonSnake.best', S.score);
+  setTimeout(() => { modal({ art: '../assets/nft/p-anon.webp', title: pb && S.score ? 'New best! 🏆' : why === 'wall' ? 'Hit the wall! 🧱' : 'Tail bite! 🐍', text: `${NAMES[S.diff]} speed: <b>${S.gems}</b> gems, length ${S.body.length}.`, lb: S.score > 0,
+    buttons: [['PLAY AGAIN', () => newGame()], ['Leaderboard', () => openLB(GAME, TITLE, NAMES, 'gems'), 1], ['Menu', () => show('setup'), 1]] });
+    if (S.score > 0) post(GAME, S.score, t, S.gems, S.diff); }, 550);
+  gameOver();
+}
+AP.swipe($('#cv'), d => { if (d !== 'tap') turn(d); }, 18);
+document.querySelectorAll('.pad button').forEach(b => b.addEventListener('pointerdown', e => { e.preventDefault(); turn(b.dataset.d); }));
+AP.keys({ ArrowUp: () => turn('up'), ArrowDown: () => turn('down'), ArrowLeft: () => turn('left'), ArrowRight: () => turn('right'), w: () => turn('up'), s: () => turn('down'), a: () => turn('left'), d: () => turn('right') });
+$('#goBtn').onclick = () => newGame(); $('#againBtn').onclick = () => { L.stop(); newGame(); };
+$('#setBtn').onclick = $('#menuBtn').onclick = () => { L.stop(); if (S) S.over = true; show('setup'); };
+$('#lbBtn').onclick = () => openLB(GAME, TITLE, NAMES, 'gems');
+window.G = { state: () => S, newGame, step, tick, turn, L, SP, draw, setDiff: d => { pref.diff = d; } };
+</script>
+</body>
+</html>

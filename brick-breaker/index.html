@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05070a">
+<title>ANON Brick Breaker · ANON NFTs</title>
+<meta name="description" content="ANON Brick Breaker: smash bricks of ANON NFT art to reveal the artwork. Free, no sign-up.">
+<link rel="icon" href="../assets/logo.webp">
+<link rel="stylesheet" href="../assets/nft/kit.css">
+<link rel="stylesheet" href="../assets/play/play.css">
+</head>
+<body>
+<header><div class="top">
+  <div class="brand"><a class="back-btn" href="../" aria-label="Back to ANON Arcade">&larr; Arcade</a><img src="../assets/logo.webp" alt=""><h1>ANON BRICK BREAKER</h1></div>
+  <div class="top-r"><button class="icon-btn" id="lbBtn" aria-label="Leaderboard">🏆</button><button class="icon-btn" id="menuBtn" aria-label="Menu">↻</button></div>
+</div></header>
+<section class="view on" id="setup">
+  <img class="hero" src="../assets/nft/c-royals.webp" alt="ANON NFTs artwork" style="object-position:50% 45%">
+  <p class="howto">Drag (or use ← →) to move the golden paddle. Tap or press Space to launch. Every brick is a piece of ANON NFT art: break them all to reveal the full artwork and move to the next level.<br>Catch power-ups: <b>W</b> wider paddle · <b>M</b> multi-ball · <b>S</b> slow ball · <b>♥</b> extra life.</p>
+  <button class="go" id="goBtn">PLAY</button>
+  <div class="nick" id="nick"></div>
+</section>
+<section class="view" id="play">
+  <div class="hud"><span id="lv">Lv 1</span><span id="sc">⭐ 0</span><span id="lives">♥ 3</span></div>
+  <div class="stage"><canvas id="cv"></canvas><div class="tap" id="msg"></div></div>
+  <div class="bar"><button id="againBtn">Restart</button><button id="setBtn">Menu</button></div>
+</section>
+<script src="../shared/leaderboard.js"></script>
+<script src="../shared/newsletter.js"></script>
+<script src="../assets/nft/kit.js"></script>
+<script src="../assets/play/play.js"></script>
+<script>
+'use strict';
+const { $, modal, post, openLB, gameOver, art, ART } = AK;
+const GAME = 'brick-breaker', TITLE = 'ANON Brick Breaker', COLS = 8, BRICK = 10, LEVEL = 500;
+const NAMES = Object.fromEntries([...Array(99)].map((_, i) => ['l' + (i + 1), 'Level ' + (i + 1)]));
+AK.nickLine($('#nick'));
+const show = id => document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === id));
+const ORDER = ['royals', 'skulls', 'grumpy', 'venge', 'anon', 'apes', 'eyes', 'ghost', 'lake', 'aces'];
+const PAT = [ // 1 = brick, 2 = tough (2 hits); rows top to bottom
+  ['11111111', '11111111', '12111121', '11111111', '11111111', '11111111'],
+  ['00011000', '00111100', '01111110', '11211211', '11111111', '11111111', '01111110'],
+  ['10101010', '01010101', '10101010', '01010101', '12121212', '21212121', '10101010', '01010101'],
+  ['00011000', '00122100', '01111110', '11122111', '11111111', '01111110', '00111100', '00011000'],
+  ['11111111', '10000001', '12222221', '10000001', '11111111', '11111111', '11111111']];
+let C = null, S = null; const IMG = {};
+ORDER.forEach(id => AP.img(art(id).cover).then(i => IMG[id] = i));
+const lvArt = l => ORDER[(l - 1) % ORDER.length];
+function layoutBricks() {
+  const p = PAT[(S.level - 1) % PAT.length], m = 6, bw = (C.w - m * 2) / COLS, bh = Math.min(bw * .62, C.h * .055), top = C.h * .08;
+  S.bw = bw; S.bh = bh; S.top = top; S.m = m; S.rows = p.length; S.bricks = [];
+  p.forEach((row, r) => [...row].forEach((ch, c) => { if (ch !== '0') S.bricks.push({ c, r, hp: +ch, max: +ch, x: m + c * bw, y: top + r * bh, w: bw, h: bh }); }));
+}
+function newGame() { show('play'); if (!C) C = AP.canvas($('#cv'), 0, () => { if (S) { const keep = S.bricks.map(b => [b.c, b.r, b.hp]); layoutBricks(); S.bricks = S.bricks.filter(b => keep.some(k => k[0] === b.c && k[1] === b.r)).map(b => (b.hp = keep.find(k => k[0] === b.c && k[1] === b.r)[2], b)); paddleY(); } draw(); }); else C.fit();
+  S = { level: 1, score: 0, broken: 0, lives: 3, balls: [], pu: [], fx: [], px: C.w / 2, pw: 0, wide: 0, slow: 0, over: false, t: 0, held: true, clear: 0 };
+  startLevel(); L.start(); }
+function paddleY() { S.py = C.h * .9; }
+function startLevel() { layoutBricks(); paddleY(); S.pw0 = Math.max(60, C.w * .22); S.wide = 0; S.slow = 0; S.pu = []; resetBall(); hud(); $('#msg').textContent = 'Level ' + S.level + ' · ' + art(lvArt(S.level)).name + '\nTap to launch'; }
+function resetBall() { S.balls = [{ x: S.px, y: S.py - 12, vx: 0, vy: 0, r: Math.max(6, C.w * .016) }]; S.held = true; }
+const speed = () => Math.min(C.h * .95, C.h * (.62 + .04 * (S.level - 1))) * (S.slow > 0 ? .65 : 1);
+function launch() { if (!S || S.over || !S.held) return; S.held = false; $('#msg').textContent = ''; const a = -Math.PI / 2 + (AP.rnd() - .5) * .6, v = speed(); S.balls.forEach(b => { b.vx = Math.cos(a) * v; b.vy = Math.sin(a) * v; }); }
+function hud() { $('#lv').textContent = 'Lv ' + S.level; $('#sc').textContent = '⭐ ' + S.score; $('#lives').textContent = '♥ ' + S.lives; }
+const PW = () => S.pw0 * (S.wide > 0 ? 1.55 : 1);
+function step(dt) {
+  if (!S || S.over) return; S.t += dt;
+  if (S.clear > 0) { S.clear -= dt; if (S.clear <= 0) { S.level++; startLevel(); } return; }
+  S.wide = Math.max(0, S.wide - dt); const was = S.slow > 0; S.slow = Math.max(0, S.slow - dt);
+  if (keyDir) S.px += keyDir * C.w * 1.3 * dt; S.px = Math.max(PW() / 2, Math.min(C.w - PW() / 2, S.px));
+  if (S.held) { S.balls[0].x = S.px; S.balls[0].y = S.py - S.balls[0].r - 2; return; }
+  if (was && S.slow <= 0 || !was && S.slow > 0) S.balls.forEach(b => { const k = speed() / (Math.hypot(b.vx, b.vy) || 1); b.vx *= k; b.vy *= k; });
+  const n = 4, h = dt / n;
+  for (let k = 0; k < n; k++) for (const b of S.balls) move(b, h);
+  S.balls = S.balls.filter(b => b.y - b.r < C.h);
+  if (!S.balls.length) { S.lives--; hud(); if (navigator.vibrate) navigator.vibrate(60); if (S.lives <= 0) return end(); S.wide = 0; S.slow = 0; resetBall(); $('#msg').textContent = 'Tap to launch'; }
+  for (const p of S.pu) { p.y += C.h * .28 * dt; if (p.y > S.py - 8 && p.y < S.py + 14 && Math.abs(p.x - S.px) < PW() / 2 + 12) { p.got = true; power(p.k); } }
+  S.pu = S.pu.filter(p => !p.got && p.y < C.h + 20); S.fx = S.fx.filter(f => (f.a += dt) < .5);
+}
+function move(b, h) {
+  b.x += b.vx * h; b.y += b.vy * h;
+  if (b.x < b.r) { b.x = b.r; b.vx = Math.abs(b.vx); } if (b.x > C.w - b.r) { b.x = C.w - b.r; b.vx = -Math.abs(b.vx); } if (b.y < b.r) { b.y = b.r; b.vy = Math.abs(b.vy); }
+  const pw = PW(); if (b.vy > 0 && b.y + b.r >= S.py && b.y + b.r <= S.py + 14 && Math.abs(b.x - S.px) <= pw / 2 + b.r) {
+    const off = Math.max(-1, Math.min(1, (b.x - S.px) / (pw / 2))), a = -Math.PI / 2 + off * 1.05, v = speed(); b.vx = Math.cos(a) * v; b.vy = Math.sin(a) * v; b.y = S.py - b.r; }
+  for (let i = 0; i < S.bricks.length; i++) { const k = S.bricks[i]; const cx = Math.max(k.x, Math.min(b.x, k.x + k.w)), cy = Math.max(k.y, Math.min(b.y, k.y + k.h));
+    if ((b.x - cx) ** 2 + (b.y - cy) ** 2 > b.r * b.r) continue;
+    const ox = Math.min(b.x + b.r - k.x, k.x + k.w - (b.x - b.r)), oy = Math.min(b.y + b.r - k.y, k.y + k.h - (b.y - b.r));
+    if (ox < oy) { b.vx = b.x < k.x + k.w / 2 ? -Math.abs(b.vx) : Math.abs(b.vx); } else { b.vy = b.y < k.y + k.h / 2 ? -Math.abs(b.vy) : Math.abs(b.vy); }
+    hit(i); break; }
+}
+function hit(i) {
+  const k = S.bricks[i]; k.hp--; if (k.hp > 0) { S.fx.push({ x: k.x + k.w / 2, y: k.y + k.h / 2, a: 0, c: '#f3d77a' }); return; }
+  S.bricks.splice(i, 1); S.broken++; S.score += BRICK; hud(); S.fx.push({ x: k.x + k.w / 2, y: k.y + k.h / 2, a: 0, c: '#ff8cc4' });
+  if (AP.rnd() < .13) { const r = AP.rnd(); S.pu.push({ x: k.x + k.w / 2, y: k.y + k.h / 2, k: r < .35 ? 'W' : r < .65 ? 'M' : r < .9 ? 'S' : '♥' }); }
+  if (!S.bricks.length) levelUp();
+}
+function power(k) {
+  if (k === 'W') S.wide = 12; else if (k === 'S') S.slow = 9; else if (k === '♥') { S.lives = Math.min(5, S.lives + 1); hud(); }
+  else if (k === 'M' && !S.held) { const add = []; for (const b of S.balls.slice(0, 3)) for (const d of [-.45, .45]) { const a = Math.atan2(b.vy, b.vx) + d, v = Math.hypot(b.vx, b.vy); add.push({ x: b.x, y: b.y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, r: b.r }); } S.balls.push(...add.slice(0, 8 - S.balls.length)); }
+  if (navigator.vibrate) navigator.vibrate(12);
+}
+function levelUp() { S.score += LEVEL; S.clear = 2.2; S.balls = []; S.pu = []; S.held = true; hud(); $('#msg').textContent = '✨ ' + art(lvArt(S.level)).name + ' revealed! +' + LEVEL; if (navigator.vibrate) navigator.vibrate([20, 30, 20]); }
+function draw() {
+  if (!C || !S) return; const x = C.x, W = C.w, H = C.h, im = IMG[lvArt(S.level)];
+  x.fillStyle = '#05070a'; x.fillRect(0, 0, W, H);
+  const aw = W - S.m * 2, ah = S.rows * S.bh;
+  if (im) { const k = Math.max(aw / im.width, ah / im.height); // full art behind the wall, revealed as bricks break
+    const sw = aw / k, sh = ah / k; x.globalAlpha = S.clear > 0 ? 1 : .9; x.drawImage(im, (im.width - sw) / 2, (im.height - sh) / 2, sw, sh, S.m, S.top, aw, ah); x.globalAlpha = 1;
+    x.globalAlpha = .18; AP.cover(x, im, 0, 0, W, H); x.globalAlpha = 1;
+    for (const b of S.bricks) { const sx = (im.width - sw) / 2 + (b.x - S.m) / k, sy = (im.height - sh) / 2 + (b.y - S.top) / k;
+      x.drawImage(im, sx, sy, b.w / k, b.h / k, b.x, b.y, b.w, b.h); x.fillStyle = b.max > 1 ? (b.hp > 1 ? 'rgba(80,60,10,.55)' : 'rgba(30,20,5,.5)') : 'rgba(5,7,10,.58)'; x.fillRect(b.x, b.y, b.w, b.h);
+      x.fillStyle = 'rgba(255,255,255,.16)'; x.fillRect(b.x + 1, b.y + 1, b.w - 2, b.h * .28); x.fillStyle = 'rgba(0,0,0,.3)'; x.fillRect(b.x + 1, b.y + b.h * .78, b.w - 2, b.h * .22 - 1);
+      x.strokeStyle = b.max > 1 ? '#f3d77a' : 'rgba(212,175,55,.8)'; x.lineWidth = b.max > 1 ? 2 : 1; x.strokeRect(b.x + .5, b.y + .5, b.w - 1, b.h - 1);
+      x.fillStyle = b.max > 1 ? '#f3d77a' : '#ff3d9a'; x.beginPath(); x.arc(b.x + b.w / 2, b.y + b.h / 2, Math.min(3, b.h * .14), 0, 7); x.fill();
+      if (b.max > 1 && b.hp === 1) { x.strokeStyle = '#ff8cc4'; x.beginPath(); x.moveTo(b.x + b.w * .3, b.y); x.lineTo(b.x + b.w * .5, b.y + b.h * .6); x.lineTo(b.x + b.w * .7, b.y + b.h); x.stroke(); } } }
+  x.strokeStyle = '#d4af37'; x.lineWidth = 1; x.strokeRect(S.m - .5, S.top - .5, aw + 1, ah + 1);
+  for (const p of S.pu) { x.fillStyle = p.k === '♥' ? '#ff3d9a' : '#d4af37'; x.beginPath(); x.arc(p.x, p.y, 12, 0, 7); x.fill(); x.fillStyle = '#120e02'; x.font = '900 13px system-ui'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(p.k, p.x, p.y + 1); }
+  const pw = PW(), g = x.createLinearGradient(0, S.py, 0, S.py + 12); g.addColorStop(0, '#fff3c4'); g.addColorStop(.5, '#e9c858'); g.addColorStop(1, '#8a6414');
+  x.fillStyle = g; AP.rr(x, S.px - pw / 2, S.py, pw, 12, 6); x.fill(); x.fillStyle = '#ff3d9a'; x.beginPath(); x.arc(S.px, S.py + 6, 3, 0, 7); x.fill();
+  for (const b of S.balls) { const bg = x.createRadialGradient(b.x - b.r * .3, b.y - b.r * .3, 1, b.x, b.y, b.r); bg.addColorStop(0, '#fff'); bg.addColorStop(1, S.slow > 0 ? '#7fd4ff' : '#ff3d9a'); x.fillStyle = bg; x.beginPath(); x.arc(b.x, b.y, b.r, 0, 7); x.fill(); }
+  for (const f of S.fx) { x.globalAlpha = 1 - f.a / .5; x.strokeStyle = f.c; x.lineWidth = 2; x.beginPath(); x.arc(f.x, f.y, 4 + f.a * 50, 0, 7); x.stroke(); } x.globalAlpha = 1;
+  if (S.wide > 0 || S.slow > 0) { x.fillStyle = '#f3d77a'; x.font = '800 12px system-ui'; x.textAlign = 'left'; x.fillText((S.wide > 0 ? 'W ' + Math.ceil(S.wide) + 's  ' : '') + (S.slow > 0 ? 'S ' + Math.ceil(S.slow) + 's' : ''), 8, H - 8); }
+}
+const L = AP.loop(step, draw); L.onHide = () => { if (S && !S.over && !S.held) { L.stop(); S.paused = true; $('#msg').textContent = 'Paused. Tap to carry on'; } };
+function end() {
+  S.over = true; L.stop(); draw(); const t = Math.max(1, Math.ceil(S.t)), a = art(lvArt(S.level));
+  setTimeout(() => { modal({ art: a.cover, title: 'Game over 🧱', text: `You reached <b>level ${S.level}</b> and broke <b>${S.broken}</b> bricks.`, lb: S.score > 0,
+    buttons: [['PLAY AGAIN', () => newGame()], ['Leaderboard', () => openLB(GAME, TITLE, NAMES, 'bricks'), 1], ['Menu', () => show('setup'), 1]] });
+    if (S.score > 0) post(GAME, S.score, t, S.broken, 'l' + Math.min(99, S.level)); }, 500);
+  gameOver();
+}
+const cv = $('#cv'); let drag = null, keyDir = 0;
+cv.addEventListener('pointerdown', e => { if (S && S.paused) { S.paused = false; $('#msg').textContent = ''; L.start(); return; } drag = { x: e.clientX, px: S ? S.px : 0, moved: false }; cv.setPointerCapture(e.pointerId); });
+cv.addEventListener('pointermove', e => { if (!drag || !S) return; const d = e.clientX - drag.x; if (Math.abs(d) > 4) drag.moved = true; S.px = drag.px + d * 1.2; });
+cv.addEventListener('pointerup', () => { if (drag && !drag.moved) launch(); else if (S && S.held && drag) launch(); drag = null; });
+const held = new Set(); const kd = () => { keyDir = (held.has('r') ? 1 : 0) - (held.has('l') ? 1 : 0); };
+window.addEventListener('keydown', e => { if (!$('#play').classList.contains('on') || document.querySelector('.modal.show,.alb-ov,.anw-ov')) return; if (e.key === 'ArrowLeft' || e.key === 'a') { held.add('l'); kd(); e.preventDefault(); } else if (e.key === 'ArrowRight' || e.key === 'd') { held.add('r'); kd(); e.preventDefault(); } else if (e.key === ' ') { launch(); e.preventDefault(); } });
+window.addEventListener('keyup', e => { if (e.key === 'ArrowLeft' || e.key === 'a') held.delete('l'); if (e.key === 'ArrowRight' || e.key === 'd') held.delete('r'); kd(); });
+$('#goBtn').onclick = () => newGame(); $('#againBtn').onclick = () => { L.stop(); newGame(); };
+$('#setBtn').onclick = $('#menuBtn').onclick = () => { L.stop(); if (S) S.over = true; show('setup'); };
+$('#lbBtn').onclick = () => openLB(GAME, TITLE, NAMES, 'bricks');
+window.G = { state: () => S, newGame, step, launch, power, hit, L, C: () => C, PAT, draw, PW };
+</script>
+</body>
+</html>
