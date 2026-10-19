@@ -680,6 +680,36 @@
         "hard": "Hard"
       },
       "added": "2026-10-19"
+    },
+    {
+      "id": "sky-defence",
+      "name": "ANON Sky Defence",
+      "tagline": "Tap the sky to protect the ANON city",
+      "path": "sky-defence/",
+      "thumb": "sky-defence/thumb.webp",
+      "category": "Arcade",
+      "tags": [
+        "defence",
+        "tap",
+        "retro",
+        "action",
+        "waves"
+      ],
+      "status": "live",
+      "leaderboard": true,
+      "scoreLabel": "Score",
+      "order": "desc",
+      "periods": [
+        "day",
+        "all"
+      ],
+      "movesLabel": "hits",
+      "modeLabels": {
+        "easy": "Easy",
+        "medium": "Medium",
+        "hard": "Hard"
+      },
+      "added": "2026-10-19"
     }
   ]
 }

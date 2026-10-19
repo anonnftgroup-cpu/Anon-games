@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05070a">
+<title>ANON Sky Defence · ANON NFTs</title>
+<meta name="description" content="ANON Sky Defence: tap the sky to launch interceptors and protect the ANON city from falling shadow bolts. Free, no sign-up.">
+<link rel="icon" href="../assets/logo.webp">
+<link rel="stylesheet" href="../assets/nft/kit.css">
+<link rel="stylesheet" href="../assets/play/play.css">
+<style>
+.pad{display:flex;gap:6px;justify-content:center;align-items:center;padding:4px 4px 2px;flex:none;user-select:none;-webkit-user-select:none}
+.pad button{min-width:52px;min-height:48px;border-radius:12px;border:1px solid rgba(212,175,55,.6);background:rgba(0,0,0,.55);color:var(--gold2);font-size:20px;font-weight:900;touch-action:none}
+.pad button.on{background:rgba(255,61,154,.35)}.pad .big{min-width:84px;background:linear-gradient(180deg,#ff5aab,#c41f73);color:#fff;font-size:15px}
+.dpad{display:grid;grid-template-columns:repeat(3,48px);grid-template-rows:repeat(2,40px);gap:4px}.dpad button{min-width:0;min-height:0}
+.dpad [data-k=U]{grid-column:2}.dpad [data-k=L]{grid-column:1;grid-row:2}.dpad [data-k=D]{grid-column:2;grid-row:2}.dpad [data-k=R]{grid-column:3;grid-row:2}
+@media (max-height:700px){.pad button{min-height:40px}.dpad{grid-template-rows:repeat(2,34px)}}
+</style>
+</head>
+<body>
+<header><div class="top">
+  <div class="brand"><a class="back-btn" href="../" aria-label="Back to ANON Arcade">&larr; Arcade</a><img src="../assets/logo.webp" alt=""><h1>SKY DEFENCE</h1></div>
+  <div class="top-r"><button class="icon-btn" id="lbBtn" aria-label="Leaderboard">🏆</button><button class="icon-btn" id="menuBtn" aria-label="Menu">↻</button></div>
+</div></header>
+<section class="view on" id="setup">
+  <img class="hero" id="hero" alt="ANON NFTs artwork">
+  <div class="lbl">Choose your ANON</div>
+  <div class="chars five" id="artPick"></div>
+  <div class="lbl">Difficulty</div><div class="seg" id="diff"><button data-v="easy">Easy</button><button data-v="medium">Medium</button><button data-v="hard">Hard</button></div>
+  <button class="go" id="goBtn">PLAY</button>
+  <p class="howto">Tap (or click) anywhere in the sky. The nearest ANON tower fires an interceptor that bursts where you tapped. Bursts destroy falling shadow bolts, so lead your shots! Keys: arrows aim, Space fires. Save buildings and ammo for wave bonuses. When every building falls, the night is over.</p>
+  <div class="nick" id="nick"></div>
+</section>
+<section class="view" id="play">
+  <div class="hud"><span id="sc"></span><span id="wv"></span><span id="am"></span></div>
+  <div class="stage"><canvas id="cv"></canvas><div class="tap" id="msg"></div></div>
+  
+  <div class="bar"><button id="againBtn">Restart</button><button id="setBtn">Change ANON</button></div>
+</section>
+<script src="../shared/leaderboard.js"></script>
+<script src="../shared/newsletter.js"></script>
+<script src="../assets/nft/kit.js"></script>
+<script src="../assets/play/play.js"></script>
+<script>
+const GAME = 'sky-defence', TITLE = 'ANON Sky Defence', PK = 'anonC2.sky-defence', ASPECT = 3/4, MOVES = 'hits';
+'use strict';
+const { $, ls, modal, post, openLB, gameOver, art, ART } = AK;
+const NAMES = Object.fromEntries(ART.map(a => [a.id, a.name.replace(/^ANON /, '')]));
+const DIFFN = { easy: 'Easy', medium: 'Medium', hard: 'Hard' };
+const pref = ls.get(PK, { art: 'anon', diff: 'medium', best: 0 });
+const show = id => document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === id));
+const setHero = () => $('#hero').src = art(pref.art).cover;
+AK.picker($('#artPick'), pref.art, id => { pref.art = id; ls.set(PK, pref); setHero(); });
+if ($('#diff')) AK.seg($('#diff'), pref.diff, v => { pref.diff = v; ls.set(PK, pref); });
+setHero(); AK.nickLine($('#nick'));
+// ---- sound: generated in the browser, nothing plays before the first tap/key ----
+let AC = null; window.__sfx = 0;
+const unlock = () => { if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } if (AC && AC.state === 'suspended') AC.resume(); };
+['pointerdown', 'keydown', 'touchstart'].forEach(t => window.addEventListener(t, unlock, { capture: true, passive: true }));
+function tone(f, d, type, vol, f2) { if (!AC || pref.mute) return; window.__sfx++; const t = AC.currentTime, o = AC.createOscillator(), g = AC.createGain();
+  o.type = type || 'square'; o.frequency.setValueAtTime(f, t); if (f2) o.frequency.exponentialRampToValueAtTime(Math.max(20, f2), t + d);
+  g.gain.setValueAtTime(vol || .08, t); g.gain.exponentialRampToValueAtTime(.0001, t + d); o.connect(g).connect(AC.destination); o.start(t); o.stop(t + d + .02); }
+function boom(d, vol) { if (!AC || pref.mute) return; window.__sfx++; const n = Math.floor(AC.sampleRate * d), b = AC.createBuffer(1, n, AC.sampleRate), c = b.getChannelData(0);
+  for (let i = 0; i < n; i++) c[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 2); const s = AC.createBufferSource(), g = AC.createGain(), fl = AC.createBiquadFilter();
+  fl.type = 'lowpass'; fl.frequency.value = 900; s.buffer = b; g.gain.value = vol || .25; s.connect(fl).connect(g).connect(AC.destination); s.start(); }
+// ---- shared loop, pause when hidden, game over ----
+let C = null, S = null;
+const imgs = {}; const IM = id => imgs[id];
+ART.forEach(a => { AP.img(a.img).then(i => imgs[a.id] = i); AP.img(a.cover).then(i => imgs['c-' + a.id] = i); });
+function ring(x, im, cx, cy, r, col) { x.save(); x.beginPath(); x.arc(cx, cy, r, 0, 7); x.closePath(); x.fillStyle = '#111'; x.fill(); x.clip(); if (im) AP.cover(x, im, cx - r, cy - r, r * 2, r * 2); x.restore();
+  x.lineWidth = Math.max(1.5, r * .16); x.strokeStyle = col || '#f3d77a'; x.beginPath(); x.arc(cx, cy, r, 0, 7); x.stroke(); }
+function bgArt(x, id, a) { const im = IM('c-' + id); if (!im) return; x.globalAlpha = a || .22; const k = Math.max(C.w / im.width, C.h / im.height); x.drawImage(im, (C.w - im.width * k) / 2, (C.h - im.height * k) / 2, im.width * k, im.height * k); x.globalAlpha = 1; }
+const L = AP.loop(dt => { if (S && !S.over && !S.paused) step(dt); }, () => draw());
+let paused = false;
+function pause() { if (!S || S.over || S.paused) return; S.paused = true; $('#msg').textContent = 'Paused\nTap to resume'; }
+function resume() { if (S && S.paused) { S.paused = false; $('#msg').textContent = ''; } }
+document.addEventListener('visibilitychange', () => { if (document.hidden) pause(); });
+$('#msg').parentElement.addEventListener('pointerdown', () => { if (S && S.paused) resume(); }, true);
+async function start() { show('play'); if (!C) C = AP.canvas($('#cv'), ASPECT, () => draw()); else C.fit(); $('#msg').textContent = ''; newRun(); L.start(); }
+function end(score, secs, moves, mode, title, text) {
+  if (!S || S.over) return; S.over = true; draw(); setTimeout(() => L.stop(), 50); if (navigator.vibrate) navigator.vibrate([40, 30, 70]);
+  const a = art(S.art || pref.art), pb = score > (pref.best || 0); if (pb) { pref.best = score; ls.set(PK, pref); }
+  S.final = { score, secs, moves, mode };
+  setTimeout(() => { modal({ art: a.img, title: pb && score > 0 ? 'New best! 🏆' : title, text, lb: score > 0,
+    buttons: [['PLAY AGAIN', () => start()], ['Leaderboard', () => lb(), 1], ['Change ANON', () => show('setup'), 1]] });
+    if (score > 0) post(GAME, score, Math.max(1, Math.round(secs)), moves, mode); }, 500);
+  gameOver();
+}
+const lb = () => openLB(GAME, TITLE, MODES, MOVES);
+$('#goBtn').onclick = () => start(); $('#againBtn').onclick = () => { if (S) S.over = true; start(); };
+$('#setBtn').onclick = $('#menuBtn').onclick = () => { if (S) S.over = true; L.stop(); show('setup'); };
+$('#lbBtn').onclick = lb;
+// hold-buttons for on-screen pads: data-k = key name
+const held = new Set(); window.__held = held;
+document.querySelectorAll('.pad [data-k]').forEach(b => { const k = b.dataset.k;
+  b.addEventListener('pointerdown', e => { e.preventDefault(); held.add(k); b.classList.add('on'); if (window.onPad) onPad(k); });
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach(t => b.addEventListener(t, () => { held.delete(k); b.classList.remove('on'); })); });
+const KM = { ArrowLeft: 'L', a: 'L', A: 'L', ArrowRight: 'R', d: 'R', D: 'R', ArrowUp: 'U', w: 'U', W: 'U', ArrowDown: 'D', s: 'D', S: 'D', ' ': 'B', Enter: 'B', x: 'B', z: 'B' };
+const playing = () => $('#play').classList.contains('on') && !document.querySelector('.modal.show,.alb-ov,.anw-ov');
+window.addEventListener('keydown', e => { const k = KM[e.key]; if (!k || !playing()) return; e.preventDefault(); if (S && S.paused) resume(); if (!held.has(k) && window.onPad) onPad(k); held.add(k); });
+window.addEventListener('keyup', e => { const k = KM[e.key]; if (k) held.delete(k); });
+
+const MODES = {"easy": "Easy", "medium": "Medium", "hard": "Hard"};
+// world: x 0..100, y 0..133 (3:4). City at bottom.
+const WH = 133, GROUND = 124, DIFF = { easy: { n: 8, v: 6, split: .1 }, medium: { n: 10, v: 8.5, split: .2 }, hard: { n: 12, v: 11, split: .3 } };
+const BLD_ART = ['anon', 'apes', 'royals', 'skulls', 'eyes', 'lake'];
+function newRun() { S = { art: pref.art, diff: pref.diff, score: 0, wave: 0, t: 0, hits: 0, aim: { x: 50, y: 60 },
+  b: BLD_ART.map((id, i) => ({ x: [14, 26, 38, 62, 74, 86][i], id, alive: true })), tw: [{ x: 4 }, { x: 50 }, { x: 96 }] }; wave(); }
+function wave() { const d = DIFF[S.diff], k = S.wave; S.wave++; Object.assign(S, { m: [], ints: [], ex: [], todo: d.n + k * 2, next: .8, between: 0, d });
+  S.tw.forEach(t => t.ammo = 10); $('#msg').textContent = 'Wave ' + S.wave; setTimeout(() => { if (S && /^Wave/.test($('#msg').textContent)) $('#msg').textContent = ''; }, 1100); hud(); }
+const hud = () => { $('#sc').textContent = '⭐ ' + S.score; $('#wv').textContent = 'Wave ' + S.wave; $('#am').textContent = '🚀 ' + S.tw.map(t => t.ammo).join(' · '); };
+const targets = () => [...S.b.filter(b => b.alive).map(b => b.x), ...S.tw.filter(t => t.ammo > 0).map(t => t.x)];
+function spawn(x0, y0, tx) { const d = S.d, v = (d.v + S.wave * .7) * (.8 + AP.rnd() * .4); const ty = GROUND, dx = tx - x0, dy = ty - y0, l = Math.hypot(dx, dy);
+  S.m.push({ x0, y0, x: x0, y: y0, vx: dx / l * v, vy: dy / l * v, split: y0 < 20 && AP.rnd() < d.split + S.wave * .02 ? 30 + AP.rnd() * 40 : 0 }); }
+function fire(x, y) { if (!S || S.over || S.paused || S.between) return false; y = Math.min(y, GROUND - 14);
+  const tw = S.tw.filter(t => t.ammo > 0).sort((a, b) => Math.abs(a.x - x) - Math.abs(b.x - x))[0]; if (!tw) return false; tw.ammo--;
+  const sx = tw.x, sy = GROUND - 6, l = Math.hypot(x - sx, y - sy); S.ints.push({ sx, sy, x: sx, y: sy, tx: x, ty: y, vx: (x - sx) / l * 75, vy: (y - sy) / l * 75 }); tone(900, .12, 'square', .04, 1800); hud(); return true; }
+function step(dt) {
+  S.t += dt; const d = S.d;
+  if (S.between) { S.between -= dt; if (S.between <= 0) wave(); return; }
+  S.next -= dt; if (S.todo > 0 && S.next <= 0) { S.todo--; S.next = Math.max(.35, 1.6 - S.wave * .1) * (.6 + AP.rnd() * .8); spawn(AP.rnd() * 100, 0, AP.pick(targets())); }
+  for (const i of S.ints) { i.x += i.vx * dt; i.y += i.vy * dt; if ((i.tx - i.x) * i.vx <= 0 && (i.ty - i.y) * i.vy <= 0) { i.done = true; S.ex.push({ x: i.tx, y: i.ty, r: 0, t: 0 }); boom(.3, .18); } }
+  S.ints = S.ints.filter(i => !i.done);
+  for (const e of S.ex) { e.t += dt; e.r = e.t < .5 ? e.t / .5 * 9 : Math.max(0, 9 * (1 - (e.t - .5) / .6)); }
+  S.ex = S.ex.filter(e => e.t < 1.1);
+  for (const m of S.m) { m.x += m.vx * dt; m.y += m.vy * dt;
+    if (m.split && m.y > m.split) { m.split = 0; for (let k = 0; k < 2; k++) spawn(m.x, m.y, AP.pick(targets())); }
+    if (S.ex.some(e => Math.hypot(e.x - m.x, e.y - m.y) < e.r)) { m.dead = true; S.score += 25 * Math.min(6, S.wave); S.hits++; tone(1200, .06, 'triangle', .04, 400); continue; }
+    if (m.y >= GROUND) { m.dead = true; S.ex.push({ x: m.x, y: GROUND, r: 0, t: 0, bad: true }); boom(.5, .3);
+      const b = S.b.find(b => b.alive && Math.abs(b.x - m.x) < 6); if (b) b.alive = false; const t = S.tw.find(t => Math.abs(t.x - m.x) < 5); if (t) t.ammo = 0; } }
+  S.m = S.m.filter(m => !m.dead); hud();
+  if (!S.b.some(b => b.alive)) return finish();
+  if (S.todo <= 0 && !S.m.length && !S.ints.length) { const nb = S.b.filter(b => b.alive).length, na = S.tw.reduce((a, t) => a + t.ammo, 0), bonus = nb * 100 + na * 5;
+    S.score += bonus; S.between = 2.2; $('#msg').textContent = `Wave ${S.wave} cleared!\n🏙️ ${nb} × 100 + 🚀 ${na} × 5 = +${bonus}`; tone(660, .2, 'square', .06); setTimeout(() => tone(990, .3, 'square', .06), 180); hud(); }
+}
+function finish() { end(S.score, S.t, S.hits, S.diff, 'The city went dark 🌃', `<b>${art(S.art).name}</b> defended the ANON city for <b>${S.wave} waves</b> and stopped ${S.hits} shadow bolts.<br>Score <b>${S.score}</b>`); }
+const toW = (cx, cy) => { const r = $('#cv').getBoundingClientRect(); return [(cx - r.left) / r.width * 100, (cy - r.top) / r.height * WH]; };
+$('#cv').addEventListener('pointerdown', e => { if (!S || S.over) return; if (S.paused) return; const [x, y] = toW(e.clientX, e.clientY); fire(x, y); S.aim = { x, y }; });
+function onPad(k) { if (!S) return; if (k === 'B') fire(S.aim.x, S.aim.y); }
+function aimKeys(dt) { const a = S.aim, v = 70 * dt; if (held.has('L')) a.x -= v; if (held.has('R')) a.x += v; if (held.has('U')) a.y -= v; if (held.has('D')) a.y += v; a.x = Math.max(2, Math.min(98, a.x)); a.y = Math.max(5, Math.min(GROUND - 14, a.y)); }
+const _step = step; step = dt => { aimKeys(dt); _step(dt); };
+function draw() {
+  if (!C) return; const x = C.x, W = C.w, H = C.h, k = W / 100; x.fillStyle = '#04060c'; x.fillRect(0, 0, W, H); if (!S) return; bgArt(x, 'ghost', .28);
+  const g = x.createLinearGradient(0, H * .6, 0, H); g.addColorStop(0, 'rgba(255,61,154,0)'); g.addColorStop(1, 'rgba(255,61,154,.15)'); x.fillStyle = g; x.fillRect(0, H * .6, W, H * .4);
+  x.fillStyle = '#0d1a10'; x.fillRect(0, GROUND * k, W, H - GROUND * k); x.strokeStyle = '#d4af37'; x.beginPath(); x.moveTo(0, GROUND * k); x.lineTo(W, GROUND * k); x.stroke();
+  for (const b of S.b) { const bx = b.x * k, bw = 9 * k, bh = (b.alive ? 16 : 4) * k, by = GROUND * k - bh; if (b.alive) { x.fillStyle = '#111'; x.fillRect(bx - bw / 2, by, bw, bh); const im = IM(b.id); if (im) { x.globalAlpha = .9; AP.cover(x, im, bx - bw / 2 + 2, by + 2, bw - 4, bw - 4); x.globalAlpha = 1; }
+      x.fillStyle = 'rgba(243,215,122,.8)'; for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++) if ((r + c + b.x) % 3) x.fillRect(bx - bw / 2 + 3 + c * (bw - 6) / 3, by + bw + 2 + r * (bh - bw - 4) / 3, (bw - 6) / 3 - 2, Math.max(2, (bh - bw - 4) / 3 - 3));
+      x.strokeStyle = '#d4af37'; x.lineWidth = 1.5; x.strokeRect(bx - bw / 2, by, bw, bh); } else { x.fillStyle = '#3a2a2a'; x.fillRect(bx - bw / 2, by, bw, bh); } }
+  for (const t of S.tw) { const tx = t.x * k, ty = GROUND * k; x.fillStyle = t.ammo ? '#c41f73' : '#3a2a2a'; x.beginPath(); x.moveTo(tx - 4 * k, ty); x.lineTo(tx, ty - 9 * k); x.lineTo(tx + 4 * k, ty); x.fill(); x.strokeStyle = '#f3d77a'; x.stroke();
+    if (t.ammo) AP.gem(x, tx, ty - 4 * k, 1.8 * k); }
+  x.lineWidth = Math.max(1.5, k * .5);
+  for (const m of S.m) { const gr = x.createLinearGradient(m.x0 * k, m.y0 * k, m.x * k, m.y * k); gr.addColorStop(0, 'rgba(255,40,80,0)'); gr.addColorStop(1, 'rgba(255,60,90,.9)'); x.strokeStyle = gr; x.beginPath(); x.moveTo(m.x0 * k, m.y0 * k); x.lineTo(m.x * k, m.y * k); x.stroke();
+    x.fillStyle = '#fff'; x.beginPath(); x.arc(m.x * k, m.y * k, k * .9, 0, 7); x.fill(); }
+  for (const i of S.ints) { x.strokeStyle = 'rgba(43,255,136,.8)'; x.beginPath(); x.moveTo(i.sx * k, i.sy * k); x.lineTo(i.x * k, i.y * k); x.stroke(); x.strokeStyle = '#f3d77a'; x.beginPath(); x.moveTo(i.tx * k - 4, i.ty * k - 4); x.lineTo(i.tx * k + 4, i.ty * k + 4); x.moveTo(i.tx * k + 4, i.ty * k - 4); x.lineTo(i.tx * k - 4, i.ty * k + 4); x.stroke(); }
+  for (const e of S.ex) { const gr = x.createRadialGradient(e.x * k, e.y * k, 0, e.x * k, e.y * k, Math.max(1, e.r * k)); gr.addColorStop(0, '#fff'); gr.addColorStop(.5, e.bad ? '#ff5a3d' : '#ff8cc4'); gr.addColorStop(1, e.bad ? 'rgba(255,90,61,0)' : 'rgba(212,175,55,.2)'); x.fillStyle = gr; x.beginPath(); x.arc(e.x * k, e.y * k, Math.max(1, e.r * k), 0, 7); x.fill(); }
+  // player ANON badge + aim reticle
+  ring(x, IM(S.art), 50 * k, (GROUND - 21) * k, 3.4 * k);
+  const a = S.aim; x.strokeStyle = 'rgba(243,215,122,.6)'; x.lineWidth = 1; x.beginPath(); x.arc(a.x * k, a.y * k, 3 * k, 0, 7); x.stroke();
+}
+window.G = { state: () => S, step: dt => step(dt), fire, spawn, wave, C: () => C, L };
+
+</script>
+</body>
+</html>
