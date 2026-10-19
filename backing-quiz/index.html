@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05070a">
+<title>ANON Backing Quiz · ANON NFTs</title>
+<meta name="description" content="ANON Backing Quiz: true or false and multiple choice about NFT liquidity backing, pools, FUSD and Proof of Work. Daily set and endless mode. Free.">
+<link rel="icon" href="../assets/logo.webp">
+<link rel="stylesheet" href="../assets/nft/kit.css">
+<link rel="stylesheet" href="../assets/play/play.css">
+<link rel="stylesheet" href="bk.css">
+<style>
+#play{position:relative}
+.qbox{position:relative;flex:1;min-height:0;overflow:auto;width:100%;padding:6px 14px 10px;display:flex;flex-direction:column;align-items:center}
+.host{display:flex;align-items:center;gap:10px;width:100%;max-width:400px;margin:4px 0 8px}
+.host img{width:52px;height:52px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 2px var(--gold),0 0 12px rgba(255,61,154,.4);flex:none}
+.host .bub{flex:1;background:rgba(0,0,0,.5);border:1px solid rgba(212,175,55,.4);border-radius:14px;padding:6px 10px;font-size:12.5px;color:#cfc6ab}
+.timer{width:100%;max-width:400px;height:7px;border-radius:4px;background:rgba(255,255,255,.08);overflow:hidden;margin-bottom:10px}
+.timer i{display:block;height:100%;width:100%;background:linear-gradient(90deg,var(--pink),var(--gold2));transform-origin:left}
+.q{width:100%;max-width:400px;font-size:clamp(17px,5vw,20px);line-height:1.38;font-weight:700;color:#f1ead2;text-align:center;margin:4px 0 14px;min-height:3em}
+.kind{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#9d9580;margin-bottom:4px}
+.opts{display:flex;flex-direction:column;gap:8px;width:100%;max-width:400px}
+.opts.tf{flex-direction:row}
+.opt{min-height:52px;border-radius:14px;border:1px solid rgba(212,175,55,.55);background:rgba(0,0,0,.5);color:#f1ead2;font-weight:800;font-size:15.5px;padding:8px 12px;text-align:left;flex:1}
+.opts.tf .opt{text-align:center;font-size:18px;min-height:64px}
+.opt.right{background:linear-gradient(180deg,#1fc66a,#0b5e31);border-color:#8affc0;color:#fff}
+.opt.wrong{background:linear-gradient(180deg,#e2384b,#7e0f1d);border-color:#ff8a8a;color:#fff}
+.opt:disabled{opacity:1}
+.exp{width:100%;max-width:400px;margin-top:12px;display:none}
+.exp.show{display:block}
+.exp .bk-fact{margin:0}
+.exp .bk-fact.no{border-color:rgba(255,90,90,.55);background:rgba(255,90,90,.08);color:#ffe0e0}.exp .bk-fact.no b{color:#ff8a8a}
+#nextBtn{margin-top:10px}
+.modes{display:flex;gap:8px;margin-top:14px}.modes .go{margin-top:0}
+.done{font-size:12px;color:var(--green);text-align:center;margin-top:6px;min-height:16px}
+.lives{letter-spacing:2px}
+</style>
+</head>
+<body>
+<header><div class="top">
+  <div class="brand"><a class="back-btn" href="../" aria-label="Back to ANON Arcade">&larr; Arcade</a><img src="../assets/logo.webp" alt=""><h1>ANON BACKING QUIZ</h1></div>
+  <div class="top-r"><button class="icon-btn" id="sndBtn" aria-label="Sound">🔊</button><button class="icon-btn" id="lbBtn" aria-label="Leaderboard">🏆</button><button class="icon-btn" id="menuBtn" aria-label="Menu">↻</button></div>
+</div></header>
+<section class="view on" id="setup">
+  <img class="hero" id="hero" alt="ANON NFTs artwork">
+  <div class="lbl">Choose your quiz host</div>
+  <div class="chars five" id="artPick"></div>
+  <div class="modes"><button class="go" id="dailyBtn">DAILY 10</button><button class="go alt" id="endlessBtn">ENDLESS</button></div>
+  <div class="done" id="dailyDone"></div>
+  <p class="howto">How do backing, pools, FUSD and Proof of Work operate? True or false and multiple choice. <b>100 points</b> per right answer plus up to <b>50</b> for speed. <b>Daily 10</b>: the same 10 questions for everyone today (UK time), one leaderboard go a day. <b>Endless</b>: keep going until you've had 3 wrong.</p>
+  <div class="nick" id="nick"></div>
+  <p class="risk-foot">General information only. NFTs and cryptoassets are high-risk. Not financial advice. <a href="https://anonnfts.com/check-backing-on-chain-1" target="_top" rel="noopener">How to check backing on-chain</a></p>
+</section>
+<section class="view" id="play">
+  <div class="hud"><span id="qn">❓ 1/10</span><span id="sc">⭐ 0</span><span id="lv" class="lives">❤️❤️❤️</span></div>
+  <div class="qbox" id="qbox">
+    <div class="host"><img id="hostImg" alt=""><div class="bub" id="bub">Ready? Read carefully, then tap your answer.</div></div>
+    <div class="timer"><i id="bar"></i></div>
+    <div class="kind" id="kind"></div>
+    <div class="q" id="q"></div>
+    <div class="opts" id="opts"></div>
+    <div class="exp" id="exp"><div class="bk-fact" id="expBox"><b id="expH"></b><span id="expT"></span></div><button class="go" id="nextBtn">NEXT →</button></div>
+  </div>
+</section>
+<script src="../shared/leaderboard.js"></script>
+<script src="../shared/newsletter.js"></script>
+<script src="../assets/nft/kit.js"></script>
+<script src="../assets/play/play.js"></script>
+<script src="bk.js"></script>
+<script src="questions.js"></script>
+<script>
+'use strict';
+const { $, el, ls, post, openLB, gameOver, art } = AK;
+const GAME = 'backing-quiz', TITLE = 'ANON Backing Quiz', QTIME = 20, DAILY_N = 10, LOCK = .8;
+const MODES = { daily: 'Daily', endless: 'Endless' };
+const pref = ls.get('anonQuiz.pref', { art: 'skulls', best: 0, daily: '' });
+const show = id => document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === id));
+const setHero = () => $('#hero').src = art(pref.art).cover;
+const ukDate = () => { try { return new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/London' }).format(new Date()); } catch (e) { return new Date().toISOString().slice(0, 10); } };
+AK.picker($('#artPick'), pref.art, id => { pref.art = id; ls.set('anonQuiz.pref', pref); setHero(); });
+setHero(); AK.nickLine($('#nick')); BK.muteBtn($('#sndBtn'));
+const paintDaily = () => { const d = pref.daily === ukDate(); $('#dailyDone').textContent = d ? '✔ Today\'s daily is done. Play again for practice (not posted), or go endless.' : ''; };
+paintDaily();
+function dailySet(day) { // same 10 for everyone on a UK date
+  let h = 2166136261; for (const c of 'anon-quiz:' + day) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); }
+  AP.seed(h >>> 0); const ix = AP.shuffle(QUIZ.map((q, i) => i)).slice(0, DAILY_N); AP.seed((Date.now() ^ 0x5bd1e995) >>> 0); return ix; }
+let S = null, deck = [];
+const L = AP.loop(step, () => {});
+const P = BK.autoPause({ running: () => !!S && !S.over && !S.answered && L.running, pause: () => L.stop(), resume: () => L.start(), host: $('#qbox') });
+function newRun(mode) {
+  const day = ukDate(); show('play'); $('#hostImg').src = art(pref.art).img;
+  S = { mode, day, ix: mode === 'daily' ? dailySet(day) : [], n: 0, score: 0, right: 0, wrong: 0, lives: 3, qt: 0, total: 0, over: false, answered: true, posted: mode === 'daily' && pref.daily === day, art: pref.art };
+  deck = []; ask();
+}
+function nextIndex() { if (S.mode === 'daily') return S.ix[S.n]; if (!deck.length) deck = AP.shuffle(QUIZ.map((q, i) => i)); return deck.pop(); }
+function ask() {
+  const q = QUIZ[nextIndex()]; S.q = q; S.qt = 0; S.answered = false;
+  const order = q.o.length === 2 ? [0, 1] : AP.shuffle([0, 1, 2, 3].slice(0, q.o.length));
+  $('#kind').textContent = q.o.length === 2 ? 'True or false' : 'Multiple choice'; $('#q').textContent = q.q;
+  const box = $('#opts'); box.innerHTML = ''; box.className = 'opts' + (q.o.length === 2 ? ' tf' : '');
+  order.forEach((oi, k) => { const b = el('button', 'opt', (q.o.length === 2 ? '' : 'ABCD'[k] + '  ') + q.o[oi]); b.dataset.i = oi; b.onclick = () => pick(oi); box.appendChild(b); });
+  $('#exp').classList.remove('show'); hud(); L.start();
+}
+function hud() { $('#qn').textContent = '❓ ' + (S.answered && S.n ? S.n : S.n + 1) + (S.mode === 'daily' ? '/' + DAILY_N : ''); $('#sc').textContent = '⭐ ' + S.score;
+  $('#lv').textContent = S.mode === 'daily' ? '✔ ' + S.right : '❤️'.repeat(S.lives) + '🖤'.repeat(3 - S.lives);
+  $('#bar').style.transform = 'scaleX(' + Math.max(0, 1 - S.qt / QTIME) + ')'; }
+function step(dt) { if (!S || S.over || S.answered) return; S.qt += dt; if (S.qt >= QTIME) { S.qt = QTIME; pick(-1); } hud(); }
+function pick(i) {
+  if (!S || S.over || S.answered || (i >= 0 && S.qt < LOCK)) return false;
+  S.answered = true; L.stop(); S.total += Math.min(QTIME, S.qt); const q = S.q, good = i === q.a;
+  document.querySelectorAll('#opts .opt').forEach(b => { b.disabled = true; if (+b.dataset.i === q.a) b.classList.add('right'); else if (+b.dataset.i === i) b.classList.add('wrong'); });
+  let pts = 0; if (good) { pts = 100 + Math.max(0, 50 - 5 * Math.floor(S.qt)); S.score += pts; S.right++; BK.play('good'); $('#bub').textContent = AP.pick(['Nice, you checked!', 'Spot on.', 'Exactly right.', 'You know your backing!', 'On-chain thinking!']) + ' +' + pts; }
+  else { S.wrong++; if (S.mode === 'endless') S.lives--; BK.play('bad'); $('#bub').textContent = i < 0 ? 'Out of time!' : 'Not quite. Here\'s why…'; }
+  $('#expBox').className = 'bk-fact' + (good ? '' : ' no'); $('#expH').textContent = good ? 'Correct ✔' : (i < 0 ? 'Time up ⏱' : 'Not quite ✖'); $('#expT').textContent = q.e;
+  S.n++; const done = S.mode === 'daily' ? S.n >= DAILY_N : S.lives <= 0;
+  $('#nextBtn').textContent = done ? 'SEE RESULT →' : 'NEXT →'; $('#exp').classList.add('show'); hud(); return true;
+}
+function next() { if (!S || S.over || !S.answered) return; if (S.mode === 'daily' ? S.n >= DAILY_N : S.lives <= 0) finish(); else ask(); }
+function finish() {
+  S.over = true; L.stop(); const a = art(S.art), secs = Math.max(S.n, Math.ceil(S.total));
+  const canPost = S.score > 0 && !(S.mode === 'daily' && S.posted);
+  if (S.mode === 'daily' && !S.posted) { pref.daily = S.day; paintDaily(); }
+  const pb = S.mode === 'endless' && S.score > (pref.best || 0); if (pb) pref.best = S.score; ls.set('anonQuiz.pref', pref);
+  BK.play(S.right >= S.n / 2 ? 'win' : 'lose');
+  BK.end({ art: a.img, title: S.mode === 'daily' ? 'Daily 10 done! 📅' : (pb ? 'New endless best! 🏆' : 'Quiz over'), lb: canPost,
+    text: `<b>${S.right}</b> of <b>${S.n}</b> right. Score <b>${S.score}</b>.` + (S.mode === 'daily' && S.posted ? '<br><small>Practice run: today\'s daily was already posted.</small>' : ''),
+    buttons: [[S.mode === 'daily' ? 'PLAY ENDLESS' : 'PLAY AGAIN', () => newRun('endless')], ['Leaderboard', () => openLB(GAME, TITLE, MODES, 'questions'), 1], ['Menu', () => show('setup'), 1]] });
+  if (canPost) post(GAME, S.score, secs, S.n, S.mode);
+  gameOver();
+}
+$('#nextBtn').onclick = next;
+AP.keys({ Enter: () => next(), ' ': () => next(), t: () => S && S.q && S.q.o.length === 2 && pick(0), f: () => S && S.q && S.q.o.length === 2 && pick(1),
+  1: () => clickOpt(0), 2: () => clickOpt(1), 3: () => clickOpt(2), 4: () => clickOpt(3) });
+function clickOpt(k) { const b = document.querySelectorAll('#opts .opt')[k]; if (b && !b.disabled) b.click(); }
+$('#dailyBtn').onclick = () => newRun('daily'); $('#endlessBtn').onclick = () => newRun('endless');
+$('#menuBtn').onclick = () => { L.stop(); if (S) S.over = true; show('setup'); };
+$('#lbBtn').onclick = () => openLB(GAME, TITLE, MODES, 'questions');
+window.G = { state: () => S, newRun, pick, next, step, L, P, Q: QUIZ, dailySet, ukDate };
+</script>
+</body>
+</html>

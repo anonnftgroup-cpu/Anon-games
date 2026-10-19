@@ -918,6 +918,35 @@
       "movesLabel": "level",
       "hideMode": true,
       "added": "2026-10-19"
+    },
+    {
+      "id": "backing-quiz",
+      "name": "ANON Backing Quiz",
+      "tagline": "How do backing, pools and Proof of Work operate? Daily set + endless",
+      "path": "backing-quiz/",
+      "thumb": "backing-quiz/thumb.webp",
+      "category": "Learn",
+      "tags": [
+        "learn",
+        "quiz",
+        "backing",
+        "trivia",
+        "daily"
+      ],
+      "status": "live",
+      "leaderboard": true,
+      "scoreLabel": "Score",
+      "order": "desc",
+      "periods": [
+        "day",
+        "all"
+      ],
+      "movesLabel": "questions",
+      "modeLabels": {
+        "daily": "Daily",
+        "endless": "Endless"
+      },
+      "added": "2026-10-19"
     }
   ]
 }
