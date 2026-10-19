@@ -33,7 +33,7 @@ h1{margin:0;font-family:Georgia,"Times New Roman",serif;font-weight:700;font-siz
 .search::before{content:"\2315";position:absolute;left:12px;top:50%;transform:translateY(-52%) scaleX(-1);color:#8a7a45;font-size:19px}
 .clear{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:32px;height:32px;border-radius:50%;border:0;background:transparent;color:#b9a35c;font-size:16px;display:none;cursor:pointer}
 .clear.show{display:block}
-.chips{display:flex;gap:7px;overflow-x:auto;padding:10px 1px 4px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.chips{position:relative;display:flex;gap:7px;overflow-x:auto;padding:10px 1px 4px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .chips::-webkit-scrollbar{display:none}
 .chip{flex:none;min-height:34px;padding:0 14px;border-radius:17px;border:1px solid rgba(212,175,55,.45);background:rgba(0,0,0,.35);color:#b9a35c;font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap}
 .chip.on{background:rgba(212,175,55,.18);color:var(--gold2);border-color:var(--gold);box-shadow:0 0 10px rgba(43,255,136,.15)}
@@ -64,6 +64,13 @@ h1{margin:0;font-family:Georgia,"Times New Roman",serif;font-weight:700;font-siz
 .lbhead{margin:12px 0 2px}
 .lbbox{margin-top:8px;border:1px solid rgba(212,175,55,.35);border-radius:14px;background:rgba(0,0,0,.35);padding:10px 8px;min-height:300px}
 .lbbox .alb-list{max-height:none}
+.lbplay{display:flex;align-items:center;gap:10px;margin-top:10px;padding:8px;border:1px solid rgba(212,175,55,.55);border-radius:14px;background:linear-gradient(180deg,#0f1114,#07080a);box-shadow:0 0 14px rgba(43,255,136,.12)}
+.lbplay img{width:64px;height:48px;flex:none;border-radius:9px;object-fit:cover;background:#0a0d10;border:1px solid rgba(212,175,55,.35)}
+.lbplay-btn{flex:1;min-width:0;display:flex;align-items:center;justify-content:center;gap:6px;min-height:48px;padding:6px 12px;border-radius:12px;border:1px solid #f3d77a;
+  background:linear-gradient(180deg,#e9c858,#a47c1f);color:#120e02;font-weight:900;font-size:15px;letter-spacing:.03em;text-decoration:none;text-align:center;line-height:1.15;box-shadow:0 0 16px rgba(43,255,136,.22);transition:transform .12s}
+.lbplay-btn:active{transform:scale(.97)}
+.lbplay-btn:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+.lbplay-btn .t{overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 footer{text-align:center;font-size:11.5px;color:#8c8570;padding:18px 8px 6px;letter-spacing:.05em}
 footer a{color:#b9a35c;text-decoration:none}
 #toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:rgba(0,0,0,.88);border:1px solid var(--gold);color:var(--gold2);padding:8px 15px;border-radius:20px;font-size:13px;opacity:0;transition:opacity .25s;pointer-events:none;z-index:6000;white-space:nowrap}
@@ -100,6 +107,7 @@ footer a{color:#b9a35c;text-decoration:none}
 
   <section class="view" id="viewLb" aria-label="Leaderboards">
     <div class="chips lbhead" id="lbGames"></div>
+    <div class="lbplay" id="lbPlay" hidden></div>
     <div class="lbbox" id="lbBox"></div>
   </section>
 
@@ -176,7 +184,7 @@ function renderTools() {
 
 function renderLb() {
   const lbs = GAMES.filter(g => isLive(g) && g.leaderboard);
-  const chips = $('#lbGames'); chips.innerHTML = '';
+  const chips = $('#lbGames'), keepX = chips.scrollLeft; chips.innerHTML = '';
   if (!lbs.length) { $('#lbBox').textContent = 'No leaderboards yet.'; return; }
   if (!lbGame || !lbs.find(g => g.id === lbGame)) lbGame = lbs[0].id;
   lbs.forEach(g => {
@@ -185,9 +193,26 @@ function renderLb() {
     chips.appendChild(b);
   });
   const g = lbs.find(x => x.id === lbGame);
+  renderLbPlay(g);
+  chips.scrollLeft = keepX;
+  const on = chips.querySelector('.chip.on'); // keep the selected chip visible without scrolling the parent page
+  if (on && (on.offsetLeft < chips.scrollLeft || on.offsetLeft + on.offsetWidth > chips.scrollLeft + chips.clientWidth)) chips.scrollLeft = on.offsetLeft - 12;
   const box = $('#lbBox');
   if (window.ANONLB) window.ANONLB.renderBoard(box, { game: g.id, order: g.order || 'desc', scoreLabel: g.scoreLabel || 'Score', periods: g.periods, movesLabel: g.movesLabel, hideMode: g.hideMode, modeLabels: g.modeLabels });
   else box.textContent = 'Leaderboard unavailable.';
+}
+
+// Big "▶ Play <game>" button above the board being viewed. Same-frame link (like the tiles), so it stays inside the anonnfts.com iframe.
+function renderLbPlay(g) {
+  const bar = $('#lbPlay'); bar.innerHTML = '';
+  if (!g || !isLive(g)) { bar.hidden = true; return; }
+  const img = el('img'); img.alt = ''; img.width = 64; img.height = 48; img.decoding = 'async';
+  img.src = g.thumb || 'assets/coming-soon.webp'; img.onerror = () => { img.onerror = null; img.src = 'assets/coming-soon.webp'; };
+  const a = el('a', 'lbplay-btn'); a.href = gameUrl(g); a.dataset.game = g.id; a.id = 'lbPlayBtn';
+  a.setAttribute('aria-label', 'Play ' + g.name);
+  a.appendChild(el('span', '', '▶')); a.appendChild(el('span', 't', 'Play ' + g.name));
+  a.onclick = e => { if (e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1) return; e.preventDefault(); open(g); };
+  bar.appendChild(img); bar.appendChild(a); bar.hidden = false;
 }
 
 function setTab(t, push) {

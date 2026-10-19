@@ -132,6 +132,7 @@ const SUPABASE_ANON_KEY = 'sb_publishable_-f0lT5SuVJ-TbFzlfMd7kA_hH6ZXp-N';
 .alb-row{display:flex;gap:8px;margin-top:12px}
 .alb-btn{flex:1;min-height:42px;border-radius:11px;border:1px solid rgba(212,175,55,.75);background:linear-gradient(180deg,#1d1a0d,#0a0905);color:#f3d77a;font:inherit;font-weight:700;font-size:14px;letter-spacing:.04em;cursor:pointer}
 .alb-btn.alb-pri{background:linear-gradient(180deg,#e9c858,#a47c1f);color:#120e02;border-color:#f3d77a}
+.alb-btn.alb-play{flex:none;width:100%;min-height:48px;margin-top:10px;font-size:15px;font-weight:900;box-shadow:0 0 16px rgba(43,255,136,.2)}
 .alb-btn.alb-ghost{background:transparent;border-color:rgba(212,175,55,.35);color:#b9a35c}
 .alb-x{position:absolute;right:8px;top:8px;width:34px;height:34px;border-radius:50%;border:1px solid rgba(212,175,55,.5);background:rgba(0,0,0,.4);color:#f3d77a;font-size:16px;cursor:pointer}
 .alb-board{display:flex;flex-direction:column;min-height:0}
@@ -352,8 +353,13 @@ const SUPABASE_ANON_KEY = 'sb_publishable_-f0lT5SuVJ-TbFzlfMd7kA_hH6ZXp-N';
     const x = el('button', 'alb-x', '✕'); x.setAttribute('aria-label', 'Close'); x.type = 'button';
     p.appendChild(x); p.appendChild(el('h2', '', '🏆 ' + opts.title));
     const b = el('div'); b.style.flex = '1'; b.style.minHeight = '0'; p.appendChild(b);
+    // In-game board: the player is already in the game, so the play button just closes the panel
+    // (or runs opts.onPlay, e.g. a restart). Pass play: false to hide it.
+    let pb = null;
+    if (opts.play !== false) { pb = el('button', 'alb-btn alb-pri alb-play', opts.playLabel || '▶ Back to the game'); pb.type = 'button'; p.appendChild(pb); }
     ov.appendChild(p); document.body.appendChild(ov);
     const close = () => { ov.remove(); document.removeEventListener('keydown', esc, true); };
+    if (pb) pb.onclick = () => { close(); if (typeof opts.onPlay === 'function') { try { opts.onPlay(); } catch (e) {} } };
     const esc = e => { if (e.key === 'Escape') { e.stopPropagation(); close(); } };
     x.onclick = close; ov.onclick = e => { if (e.target === ov) close(); };
     document.addEventListener('keydown', esc, true);
@@ -362,7 +368,7 @@ const SUPABASE_ANON_KEY = 'sb_publishable_-f0lT5SuVJ-TbFzlfMd7kA_hH6ZXp-N';
   }
 
   window.ANONLB = {
-    version: '1.4.0', isConfigured: configured, submit, fetchTop, renderBoard, openBoard, promptNickname,
+    version: '1.5.0', isConfigured: configured, submit, fetchTop, renderBoard, openBoard, promptNickname,
     getNickname, setNickname, validateNickname, isCleanName, randomNickname, seedLocal, sane, weekStart, ukDayStart, _cfg: CFG
   };
 })();
