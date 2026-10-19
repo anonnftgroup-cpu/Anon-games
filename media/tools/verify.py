@@ -5,7 +5,7 @@ Checks:
   * cinema: archive.org embed URL loads (200); the item still exists (not dark/removed); its licenseurl
     still matches the value we recorded (archive_licence).
   * radio : direct mp3 URL loads (HEAD 200); the source item's licenseurl is unchanged.
-  * tv + Watch ANON (youtube.json): YouTube oEmbed returns 200 (401 means embedding disabled, 404 means
+  * tv + Watch ANON (youtube.json, every video, no topic filtering): YouTube oEmbed returns 200 (401 means embedding disabled, 404 means
     private or removed) and author_url is still the expected channel.
 Prints one line per problem and exits 1 if there are any, so a weekly job can open a PR or remove items."""
 import json,sys,os,urllib.request,urllib.parse,urllib.error
@@ -59,7 +59,7 @@ def main():
     jobs=[('cinema',x['id'],x['title'],lambda x=x:chk_film(x)) for x in d.get('cinema',[]) if not x.get('flags')]
     jobs+=[('radio',x['id'],x['title'],lambda x=x:chk_track(x)) for x in d.get('radio',[]) if not x.get('flags')]
     jobs+=[('tv',x['id'],x['title'],lambda x=x:chk_yt(x['youtube_id'],x.get('channel'))) for x in d.get('tv',[]) if not x.get('flags')]
-    jobs+=[('watch',v['id'],v['title'],lambda v=v:chk_yt(v['id'],y.get('channel'))) for v in y.get('videos',[]) if not v.get('flags')]
+    jobs+=[('watch',v['id'],v['title'],lambda v=v:chk_yt(v['id'],y.get('channel'))) for v in y.get('videos',[])]  # all own videos are shown, so all are checked
     with ThreadPoolExecutor(10) as ex: res=list(ex.map(lambda j:(j,j[3]()),jobs))
     probs=[dict(section=j[0],id=j[1],title=j[2],problems=p) for j,p in res if p]
     for p in probs: print(f"PROBLEM [{p['section']}] {p['id']} ({p['title']}): {'; '.join(p['problems'])}")

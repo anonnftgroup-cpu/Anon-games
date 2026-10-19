@@ -26,7 +26,7 @@ function renderCW(){var a=cwGet().map(byId).filter(Boolean);$('#cw').hidden=!a.l
 function list(){
   if(view==='cinema')return live(D.cinema);
   if(view==='tv')return seriesTiles();
-  if(view==='watch')return live(YT&&YT.videos).map(function(v){return{id:'yt:'+v.id,title:v.title.replace(/#\w+/g,'').trim(),year:v.published.slice(0,4),category:v.short?'Short':'Video',thumb:v.thumb,certificate:{bbfc:'Not rated'},tags:[],description:v.description,embed_url:v.embed_url,family:true,yt:v}});
+  if(view==='watch')return live(YT&&YT.videos).map(function(v){return{id:'yt:'+v.id,title:v.title.replace(/#\w+/g,'').trim(),year:v.published.slice(0,4),category:v.short?'Short':'Video',thumb:v.thumb,certificate:{bbfc:'Not rated'},tags:[],description:v.line,embed_url:v.embed_url,family:true,yt:v}});
   return [];
 }
 function filtered(){
@@ -57,6 +57,7 @@ function renderRadio(){
 function setView(v){view=v;cat='All';genre='All';
   document.querySelectorAll('.tab').forEach(function(b){b.classList.toggle('on',b.dataset.v===v)});
   $('#intro').textContent=D.intros[v]||'';
+  $('#disc').hidden=v!=='watch';$('#disc').textContent=(YT&&YT.disclaimer)||'NFTs and cryptoassets are high-risk. Not financial advice.';
   var radio=v==='radio';$('#grid').hidden=radio;$('#tracks').hidden=!radio;
   document.querySelector('.filters').style.display=(v==='cinema')?'':'none';
   $('#hero').hidden=v!=='cinema';
@@ -71,8 +72,8 @@ function openItem(id){
   if(id.indexOf('series:')===0){x=seriesTiles().filter(function(s){return s.id===id})[0];if(!x)return;
     var ep=x.eps[0];
     $('#sheet').innerHTML='<button class="x" aria-label="Close">✕</button><h3>'+esc(x.title)+'</h3>'+facts(ep)+'<div id="epPlayer">'+playerBox(ep,true)+'</div><div class="desc" id="epDesc"><b>'+esc(ep.title)+'</b>: '+esc(ep.description)+'</div><div class="small">'+esc(ep.certificate.note)+'<br>'+esc(ep.rights)+'</div><div class="eps">'+x.eps.map(function(e,i){return '<button class="ep'+(i?'':' on')+'" data-ep="'+esc(e.id)+'"><b>S'+e.season+' E'+e.episode+'</b> · '+esc(e.title)+' ('+e.year+')</button>'}).join('')+'</div><div class="share">Share: '+share(SITE,'Watching '+x.title+' free on ANON Cinema & Radio')+'</div>';
-  } else if(id.indexOf('yt:')===0){x=list().filter(function(v){return v.id===id})[0]||null;if(!x){var v=(YT.videos||[]).filter(function(v){return 'yt:'+v.id===id})[0];if(!v)return;x={title:v.title,thumb:v.thumb,embed_url:v.embed_url,description:v.description,yt:v}}
-    $('#sheet').innerHTML='<button class="x" aria-label="Close">✕</button><h3>'+esc(x.title)+'</h3>'+playerBox(x,!x.yt.short)+'<div class="desc">'+esc(x.yt.description)+'</div><div class="small">'+esc(x.yt.rights)+' · <a href="'+esc(YT.channel)+'" target="_blank" rel="noopener" style="color:#e0c060">Subscribe on YouTube</a></div><div class="share">Share: '+share(SITE,x.title+' | ANON NFTs')+'</div>';
+  } else if(id.indexOf('yt:')===0){x=list().filter(function(v){return v.id===id})[0]||null;if(!x){var v=(YT.videos||[]).filter(function(v){return 'yt:'+v.id===id})[0];if(!v)return;x={title:v.title,thumb:v.thumb,embed_url:v.embed_url,description:v.line,yt:v}}
+    $('#sheet').innerHTML='<button class="x" aria-label="Close">✕</button><h3>'+esc(x.title)+'</h3>'+playerBox(x,!x.yt.short)+'<div class="desc">'+esc(x.yt.line)+'</div><div class="small disc">'+esc(YT.disclaimer||'')+'</div><div class="small">'+esc(x.yt.rights)+' · <a href="'+esc(YT.channel)+'" target="_blank" rel="noopener" style="color:#e0c060">Subscribe on YouTube</a></div><div class="share">Share: '+share(SITE,x.title+' | ANON NFTs')+'</div>';
   } else { x=byId(id);if(!x)return;
     $('#sheet').innerHTML='<button class="x" aria-label="Close">✕</button><h3>'+esc(x.title)+'</h3>'+facts(x)+playerBox(x,false)+'<div class="desc">'+esc(x.description)+'</div><div class="small"><b>Content:</b> '+esc(x.certificate.note)+(x.rating?'<br><b>Rating:</b> '+esc(x.rating.source+' '+x.rating.value)+' (via Wikidata)':'')+'<br><b>Rights:</b> '+esc(x.rights)+'<br><b>Source:</b> <a style="color:#e0c060" href="'+esc(x.source_url)+'" target="_blank" rel="noopener">Internet Archive</a> · last verified '+esc(x.last_verified)+'</div><div class="share">Share: '+share(SITE,'Watching '+x.title+' ('+x.year+') free on ANON Cinema & Radio')+'</div>';
   }
