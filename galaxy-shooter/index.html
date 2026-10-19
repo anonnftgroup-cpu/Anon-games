@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05070a">
+<title>ANON Galaxy Shooter · ANON NFTs</title>
+<meta name="description" content="ANON Galaxy Shooter: blast waves of swooping shadow drones with your ANON NFT ship. Free, no sign-up.">
+<link rel="icon" href="../assets/logo.webp">
+<link rel="stylesheet" href="../assets/nft/kit.css">
+<link rel="stylesheet" href="../assets/play/play.css">
+<style>
+.pad{display:flex;gap:6px;justify-content:center;align-items:center;padding:4px 4px 2px;flex:none;user-select:none;-webkit-user-select:none;flex-wrap:wrap}
+.pad button{min-width:52px;min-height:44px;border-radius:12px;border:1px solid rgba(212,175,55,.6);background:rgba(0,0,0,.55);color:var(--gold2);font-size:17px;font-weight:900;touch-action:none;padding:0 8px}
+.pad button.on{background:rgba(255,61,154,.35)}.pad .big{min-width:84px;background:linear-gradient(180deg,#ff5aab,#c41f73);color:#fff;font-size:15px}
+.pad button:disabled{opacity:.35}
+.dpad{display:grid;grid-template-columns:repeat(3,48px);grid-template-rows:repeat(2,40px);gap:4px}.dpad button{min-width:0;min-height:0}
+.dpad [data-k=U]{grid-column:2}.dpad [data-k=L]{grid-column:1;grid-row:2}.dpad [data-k=D]{grid-column:2;grid-row:2}.dpad [data-k=R]{grid-column:3;grid-row:2}
+.seg.wrap{flex-wrap:wrap}.seg.wrap button{flex:1 1 22%}
+@media (max-height:700px){.pad button{min-height:38px}}
+</style>
+</head>
+<body>
+<header><div class="top">
+  <div class="brand"><a class="back-btn" href="../" aria-label="Back to ANON Arcade">&larr; Arcade</a><img src="../assets/logo.webp" alt=""><h1>GALAXY SHOOTER</h1></div>
+  <div class="top-r"><button class="icon-btn" id="lbBtn" aria-label="Leaderboard">🏆</button><button class="icon-btn" id="menuBtn" aria-label="Menu">↻</button></div>
+</div></header>
+<section class="view on" id="setup">
+  <img class="hero" id="hero" alt="ANON NFTs artwork">
+  <div class="lbl">Choose your ANON</div>
+  <div class="chars five" id="artPick"></div>
+  <div class="lbl">Difficulty</div><div class="seg" id="diff"><button data-v="easy">Easy</button><button data-v="medium">Medium</button><button data-v="hard">Hard</button></div>
+  <button class="go" id="goBtn">PLAY</button>
+  <p class="howto">Your ANON ship fires by itself. Slide your finger anywhere on the screen (or use ◀ ▶ / arrow keys) to move. Shadow drones fly in formation and swoop down at you: divers score double, crowned drones take 2 hits. Catch pink gems for a double shot. Clear a wave for a bonus. Easy has 4 lives, Medium and Hard 3.</p>
+  <div class="nick" id="nick"></div>
+</section>
+<section class="view" id="play">
+  <div class="hud"><span id="sc"></span><span id="wv"></span><span id="lf"></span></div>
+  <div class="stage"><canvas id="cv"></canvas><div class="tap" id="msg"></div></div>
+  <div class="pad"><button data-k="L" aria-label="Left">◀</button><button data-k="R" aria-label="Right">▶</button></div>
+  <div class="bar"><button id="againBtn">Restart</button><button id="setBtn">Change ANON</button></div>
+</section>
+<script src="../shared/leaderboard.js"></script>
+<script src="../shared/newsletter.js"></script>
+<script src="../assets/nft/kit.js"></script>
+<script src="../assets/play/play.js"></script>
+<script>
+const GAME = 'galaxy-shooter', TITLE = 'ANON Galaxy Shooter', PK = 'anonB.galaxy-shooter', ASPECT = 0.62, MOVES = 'drones', DEFMODE = 'medium';
+'use strict';
+const { $, ls, modal, post, openLB, gameOver, art, ART } = AK;
+const NAMES = Object.fromEntries(ART.map(a => [a.id, a.name.replace(/^ANON /, '')]));
+const DIFFN = { easy: 'Easy', medium: 'Medium', hard: 'Hard' };
+const pref = ls.get(PK, { art: 'anon', diff: DEFMODE, best: 0 }); if (window.MODELIST && !MODELIST.includes(pref.diff)) pref.diff = DEFMODE;
+const show = id => document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === id));
+const setHero = () => $('#hero').src = art(pref.art).cover;
+AK.picker($('#artPick'), pref.art, id => { pref.art = id; ls.set(PK, pref); setHero(); });
+if ($('#diff') && ![...$('#diff').children].some(b => b.dataset.v === pref.diff)) pref.diff = DEFMODE;
+if ($('#diff')) AK.seg($('#diff'), pref.diff, v => { pref.diff = v; ls.set(PK, pref); });
+setHero(); AK.nickLine($('#nick'));
+// ---- sound: generated in the browser, nothing plays before the first tap/key ----
+let AC = null; window.__sfx = 0;
+const unlock = () => { if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } if (AC && AC.state === 'suspended') AC.resume(); };
+['pointerdown', 'keydown', 'touchstart'].forEach(t => window.addEventListener(t, unlock, { capture: true, passive: true }));
+function tone(f, d, type, vol, f2) { if (!AC || pref.mute) return; window.__sfx++; const t = AC.currentTime, o = AC.createOscillator(), g = AC.createGain();
+  o.type = type || 'square'; o.frequency.setValueAtTime(f, t); if (f2) o.frequency.exponentialRampToValueAtTime(Math.max(20, f2), t + d);
+  g.gain.setValueAtTime(vol || .08, t); g.gain.exponentialRampToValueAtTime(.0001, t + d); o.connect(g).connect(AC.destination); o.start(t); o.stop(t + d + .02); }
+function boom(d, vol) { if (!AC || pref.mute) return; window.__sfx++; const n = Math.floor(AC.sampleRate * d), b = AC.createBuffer(1, n, AC.sampleRate), c = b.getChannelData(0);
+  for (let i = 0; i < n; i++) c[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 2); const s = AC.createBufferSource(), g = AC.createGain(), fl = AC.createBiquadFilter();
+  fl.type = 'lowpass'; fl.frequency.value = 900; s.buffer = b; g.gain.value = vol || .25; s.connect(fl).connect(g).connect(AC.destination); s.start(); }
+// ---- shared loop, pause when hidden, game over ----
+let C = null, S = null;
+const imgs = {}; const IM = id => imgs[id];
+ART.forEach(a => { AP.img(a.img).then(i => { imgs[a.id] = i; dirty = true; }); AP.img(a.cover).then(i => { imgs['c-' + a.id] = i; dirty = true; }); });
+function ring(x, im, cx, cy, r, col) { x.save(); x.beginPath(); x.arc(cx, cy, r, 0, 7); x.closePath(); x.fillStyle = '#111'; x.fill(); x.clip(); if (im) AP.cover(x, im, cx - r, cy - r, r * 2, r * 2); x.restore();
+  x.lineWidth = Math.max(1.5, r * .16); x.strokeStyle = col || '#f3d77a'; x.beginPath(); x.arc(cx, cy, r, 0, 7); x.stroke(); }
+function bgArt(x, id, a) { const im = IM('c-' + id); if (!im) return; x.globalAlpha = a || .22; const k = Math.max(C.w / im.width, C.h / im.height); x.drawImage(im, (C.w - im.width * k) / 2, (C.h - im.height * k) / 2, im.width * k, im.height * k); x.globalAlpha = 1; }
+const L = AP.loop(dt => { if (S && !S.over && !S.paused) step(dt); }, () => draw());
+let paused = false;
+function pause() { if (!S || S.over || S.paused) return; S.paused = true; $('#msg').textContent = 'Paused\nTap to resume'; }
+function resume() { if (S && S.paused) { S.paused = false; $('#msg').textContent = ''; } }
+document.addEventListener('visibilitychange', () => { if (document.hidden) pause(); });
+$('#msg').parentElement.addEventListener('pointerdown', () => { if (S && S.paused) resume(); }, true);
+async function start() { show('play'); if (!C) C = AP.canvas($('#cv'), ASPECT, () => draw()); else C.fit(); $('#msg').textContent = ''; newRun(); L.start(); }
+function end(score, secs, moves, mode, title, text) {
+  if (!S || S.over) return; S.over = true; draw(); setTimeout(() => L.stop(), 50); if (navigator.vibrate) navigator.vibrate([40, 30, 70]);
+  const a = art(S.art || pref.art), pb = score > (pref.best || 0); if (pb) { pref.best = score; ls.set(PK, pref); }
+  S.final = { score, secs, moves, mode };
+  setTimeout(() => { modal({ art: a.img, title: pb && score > 0 ? 'New best! 🏆' : title, text, lb: score > 0,
+    buttons: [['PLAY AGAIN', () => start()], ['Leaderboard', () => lb(), 1], ['Change ANON', () => show('setup'), 1]] });
+    if (score > 0) post(GAME, score, Math.max(1, Math.round(secs)), moves, mode); }, 500);
+  gameOver();
+}
+const lb = () => openLB(GAME, TITLE, MODES, MOVES);
+$('#goBtn').onclick = () => start(); $('#againBtn').onclick = () => { if (S) S.over = true; start(); };
+$('#setBtn').onclick = $('#menuBtn').onclick = () => { if (S) S.over = true; L.stop(); show('setup'); };
+$('#lbBtn').onclick = lb;
+// hold-buttons for on-screen pads: data-k = key name
+const held = new Set(); window.__held = held;
+document.querySelectorAll('.pad [data-k]').forEach(b => { const k = b.dataset.k;
+  b.addEventListener('pointerdown', e => { e.preventDefault(); held.add(k); b.classList.add('on'); if (window.onPad) onPad(k); });
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach(t => b.addEventListener(t, () => { held.delete(k); b.classList.remove('on'); })); });
+const KM = { ArrowLeft: 'L', a: 'L', A: 'L', ArrowRight: 'R', d: 'R', D: 'R', ArrowUp: 'U', w: 'U', W: 'U', ArrowDown: 'D', s: 'D', S: 'D', ' ': 'B', Enter: 'B', x: 'B', z: 'B' };
+const playing = () => $('#play').classList.contains('on') && !document.querySelector('.modal.show,.alb-ov,.anw-ov');
+window.addEventListener('keydown', e => { const k = KM[e.key]; if (!k || !playing()) return; e.preventDefault(); if (S && S.paused) resume(); if (!held.has(k) && window.onPad) onPad(k); held.add(k); });
+window.addEventListener('keyup', e => { const k = KM[e.key]; if (k) held.delete(k); });
+
+// pointer -> canvas CSS coords (canvas has a 2px border)
+function P(e) { const r = $('#cv').getBoundingClientRect(); return { x: (e.clientX - r.left - 2) * C.w / (r.width - 4), y: (e.clientY - r.top - 2) * C.h / (r.height - 4) }; }
+const ukDay = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/London' }).format(new Date());
+function hashStr(s) { let h = 2166136261; for (const c of s) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
+function txt(x, s, X, Y, size, col, align, weight, font) { x.font = `${weight || 800} ${size}px ${font || 'system-ui,sans-serif'}`; x.fillStyle = col || '#f3d77a'; x.textAlign = align || 'center'; x.textBaseline = 'middle'; x.fillText(s, X, Y); }
+var dirty = true; window.addEventListener('resize', () => dirty = true); window.addEventListener('pointerup', () => dirty = true);
+const fmt = s => Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
+
+const MODES = {"easy": "Easy", "medium": "Medium", "hard": "Hard"};
+// ANON Galaxy Shooter: formation waves of shadow drones that swoop and dive
+const D = { easy: { shot: .9, dive: 4.5, bs: 150, es: 1, lives: 4 }, medium: { shot: 1.4, dive: 3, bs: 200, es: 1.2, lives: 3 }, hard: { shot: 1.8, dive: 2, bs: 250, es: 1.45, lives: 3 } };
+function newRun() { const d = D[pref.diff]; S = { art: pref.art, mode: pref.diff, d, px: .5, lives: d.lives, score: 0, moves: 0, t: 0, wave: 0, bul: [], eb: [], en: [], fx: [], gems: [], fire: 0, dbl: 0, inv: 2, diveT: 2, shotT: 1.5, sway: 0, stars: Array.from({ length: 50 }, () => [AP.rnd(), AP.rnd(), AP.rnd() * .6 + .2]), tx: null, msg: 0 }; wave(); hud(); }
+function wave() { S.wave++; S.en = []; const rows = Math.min(5, 3 + Math.floor(S.wave / 3)), cols = 7;
+  for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) S.en.push({ r, c, kind: r === 0 ? 2 : r < 2 ? 1 : 0, hp: r === 0 ? 2 : 1, dive: null, x: 0, y: -0.3 - r * .05, enter: .6 + c * .05 + r * .12 });
+  S.msg = 1.6; S.waveSpeed = 1 + (S.wave - 1) * .08; }
+const hud = () => { $('#sc').textContent = '⭐ ' + S.score; $('#wv').textContent = 'Wave ' + S.wave; $('#lf').textContent = '❤️'.repeat(Math.max(0, S.lives)); };
+const home = e => ({ x: .14 + e.c * .12 + Math.sin(S.sway) * .05, y: .1 + e.r * .065 });
+function step(dt) { S.t += dt; S.sway += dt * .8; const d = S.d, sp = S.waveSpeed; if (S.msg > 0) S.msg -= dt; if (S.inv > 0) S.inv -= dt; if (S.dbl > 0) S.dbl -= dt;
+  let mv = 0; if (held.has('L')) mv -= 1; if (held.has('R')) mv += 1; if (mv) S.px += mv * dt * .9; else if (S.tx != null) S.px += Math.max(-1.1 * dt, Math.min(1.1 * dt, S.tx - S.px)); S.px = Math.max(.05, Math.min(.95, S.px));
+  S.fire -= dt; if (S.fire <= 0) { S.fire = .26; if (S.dbl > 0) S.bul.push({ x: S.px - .025, y: .86 }, { x: S.px + .025, y: .86 }); else S.bul.push({ x: S.px, y: .86 }); tone(900, .03, 'square', .02); }
+  S.bul.forEach(b => b.y -= dt * 1.4); S.bul = S.bul.filter(b => b.y > -0.05 && !b.dead);
+  S.en.forEach(e => { const h = home(e); if (e.enter > 0) { e.enter -= dt; e.x = h.x; e.y = h.y - Math.max(0, e.enter) * .6; return; }
+    if (e.dive) { const v = e.dive; v.t += dt * sp * d.es; e.x = v.x0 + Math.sin(v.t * 2.2) * .22 * v.dir; e.y = v.y0 + v.t * .38; if (e.y > 1.08) { e.dive = null; e.y = -0.05; e.enter = .5; } }
+    else { e.x = h.x; e.y = h.y; } });
+  S.diveT -= dt * sp; if (S.diveT <= 0) { S.diveT = d.dive * (.6 + AP.rnd() * .8); const c = S.en.filter(e => !e.dive && e.enter <= 0); if (c.length) { const e = AP.pick(c); e.dive = { t: 0, x0: e.x, y0: e.y, dir: AP.rnd() < .5 ? -1 : 1 }; tone(300, .25, 'sawtooth', .03, 700); } }
+  S.shotT -= dt * sp; if (S.shotT <= 0) { S.shotT = 1 / d.shot * (.5 + AP.rnd()); const c = S.en.filter(e => e.enter <= 0); if (c.length) { const e = c.reduce((a, b) => Math.abs(b.x - S.px) + AP.rnd() * .3 < Math.abs(a.x - S.px) + AP.rnd() * .3 ? b : a); S.eb.push({ x: e.x, y: e.y + .03, vy: d.bs / 400 * (1 + (S.wave - 1) * .04) }); } }
+  S.eb.forEach(b => b.y += b.vy * dt); S.eb = S.eb.filter(b => b.y < 1.05 && !b.dead);
+  for (const b of S.bul) for (const e of S.en) if (!e.dead && Math.abs(b.x - e.x) < .045 && Math.abs(b.y - e.y) < .035) { b.dead = true; if (--e.hp <= 0) { e.dead = true; const pts = [10, 20, 40][e.kind] * (e.dive ? 2 : 1); S.score += pts; S.moves++; S.fx.push({ x: e.x, y: e.y, t: .35, pts });
+      boom(.12, .12); if (AP.rnd() < .06) S.gems.push({ x: e.x, y: e.y }); } else tone(500, .04, 'square', .03); break; }
+  S.en = S.en.filter(e => !e.dead);
+  S.gems.forEach(g => g.y += dt * .3); S.gems = S.gems.filter(g => { if (Math.abs(g.x - S.px) < .06 && Math.abs(g.y - .9) < .04) { S.dbl = 8; tone(1200, .2, 'triangle', .08); return false; } return g.y < 1.05; });
+  if (S.inv <= 0) { const hit = S.eb.find(b => Math.abs(b.x - S.px) < .035 && Math.abs(b.y - .9) < .03) || S.en.find(e => Math.abs(e.x - S.px) < .055 && Math.abs(e.y - .9) < .045);
+    if (hit) { hit.dead = true; if (hit.kind != null) { S.en = S.en.filter(e => e !== hit); } S.lives--; S.inv = 2; S.dbl = 0; boom(.5, .3); if (navigator.vibrate) navigator.vibrate(80); S.fx.push({ x: S.px, y: .9, t: .6, big: 1 });
+      if (S.lives <= 0) { hud(); return end(S.score, S.t, S.moves, S.mode, 'Ship down 💥', `<b>${art(S.art).name}</b> reached wave <b>${S.wave}</b> and blasted ${S.moves} drones.<br>Score <b>${S.score}</b>`); } } }
+  S.fx.forEach(f => f.t -= dt); S.fx = S.fx.filter(f => f.t > 0);
+  if (!S.en.length) { S.score += 100 * S.wave; tone(880, .3, 'triangle', .08); wave(); } hud(); }
+const cv = $('#cv'); const tgt = e => { if (S && !S.over) { const p = P(e); S.tx = p.x / C.w; } };
+cv.addEventListener('pointerdown', tgt); cv.addEventListener('pointermove', e => { if (e.buttons || e.pointerType === 'touch') tgt(e); }); cv.addEventListener('pointerup', () => { if (S) S.tx = null; });
+function onPad() { if (S) S.tx = null; }
+function draw() { if (!C) return; const x = C.x, W = C.w, H = C.h; x.fillStyle = '#03040a'; x.fillRect(0, 0, W, H); if (!S) return; bgArt(x, S.art, .1);
+  S.stars.forEach(s => { s[1] = (s[1] + s[2] * .004) % 1; x.fillStyle = `rgba(255,255,255,${s[2]})`; x.fillRect(s[0] * W, s[1] * H, 1.5, 1.5); });
+  const er = W * .038; S.en.forEach(e => { const X = e.x * W, Y = e.y * H; ring(x, IM(e.kind === 2 ? 'royals' : e.kind === 1 ? 'ghost' : 'skulls'), X, Y, er * (e.kind === 2 ? 1.15 : 1), e.kind === 2 ? '#f3d77a' : e.dive ? '#ff3d9a' : '#8a3dff');
+    if (e.kind === 2) AP.crown(x, X, Y - er * 1.35, er * .6); });
+  x.fillStyle = '#2bff88'; S.bul.forEach(b => x.fillRect(b.x * W - 1.5, b.y * H - 7, 3, 12));
+  x.fillStyle = '#ff3d9a'; S.eb.forEach(b => { x.beginPath(); x.arc(b.x * W, b.y * H, 3.5, 0, 7); x.fill(); });
+  S.gems.forEach(g => AP.gem(x, g.x * W, g.y * H, 9));
+  S.fx.forEach(f => { x.globalAlpha = f.t / (f.big ? .6 : .35); x.strokeStyle = f.big ? '#ff3d9a' : '#f3d77a'; x.lineWidth = 2; x.beginPath(); x.arc(f.x * W, f.y * H, (1 - f.t) * (f.big ? 60 : 22) + 4, 0, 7); x.stroke(); if (f.pts) txt(x, '+' + f.pts, f.x * W, f.y * H - 14, 11, '#f3d77a'); x.globalAlpha = 1; });
+  const X = S.px * W, Y = .9 * H, r = W * .045; if (!(S.inv > 0 && Math.floor(S.inv * 10) % 2)) { x.fillStyle = '#d4af37'; x.beginPath(); x.moveTo(X - r * 1.8, Y + r * .9); x.lineTo(X, Y - r * 1.6); x.lineTo(X + r * 1.8, Y + r * .9); x.closePath(); x.fill(); ring(x, IM(S.art), X, Y, r, S.dbl > 0 ? '#2bff88' : '#ff3d9a'); }
+  if (S.msg > 0) txt(x, 'WAVE ' + S.wave, W / 2, H * .5, 28, '#f3d77a', 'center', 900, 'Georgia,serif'); }
+window.G = { state: () => S, step, C: () => C, L };
+
+</script>
+</body>
+</html>

@@ -1468,6 +1468,35 @@
         "hard": "Hard"
       },
       "added": "2026-10-19"
+    },
+    {
+      "id": "galaxy-shooter",
+      "name": "ANON Galaxy Shooter",
+      "tagline": "Blast swooping shadow drones in deep space",
+      "path": "galaxy-shooter/",
+      "thumb": "galaxy-shooter/thumb.webp",
+      "category": "Arcade",
+      "tags": [
+        "shooter",
+        "space",
+        "retro",
+        "waves"
+      ],
+      "status": "live",
+      "leaderboard": true,
+      "scoreLabel": "Score",
+      "order": "desc",
+      "periods": [
+        "day",
+        "all"
+      ],
+      "movesLabel": "drones",
+      "modeLabels": {
+        "easy": "Easy",
+        "medium": "Medium",
+        "hard": "Hard"
+      },
+      "added": "2026-10-19"
     }
   ]
 }
