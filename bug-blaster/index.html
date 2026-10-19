@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05070a">
+<title>ANON Bug Blaster · ANON NFTs</title>
+<meta name="description" content="ANON Bug Blaster: blast the shadow bug chain as it snakes down through the NFT stone field. Free, no sign-up.">
+<link rel="icon" href="../assets/logo.webp">
+<link rel="stylesheet" href="../assets/nft/kit.css">
+<link rel="stylesheet" href="../assets/play/play.css">
+<style>
+.pad{display:flex;gap:6px;justify-content:center;align-items:center;padding:4px 4px 2px;flex:none;user-select:none;-webkit-user-select:none}
+.pad button{min-width:52px;min-height:48px;border-radius:12px;border:1px solid rgba(212,175,55,.6);background:rgba(0,0,0,.55);color:var(--gold2);font-size:20px;font-weight:900;touch-action:none}
+.pad button.on{background:rgba(255,61,154,.35)}.pad .big{min-width:84px;background:linear-gradient(180deg,#ff5aab,#c41f73);color:#fff;font-size:15px}
+.dpad{display:grid;grid-template-columns:repeat(3,48px);grid-template-rows:repeat(2,40px);gap:4px}.dpad button{min-width:0;min-height:0}
+.dpad [data-k=U]{grid-column:2}.dpad [data-k=L]{grid-column:1;grid-row:2}.dpad [data-k=D]{grid-column:2;grid-row:2}.dpad [data-k=R]{grid-column:3;grid-row:2}
+@media (max-height:700px){.pad button{min-height:40px}.dpad{grid-template-rows:repeat(2,34px)}}
+</style>
+</head>
+<body>
+<header><div class="top">
+  <div class="brand"><a class="back-btn" href="../" aria-label="Back to ANON Arcade">&larr; Arcade</a><img src="../assets/logo.webp" alt=""><h1>BUG BLASTER</h1></div>
+  <div class="top-r"><button class="icon-btn" id="lbBtn" aria-label="Leaderboard">🏆</button><button class="icon-btn" id="menuBtn" aria-label="Menu">↻</button></div>
+</div></header>
+<section class="view on" id="setup">
+  <img class="hero" id="hero" alt="ANON NFTs artwork">
+  <div class="lbl">Choose your ANON</div>
+  <div class="chars five" id="artPick"></div>
+  <div class="lbl">Difficulty</div><div class="seg" id="diff"><button data-v="easy">Easy</button><button data-v="medium">Medium</button><button data-v="hard">Hard</button></div>
+  <button class="go" id="goBtn">PLAY</button>
+  <p class="howto">Drag anywhere on the screen (or use the arrows / pad) to move your ANON around the gold zone at the bottom. Your blaster fires on its own. Every segment you hit turns into a stone and splits the chain. Heads are worth 100, body segments 10, and the jumping grumpy spider 300 to 900 (more when it's close). Clear the chain to start the next, faster wave. You have 3 lives.</p>
+  <div class="nick" id="nick"></div>
+</section>
+<section class="view" id="play">
+  <div class="hud"><span id="sc"></span><span id="wv"></span><span id="lv"></span></div>
+  <div class="stage"><canvas id="cv"></canvas><div class="tap" id="msg"></div></div>
+  <div class="pad"><div class="dpad"><button data-k="U" aria-label="Up">▲</button><button data-k="L" aria-label="Left">◀</button><button data-k="D" aria-label="Down">▼</button><button data-k="R" aria-label="Right">▶</button></div></div>
+  <div class="bar"><button id="againBtn">Restart</button><button id="setBtn">Change ANON</button></div>
+</section>
+<script src="../shared/leaderboard.js"></script>
+<script src="../shared/newsletter.js"></script>
+<script src="../assets/nft/kit.js"></script>
+<script src="../assets/play/play.js"></script>
+<script>
+const GAME = 'bug-blaster', TITLE = 'ANON Bug Blaster', PK = 'anonC2.bug-blaster', ASPECT = 3/4, MOVES = 'segments';
+'use strict';
+const { $, ls, modal, post, openLB, gameOver, art, ART } = AK;
+const NAMES = Object.fromEntries(ART.map(a => [a.id, a.name.replace(/^ANON /, '')]));
+const DIFFN = { easy: 'Easy', medium: 'Medium', hard: 'Hard' };
+const pref = ls.get(PK, { art: 'anon', diff: 'medium', best: 0 });
+const show = id => document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === id));
+const setHero = () => $('#hero').src = art(pref.art).cover;
+AK.picker($('#artPick'), pref.art, id => { pref.art = id; ls.set(PK, pref); setHero(); });
+if ($('#diff')) AK.seg($('#diff'), pref.diff, v => { pref.diff = v; ls.set(PK, pref); });
+setHero(); AK.nickLine($('#nick'));
+// ---- sound: generated in the browser, nothing plays before the first tap/key ----
+let AC = null; window.__sfx = 0;
+const unlock = () => { if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } if (AC && AC.state === 'suspended') AC.resume(); };
+['pointerdown', 'keydown', 'touchstart'].forEach(t => window.addEventListener(t, unlock, { capture: true, passive: true }));
+function tone(f, d, type, vol, f2) { if (!AC || pref.mute) return; window.__sfx++; const t = AC.currentTime, o = AC.createOscillator(), g = AC.createGain();
+  o.type = type || 'square'; o.frequency.setValueAtTime(f, t); if (f2) o.frequency.exponentialRampToValueAtTime(Math.max(20, f2), t + d);
+  g.gain.setValueAtTime(vol || .08, t); g.gain.exponentialRampToValueAtTime(.0001, t + d); o.connect(g).connect(AC.destination); o.start(t); o.stop(t + d + .02); }
+function boom(d, vol) { if (!AC || pref.mute) return; window.__sfx++; const n = Math.floor(AC.sampleRate * d), b = AC.createBuffer(1, n, AC.sampleRate), c = b.getChannelData(0);
+  for (let i = 0; i < n; i++) c[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 2); const s = AC.createBufferSource(), g = AC.createGain(), fl = AC.createBiquadFilter();
+  fl.type = 'lowpass'; fl.frequency.value = 900; s.buffer = b; g.gain.value = vol || .25; s.connect(fl).connect(g).connect(AC.destination); s.start(); }
+// ---- shared loop, pause when hidden, game over ----
+let C = null, S = null;
+const imgs = {}; const IM = id => imgs[id];
+ART.forEach(a => { AP.img(a.img).then(i => imgs[a.id] = i); AP.img(a.cover).then(i => imgs['c-' + a.id] = i); });
+function ring(x, im, cx, cy, r, col) { x.save(); x.beginPath(); x.arc(cx, cy, r, 0, 7); x.closePath(); x.fillStyle = '#111'; x.fill(); x.clip(); if (im) AP.cover(x, im, cx - r, cy - r, r * 2, r * 2); x.restore();
+  x.lineWidth = Math.max(1.5, r * .16); x.strokeStyle = col || '#f3d77a'; x.beginPath(); x.arc(cx, cy, r, 0, 7); x.stroke(); }
+function bgArt(x, id, a) { const im = IM('c-' + id); if (!im) return; x.globalAlpha = a || .22; const k = Math.max(C.w / im.width, C.h / im.height); x.drawImage(im, (C.w - im.width * k) / 2, (C.h - im.height * k) / 2, im.width * k, im.height * k); x.globalAlpha = 1; }
+const L = AP.loop(dt => { if (S && !S.over && !S.paused) step(dt); }, () => draw());
+let paused = false;
+function pause() { if (!S || S.over || S.paused) return; S.paused = true; $('#msg').textContent = 'Paused\nTap to resume'; }
+function resume() { if (S && S.paused) { S.paused = false; $('#msg').textContent = ''; } }
+document.addEventListener('visibilitychange', () => { if (document.hidden) pause(); });
+$('#msg').parentElement.addEventListener('pointerdown', () => { if (S && S.paused) resume(); }, true);
+async function start() { show('play'); if (!C) C = AP.canvas($('#cv'), ASPECT, () => draw()); else C.fit(); $('#msg').textContent = ''; newRun(); L.start(); }
+function end(score, secs, moves, mode, title, text) {
+  if (!S || S.over) return; S.over = true; draw(); setTimeout(() => L.stop(), 50); if (navigator.vibrate) navigator.vibrate([40, 30, 70]);
+  const a = art(S.art || pref.art), pb = score > (pref.best || 0); if (pb) { pref.best = score; ls.set(PK, pref); }
+  S.final = { score, secs, moves, mode };
+  setTimeout(() => { modal({ art: a.img, title: pb && score > 0 ? 'New best! 🏆' : title, text, lb: score > 0,
+    buttons: [['PLAY AGAIN', () => start()], ['Leaderboard', () => lb(), 1], ['Change ANON', () => show('setup'), 1]] });
+    if (score > 0) post(GAME, score, Math.max(1, Math.round(secs)), moves, mode); }, 500);
+  gameOver();
+}
+const lb = () => openLB(GAME, TITLE, MODES, MOVES);
+$('#goBtn').onclick = () => start(); $('#againBtn').onclick = () => { if (S) S.over = true; start(); };
+$('#setBtn').onclick = $('#menuBtn').onclick = () => { if (S) S.over = true; L.stop(); show('setup'); };
+$('#lbBtn').onclick = lb;
+// hold-buttons for on-screen pads: data-k = key name
+const held = new Set(); window.__held = held;
+document.querySelectorAll('.pad [data-k]').forEach(b => { const k = b.dataset.k;
+  b.addEventListener('pointerdown', e => { e.preventDefault(); held.add(k); b.classList.add('on'); if (window.onPad) onPad(k); });
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach(t => b.addEventListener(t, () => { held.delete(k); b.classList.remove('on'); })); });
+const KM = { ArrowLeft: 'L', a: 'L', A: 'L', ArrowRight: 'R', d: 'R', D: 'R', ArrowUp: 'U', w: 'U', W: 'U', ArrowDown: 'D', s: 'D', S: 'D', ' ': 'B', Enter: 'B', x: 'B', z: 'B' };
+const playing = () => $('#play').classList.contains('on') && !document.querySelector('.modal.show,.alb-ov,.anw-ov');
+window.addEventListener('keydown', e => { const k = KM[e.key]; if (!k || !playing()) return; e.preventDefault(); if (S && S.paused) resume(); if (!held.has(k) && window.onPad) onPad(k); held.add(k); });
+window.addEventListener('keyup', e => { const k = KM[e.key]; if (k) held.delete(k); });
+
+const MODES = {"easy": "Easy", "medium": "Medium", "hard": "Hard"};
+// world: x 0..100, y 0..133 (3:4). Grid 20x26 cells of 5 units. Player zone = rows 21..25.
+const CS = 5, COLS = 20, ROWS = 26, ZONE = 21, DIFF = { easy: { len: 10, tick: .12, sp: 9, st: 26 }, medium: { len: 12, tick: .09, sp: 6.5, st: 32 }, hard: { len: 14, tick: .07, sp: 4.5, st: 38 } };
+const STONE_ART = ['anon', 'apes', 'royals', 'aces', 'eyes', 'lake'];
+const key = (r, c) => r * COLS + c, cx = c => c * CS + CS / 2, cy = r => r * CS + CS / 2;
+function newRun() { S = { art: pref.art, diff: pref.diff, d: DIFF[pref.diff], score: 0, wave: 0, t: 0, kills: 0, lives: 3, p: { x: 50, y: 120 }, b: null, st: new Map(), fx: [], inv: 0 };
+  for (let i = 0; i < S.d.st; i++) { const r = AP.ri(1, 19), c = AP.ri(0, COLS - 1); S.st.set(key(r, c), { hp: 3, id: AP.pick(STONE_ART) }); } nextWave(); }
+function chainAt(len) { const ch = []; for (let i = 0; i < len; i++) ch.push({ c: Math.min(COLS - 1, 9 - i < 0 ? 0 : 9 - i) , r: 0, pc: 0, pr: 0, dir: 1, dn: 1 }); ch.forEach((s, i) => { s.c = 10 - i; if (s.c < 0) { s.c = 0; } s.pc = s.c; s.pr = s.r; }); return ch; }
+function nextWave() { S.wave++; const d = S.d; S.tick = Math.max(.035, d.tick * Math.pow(.92, S.wave - 1)); S.acc = 0; S.ch = [chainAt(Math.min(20, d.len + S.wave - 1))]; S.spider = null; S.spT = d.sp;
+  $('#msg').textContent = 'Wave ' + S.wave; setTimeout(() => { if (S && /^Wave/.test($('#msg').textContent)) $('#msg').textContent = ''; }, 1000); hud(); }
+const hud = () => { $('#sc').textContent = '⭐ ' + S.score; $('#wv').textContent = 'Wave ' + S.wave; $('#lv').textContent = '❤️'.repeat(Math.max(0, S.lives)); };
+function moveHead(h) { const nc = h.c + h.dir; if (nc < 0 || nc >= COLS || S.st.has(key(h.r, nc)) || h.poison) { h.dir = -h.dir; let nr = h.r + h.dn; if (nr >= ROWS || (h.dn < 0 && nr < ZONE - 1)) { h.dn = -h.dn; nr = h.r + h.dn; } h.r = nr; if (h.r >= ROWS - 1) h.poison = false; } else h.c = nc; }
+function tickChains() { for (const ch of S.ch) { for (const s of ch) { s.pc = s.c; s.pr = s.r; } moveHead(ch[0]); for (let i = 1; i < ch.length; i++) { const a = ch[i - 1], s = ch[i]; s.c = a.pc; s.r = a.pr; s.dir = a.dir; s.dn = a.dn; } } }
+function hitSeg(ci, i) { const ch = S.ch[ci], s = ch[i]; S.score += i === 0 ? 100 : 10; S.kills++; S.fx.push({ x: cx(s.c), y: cy(s.r), t: 0 }); tone(i === 0 ? 1100 : 700, .08, 'square', .05, 200);
+  if (s.r < ROWS - 1) S.st.set(key(s.r, s.c), { hp: 3, id: AP.pick(STONE_ART) }); const a = ch.slice(0, i), b = ch.slice(i + 1); S.ch.splice(ci, 1); if (a.length) S.ch.push(a); if (b.length) S.ch.push(b); }
+function shoot() { if (!S.b) { S.b = { x: S.p.x, y: S.p.y - 3 }; tone(1500, .03, 'square', .015, 2200); } }
+function die() { S.lives--; S.inv = 2; boom(.6, .35); S.fx.push({ x: S.p.x, y: S.p.y, t: 0, big: true }); hud(); if (navigator.vibrate) navigator.vibrate(60);
+  if (S.lives <= 0) return finish(); const n = S.ch.reduce((a, c) => a + c.length, 0); S.ch = [chainAt(n)]; S.spider = null; S.spT = S.d.sp; S.p.x = 50; S.p.y = 120; }
+function step(dt) {
+  S.t += dt; if (S.inv > 0) S.inv -= dt; const p = S.p, v = 62 * dt;
+  if (held.has('L')) p.x -= v; if (held.has('R')) p.x += v; if (held.has('U')) p.y -= v; if (held.has('D')) p.y += v;
+  if (S.drag) { const dx = S.drag.x - p.x, dy = S.drag.y - p.y, l = Math.hypot(dx, dy), m = Math.min(l, 110 * dt); if (l > .1) { p.x += dx / l * m; p.y += dy / l * m; } }
+  p.x = Math.max(2.5, Math.min(97.5, p.x)); p.y = Math.max(ZONE * CS + 2, Math.min(ROWS * CS - 2.5, p.y));
+  shoot();
+  if (S.b) { S.b.y -= 190 * dt; const b = S.b, r = Math.floor(b.y / CS), c = Math.floor(b.x / CS);
+    if (b.y < 0) S.b = null;
+    else { let done = false;
+      for (let ci = 0; ci < S.ch.length && !done; ci++) for (let i = 0; i < S.ch[ci].length; i++) { const s = S.ch[ci][i]; if (Math.abs(cx(s.c) - b.x) < 3 && Math.abs(cy(s.r) - b.y) < 3.5) { hitSeg(ci, i); done = true; break; } }
+      if (!done && S.spider && Math.hypot(S.spider.x - b.x, S.spider.y - b.y) < 4) { const pts = Math.abs(S.spider.y - p.y) < 8 ? 900 : Math.abs(S.spider.y - p.y) < 16 ? 600 : 300; S.score += pts; S.fx.push({ x: S.spider.x, y: S.spider.y, t: 0, txt: '+' + pts }); S.spider = null; S.spT = S.d.sp; tone(300, .2, 'sawtooth', .06, 1200); done = true; }
+      if (!done && S.st.has(key(r, c))) { const s = S.st.get(key(r, c)); if (--s.hp <= 0) { S.st.delete(key(r, c)); S.score += 1; } tone(200, .03, 'triangle', .03); done = true; }
+      if (done) S.b = null; } }
+  S.acc += dt; while (S.acc >= S.tick) { S.acc -= S.tick; tickChains(); }
+  S.spT -= dt; if (!S.spider && S.spT <= 0) { const l = AP.rnd() < .5; S.spider = { x: l ? -3 : 103, y: 112, vx: (l ? 1 : -1) * (14 + S.wave * 1.5), vy: 30 }; }
+  const sp = S.spider; if (sp) { sp.x += sp.vx * dt; sp.y += sp.vy * dt; if (sp.y < ZONE * CS - 8 || sp.y > ROWS * CS - 2) { sp.vy = -sp.vy * (.7 + AP.rnd() * .6); sp.y = Math.max(ZONE * CS - 8, Math.min(ROWS * CS - 2, sp.y)); }
+    const k = key(Math.floor(sp.y / CS), Math.floor(sp.x / CS)); if (S.st.has(k) && Math.floor(sp.y / CS) >= ZONE) S.st.delete(k);
+    if (sp.x < -6 || sp.x > 106) { S.spider = null; S.spT = S.d.sp; } }
+  for (const f of S.fx) f.t += dt; S.fx = S.fx.filter(f => f.t < .6);
+  if (S.inv <= 0) { if (sp && Math.hypot(sp.x - p.x, sp.y - p.y) < 4.5) return die(); for (const ch of S.ch) for (const s of ch) if (Math.hypot(cx(s.c) - p.x, cy(s.r) - p.y) < 4.3) return die(); }
+  if (!S.ch.length) { S.score += 0; tone(660, .2, 'square', .06); setTimeout(() => tone(990, .3, 'square', .06), 160); nextWave(); }
+  hud();
+}
+function finish() { end(S.score, S.t, S.kills, S.diff, 'The shadow bugs got through 🐛', `<b>${art(S.art).name}</b> blasted <b>${S.kills}</b> shadow bug segments and reached <b>wave ${S.wave}</b>.<br>Score <b>${S.score}</b>`); }
+const toW = (x0, y0) => { const r = $('#cv').getBoundingClientRect(); return { x: (x0 - r.left) / r.width * 100, y: (y0 - r.top) / r.height * 133 }; };
+let dragOff = null;
+$('#cv').addEventListener('pointerdown', e => { if (!playing()) return; const w = toW(e.clientX, e.clientY); dragOff = { x: S.p.x - w.x, y: S.p.y - w.y }; S.drag = { x: S.p.x, y: S.p.y }; $('#cv').setPointerCapture && $('#cv').setPointerCapture(e.pointerId); });
+$('#cv').addEventListener('pointermove', e => { if (!dragOff || !S) return; const w = toW(e.clientX, e.clientY); S.drag = { x: w.x + dragOff.x, y: w.y + dragOff.y }; });
+const endDrag = () => { dragOff = null; if (S) S.drag = null; }; $('#cv').addEventListener('pointerup', endDrag); $('#cv').addEventListener('pointercancel', endDrag);
+function onPad(k) {}
+function draw() {
+  if (!C) return; const x = C.x, W = C.w, H = C.h, k = W / 100; x.fillStyle = '#05080a'; x.fillRect(0, 0, W, H); if (!S) return; bgArt(x, 'lake', .22);
+  x.fillStyle = 'rgba(212,175,55,.06)'; x.fillRect(0, ZONE * CS * k, W, (ROWS - ZONE) * CS * k); x.strokeStyle = 'rgba(212,175,55,.35)'; x.setLineDash([4, 4]); x.beginPath(); x.moveTo(0, ZONE * CS * k); x.lineTo(W, ZONE * CS * k); x.stroke(); x.setLineDash([]);
+  for (const [kk, s] of S.st) { const r = Math.floor(kk / COLS), c = kk % COLS, sx = c * CS * k + 1, sy = r * CS * k + 1, sz = CS * k - 2; x.fillStyle = '#1a1424'; AP.rr(x, sx, sy, sz, sz, 3); x.fill(); const im = IM('c-' + s.id) || IM(s.id); if (im) { x.globalAlpha = .35 + s.hp * .2; x.save(); AP.rr(x, sx, sy, sz, sz, 3); x.clip(); AP.cover(x, im, sx, sy, sz, sz); x.restore(); x.globalAlpha = 1; } x.strokeStyle = s.hp === 3 ? '#d4af37' : s.hp === 2 ? '#c41f73' : '#555'; x.lineWidth = 1; AP.rr(x, sx, sy, sz, sz, 3); x.stroke(); }
+  const f = Math.min(1, S.acc / S.tick);
+  for (const ch of S.ch) for (let i = ch.length - 1; i >= 0; i--) { const s = ch[i], px = (s.pc + (s.c - s.pc) * f) * CS + CS / 2, py = (s.pr + (s.r - s.pr) * f) * CS + CS / 2;
+    if (i === 0) ring(x, IM('venge'), px * k, py * k, CS * .58 * k, '#ff3d9a'); else { x.fillStyle = '#2bff88'; x.beginPath(); x.arc(px * k, py * k, CS * .48 * k, 0, 7); x.fill(); const im = IM('skulls'); if (im) { x.save(); x.beginPath(); x.arc(px * k, py * k, CS * .4 * k, 0, 7); x.clip(); AP.cover(x, im, (px - 2) * k, (py - 2) * k, 4 * k, 4 * k); x.restore(); } } }
+  const sp = S.spider; if (sp) { x.strokeStyle = '#ff8cc4'; x.lineWidth = 1.5; for (let l = 0; l < 4; l++) { const a = Math.sin(S.t * 14 + l) * 1.2; x.beginPath(); x.moveTo((sp.x - 2) * k, sp.y * k); x.lineTo((sp.x - 5) * k, (sp.y - 2 + l * 1.4 + a) * k); x.moveTo((sp.x + 2) * k, sp.y * k); x.lineTo((sp.x + 5) * k, (sp.y - 2 + l * 1.4 - a) * k); x.stroke(); } ring(x, IM('grumpy'), sp.x * k, sp.y * k, 2.6 * k, '#ff8cc4'); }
+  if (S.b) { x.fillStyle = '#f3d77a'; x.fillRect((S.b.x - .4) * k, (S.b.y - 2) * k, .8 * k, 3 * k); }
+  if (!(S.inv > 0 && Math.floor(S.t * 10) % 2)) ring(x, IM(S.art), S.p.x * k, S.p.y * k, 3 * k);
+  for (const e of S.fx) { x.globalAlpha = 1 - e.t / .6; if (e.txt) { x.fillStyle = '#f3d77a'; x.font = `bold ${4 * k}px system-ui`; x.textAlign = 'center'; x.fillText(e.txt, e.x * k, (e.y - e.t * 10) * k); } else { x.strokeStyle = e.big ? '#ff5a3d' : '#2bff88'; x.lineWidth = 2; x.beginPath(); x.arc(e.x * k, e.y * k, (1 + e.t * (e.big ? 30 : 10)) * k, 0, 7); x.stroke(); } x.globalAlpha = 1; }
+}
+window.G = { state: () => S, step: dt => step(dt), nextWave, die, C: () => C, L, key };
+
+</script>
+</body>
+</html>

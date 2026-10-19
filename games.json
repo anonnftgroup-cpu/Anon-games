@@ -777,6 +777,35 @@
         "hard": "Hard"
       },
       "added": "2026-10-19"
+    },
+    {
+      "id": "bug-blaster",
+      "name": "ANON Bug Blaster",
+      "tagline": "Blast the shadow bug chain through the NFT stones",
+      "path": "bug-blaster/",
+      "thumb": "bug-blaster/thumb.webp",
+      "category": "Arcade",
+      "tags": [
+        "shooter",
+        "retro",
+        "action",
+        "waves"
+      ],
+      "status": "live",
+      "leaderboard": true,
+      "scoreLabel": "Score",
+      "order": "desc",
+      "periods": [
+        "day",
+        "all"
+      ],
+      "movesLabel": "segments",
+      "modeLabels": {
+        "easy": "Easy",
+        "medium": "Medium",
+        "hard": "Hard"
+      },
+      "added": "2026-10-19"
     }
   ]
 }
