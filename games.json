@@ -893,6 +893,31 @@
       "movesLabel": "cards",
       "hideMode": true,
       "added": "2026-10-19"
+    },
+    {
+      "id": "crossing",
+      "name": "ANON Crossing",
+      "tagline": "Hop the shadow road and the gold river to the shrines",
+      "path": "crossing/",
+      "thumb": "crossing/thumb.webp",
+      "category": "Arcade",
+      "tags": [
+        "hopping",
+        "road",
+        "river",
+        "retro"
+      ],
+      "status": "live",
+      "leaderboard": true,
+      "scoreLabel": "Score",
+      "order": "desc",
+      "periods": [
+        "day",
+        "all"
+      ],
+      "movesLabel": "level",
+      "hideMode": true,
+      "added": "2026-10-19"
     }
   ]
 }

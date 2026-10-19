@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05070a">
+<title>ANON Crossing · ANON NFTs</title>
+<meta name="description" content="ANON Crossing: hop your ANON ninja over the shadow road and the gold river to fill the five ANON shrines. Free, no sign-up.">
+<link rel="icon" href="../assets/logo.webp">
+<link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
+<link rel="stylesheet" href="../assets/nft/kit.css">
+<link rel="stylesheet" href="../assets/retro-c1/rk.css">
+</head>
+<body>
+<script src="../shared/leaderboard.js"></script>
+<script src="../shared/newsletter.js"></script>
+<script src="../assets/nft/kit.js"></script>
+<script src="../assets/retro-c1/rk.js"></script>
+<script src="game.js"></script>
+<script>
+'use strict';
+(function () {
+  const T = 34, G = CRGame, IDS = RK.ART.map(a => a.id);
+  let bg = null;
+  function backdrop() {
+    const c = document.createElement('canvas'), k = 2; c.width = G.W * T * k; c.height = G.ROWS * T * k; const x = c.getContext('2d'); x.scale(k, k); const Wp = G.W * T;
+    // shrine hedge row
+    x.fillStyle = '#06140c'; x.fillRect(0, 0, Wp, T); RK.cover(x, RK.C.lake, 0, 0, Wp, T, 0.25);
+    // river
+    const rg = x.createLinearGradient(0, T, 0, 6 * T); rg.addColorStop(0, '#07202e'); rg.addColorStop(1, '#0b3341'); x.fillStyle = rg; x.fillRect(0, T, Wp, 5 * T);
+    x.strokeStyle = 'rgba(243,215,122,.12)'; for (let i = 0; i < 40; i++) { const yy = T + (i * 37 % (5 * T)), xx = (i * 89) % Wp; x.beginPath(); x.moveTo(xx, yy); x.quadraticCurveTo(xx + 8, yy - 3, xx + 16, yy); x.stroke(); }
+    // banks
+    const bank = y => { x.fillStyle = '#123018'; x.fillRect(0, y * T, Wp, T); x.fillStyle = 'rgba(43,255,136,.12)'; for (let i = 0; i < 22; i++) { x.beginPath(); x.arc((i * 53) % Wp, y * T + 6 + (i * 13) % (T - 10), 2.5, 0, 7); x.fill(); } };
+    bank(6); bank(12);
+    // road
+    x.fillStyle = '#0d0d12'; x.fillRect(0, 7 * T, Wp, 5 * T); x.strokeStyle = 'rgba(212,175,55,.55)'; x.setLineDash([10, 10]); x.lineWidth = 2;
+    for (let r = 8; r <= 11; r++) { x.beginPath(); x.moveTo(0, r * T); x.lineTo(Wp, r * T); x.stroke(); } x.setLineDash([]);
+    RK.cover(x, RK.C.anon, Wp / 2 - 60, 7 * T + 20, 120, 130, 0.08);
+    x.font = '800 11px Georgia,serif'; x.fillStyle = 'rgba(243,215,122,.55)'; x.textAlign = 'center'; x.fillText('SHADOW ROAD', Wp / 2, 12 * T + 13); x.fillText('GOLD RIVER', Wp / 2, 6 * T + 13);
+    return c;
+  }
+  function vehicle(x, X, Y, len, kind, art, d, t) {
+    const w = len * T - 6, h = T - 10, col = kind === 'wagon' ? '#3a1d4a' : kind === 'coach' ? '#14324a' : '#4a2a10';
+    RK.rr(x, X + 3, Y + 5, w, h, 7); x.fillStyle = col; x.fill(); x.strokeStyle = '#d4af37'; x.lineWidth = 1.6; x.stroke();
+    x.fillStyle = '#111'; [X + 9, X + w - 3].forEach(cx => { x.beginPath(); x.arc(cx, Y + T - 5, 4, 0, 7); x.fill(); });
+    x.fillStyle = 'rgba(255,240,180,.9)'; x.beginPath(); x.arc(d > 0 ? X + w + 1 : X + 5, Y + T / 2, 2.6, 0, 7); x.fill();
+    for (let i = 0; i < Math.max(1, len - 1 + (len === 1 ? 0 : 1)) && i < len; i++) RK.portrait(x, RK.P[IDS[(art + i) % IDS.length]], X + T / 2 + i * T + (len === 1 ? -1 : 0), Y + T / 2, 10, '#f3d77a');
+  }
+  RK.shell({
+    game: 'crossing', title: 'ANON Crossing', h1: 'ANON CROSSING', W: G.W * T, H: G.ROWS * T, movesLabel: 'level', swipe: true, controls: ['pad'], pickLabel: 'Pick your ninja', startMsg: 'HOP TO THE SHRINES!',
+    how: '<b>Tap</b> or swipe up to hop forward, swipe or use the pad / arrow keys to hop sideways or back. Dodge the carts on the Shadow Road, ride the gold logs and pink lotus rafts across the river (lotus rafts dive under now and then), and fill all five ANON shrines to level up. Quick hops earn a time bonus, and an NFT token in a shrine is worth +200.',
+    create: o => { bg = null; return G.create(o); },
+    hud: S => `<span>⭐ ${S.score.toLocaleString()}</span><span>LVL ${S.level}</span><span>⏱ ${Math.max(0, Math.ceil(S.timer))}</span><span>${'❤️'.repeat(Math.max(0, Math.min(5, S.lives)))}</span>`,
+    result: S => ({ score: S.score, time: S.t, moves: S.level, text: `Level ${S.level} · ${S.homes} shrines filled · ${Math.round(S.t)} s` }),
+    draw(x, S, t) {
+      if (!bg) bg = backdrop(); x.drawImage(bg, 0, 0, G.W * T, G.ROWS * T);
+      // shrines
+      G.SLOTS.forEach((sx, i) => { const X = sx * T, cx = X + T / 2; x.fillStyle = '#05070a'; x.fillRect(X + 2, 3, T - 4, T - 4); x.strokeStyle = '#d4af37'; x.lineWidth = 2; x.beginPath(); x.moveTo(X + 3, T - 2); x.lineTo(X + 3, 9); x.quadraticCurveTo(cx, -2, X + T - 3, 9); x.lineTo(X + T - 3, T - 2); x.stroke();
+        if (S.filled[i]) RK.portrait(x, RK.P[IDS[(i * 3 + 1) % IDS.length]], cx, T / 2 + 2, 12, '#2bff88', '#2bff88');
+        else if (S.token && S.token.slot === i) RK.portrait(x, RK.P.royals, cx, T / 2 + 2, 10 + Math.sin(t * 6), '#ff3d9a', '#ff3d9a'); });
+      // lanes
+      for (const r in S.lanes) { const ln = S.lanes[r], Y = ln.row * T, sunk = S.sunk(ln), warn = S.sinkWarn(ln);
+        for (const it of ln.items) { const X = S.itemX(ln, it) * T;
+          for (const off of [0, -16 * T, 16 * T]) { const XX = X + off; if (XX > G.W * T || XX + it.len * T < 0) continue;
+            if (ln.t === 'road') vehicle(x, XX, Y, it.len, it.kind, it.art, ln.d, t);
+            else if (it.kind === 'log') { RK.rr(x, XX + 2, Y + 6, it.len * T - 4, T - 12, 10); const g = x.createLinearGradient(0, Y + 6, 0, Y + T - 6); g.addColorStop(0, '#e9c858'); g.addColorStop(1, '#7a5614'); x.fillStyle = g; x.fill(); x.strokeStyle = 'rgba(60,40,5,.8)'; x.lineWidth = 1; for (let k = 1; k < it.len; k++) { x.beginPath(); x.moveTo(XX + k * T, Y + 9); x.lineTo(XX + k * T, Y + T - 9); x.stroke(); } }
+            else for (let k = 0; k < it.len; k++) { const cx = XX + k * T + T / 2, cy = Y + T / 2; if (sunk) { x.strokeStyle = 'rgba(255,140,196,.3)'; x.beginPath(); x.arc(cx, cy, 9, 0, 7); x.stroke(); continue; }
+              x.globalAlpha = warn && Math.floor(t * 8) % 2 ? 0.55 : 1; x.fillStyle = '#1f6b45'; x.beginPath(); x.arc(cx, cy, 14, 0, 7); x.fill(); x.fillStyle = '#ff8cc4'; for (let q = 0; q < 6; q++) { const an = q * Math.PI / 3 + k; x.beginPath(); x.ellipse(cx + Math.cos(an) * 6, cy + Math.sin(an) * 6, 6, 3.2, an, 0, 7); x.fill(); } x.fillStyle = '#f3d77a'; x.beginPath(); x.arc(cx, cy, 3.5, 0, 7); x.fill(); x.globalAlpha = 1; } } } }
+      // ninja
+      const p = S.p; if (p.row > 0 || S.dead) { const cx = p.x * T + T / 2, cy = p.row * T + T / 2 - (S.hop > 0 ? 5 : 0);
+        if (S.dead) { x.globalAlpha = Math.max(0, S.dead); RK.text(x, S.deathWhy === 'water' ? '💦' : '💥', cx, cy + 8, 24); x.globalAlpha = 1; }
+        else { RK.portrait(x, RK.P[S.art], cx, cy, 13, '#f3d77a', 'rgba(243,215,122,.8)'); const d = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] }[p.face]; x.fillStyle = '#ff3d9a'; x.beginPath(); x.moveTo(cx + d[0] * 18, cy + d[1] * 18); x.lineTo(cx + d[0] * 13 - d[1] * 5, cy + d[1] * 13 + d[0] * 5); x.lineTo(cx + d[0] * 13 + d[1] * 5, cy + d[1] * 13 - d[0] * 5); x.fill(); } }
+      // timer bar
+      const f = Math.max(0, S.timer / S.LIFE_T); x.fillStyle = f < 0.25 ? '#ff3d9a' : '#2bff88'; x.fillRect(0, G.ROWS * T - 3, G.W * T * f, 3);
+    }
+  });
+})();
+</script>
+</body>
+</html>
