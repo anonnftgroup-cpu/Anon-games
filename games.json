@@ -747,6 +747,36 @@
         "grumpy": "Grumpy Cat"
       },
       "added": "2026-10-19"
+    },
+    {
+      "id": "pyramid-hop",
+      "name": "ANON Pyramid Hop",
+      "tagline": "Hop the cubes, flip every colour, dodge the orbs",
+      "path": "pyramid-hop/",
+      "thumb": "pyramid-hop/thumb.webp",
+      "category": "Arcade",
+      "tags": [
+        "pyramid",
+        "hop",
+        "cubes",
+        "retro",
+        "action"
+      ],
+      "status": "live",
+      "leaderboard": true,
+      "scoreLabel": "Score",
+      "order": "desc",
+      "periods": [
+        "day",
+        "all"
+      ],
+      "movesLabel": "hops",
+      "modeLabels": {
+        "easy": "Easy",
+        "medium": "Medium",
+        "hard": "Hard"
+      },
+      "added": "2026-10-19"
     }
   ]
 }

@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05070a">
+<title>ANON Pyramid Hop · ANON NFTs</title>
+<meta name="description" content="ANON Pyramid Hop: hop your ANON across a pyramid of cubes to flip every top to the target colour while dodging shadow orbs. Free, no sign-up.">
+<link rel="icon" href="../assets/logo.webp">
+<link rel="stylesheet" href="../assets/nft/kit.css">
+<link rel="stylesheet" href="../assets/play/play.css">
+<style>
+.pad{display:flex;gap:6px;justify-content:center;align-items:center;padding:4px 4px 2px;flex:none;user-select:none;-webkit-user-select:none}
+.pad button{min-width:52px;min-height:48px;border-radius:12px;border:1px solid rgba(212,175,55,.6);background:rgba(0,0,0,.55);color:var(--gold2);font-size:20px;font-weight:900;touch-action:none}
+.pad button.on{background:rgba(255,61,154,.35)}.pad .big{min-width:84px;background:linear-gradient(180deg,#ff5aab,#c41f73);color:#fff;font-size:15px}
+.dpad{display:grid;grid-template-columns:repeat(3,48px);grid-template-rows:repeat(2,40px);gap:4px}.dpad button{min-width:0;min-height:0}
+.dpad [data-k=U]{grid-column:2}.dpad [data-k=L]{grid-column:1;grid-row:2}.dpad [data-k=D]{grid-column:2;grid-row:2}.dpad [data-k=R]{grid-column:3;grid-row:2}
+@media (max-height:700px){.pad button{min-height:40px}.dpad{grid-template-rows:repeat(2,34px)}}
+</style>
+</head>
+<body>
+<header><div class="top">
+  <div class="brand"><a class="back-btn" href="../" aria-label="Back to ANON Arcade">&larr; Arcade</a><img src="../assets/logo.webp" alt=""><h1>PYRAMID HOP</h1></div>
+  <div class="top-r"><button class="icon-btn" id="lbBtn" aria-label="Leaderboard">🏆</button><button class="icon-btn" id="menuBtn" aria-label="Menu">↻</button></div>
+</div></header>
+<section class="view on" id="setup">
+  <img class="hero" id="hero" alt="ANON NFTs artwork">
+  <div class="lbl">Choose your ANON</div>
+  <div class="chars five" id="artPick"></div>
+  <div class="lbl">Difficulty</div><div class="seg" id="diff"><button data-v="easy">Easy</button><button data-v="medium">Medium</button><button data-v="hard">Hard</button></div>
+  <button class="go" id="goBtn">PLAY</button>
+  <p class="howto">Tap the diagonal buttons, swipe diagonally, or use the arrow keys (↑ up-right, ← up-left, ↓ down-left, → down-right). Every hop changes the cube top. Turn the whole pyramid to the target colour to clear the level. Later levels need two hops per cube, then flip back if you hop again! Dodge the skull orbs and the ghost chaser, and don't hop off the edge.</p>
+  <div class="nick" id="nick"></div>
+</section>
+<section class="view" id="play">
+  <div class="hud"><span id="sc"></span><span id="lv"></span><span id="lf"></span><span id="tg"></span></div>
+  <div class="stage"><canvas id="cv"></canvas><div class="tap" id="msg"></div></div>
+  <div class="pad"><button data-k="UL" aria-label="Up left">↖</button><button data-k="UR" aria-label="Up right">↗</button><button data-k="DL" aria-label="Down left">↙</button><button data-k="DR" aria-label="Down right">↘</button></div>
+  <div class="bar"><button id="againBtn">Restart</button><button id="setBtn">Change ANON</button></div>
+</section>
+<script src="../shared/leaderboard.js"></script>
+<script src="../shared/newsletter.js"></script>
+<script src="../assets/nft/kit.js"></script>
+<script src="../assets/play/play.js"></script>
+<script>
+const GAME = 'pyramid-hop', TITLE = 'ANON Pyramid Hop', PK = 'anonC2.pyramid-hop', ASPECT = 1, MOVES = 'hops';
+'use strict';
+const { $, ls, modal, post, openLB, gameOver, art, ART } = AK;
+const NAMES = Object.fromEntries(ART.map(a => [a.id, a.name.replace(/^ANON /, '')]));
+const DIFFN = { easy: 'Easy', medium: 'Medium', hard: 'Hard' };
+const pref = ls.get(PK, { art: 'anon', diff: 'medium', best: 0 });
+const show = id => document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === id));
+const setHero = () => $('#hero').src = art(pref.art).cover;
+AK.picker($('#artPick'), pref.art, id => { pref.art = id; ls.set(PK, pref); setHero(); });
+if ($('#diff')) AK.seg($('#diff'), pref.diff, v => { pref.diff = v; ls.set(PK, pref); });
+setHero(); AK.nickLine($('#nick'));
+// ---- sound: generated in the browser, nothing plays before the first tap/key ----
+let AC = null; window.__sfx = 0;
+const unlock = () => { if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } if (AC && AC.state === 'suspended') AC.resume(); };
+['pointerdown', 'keydown', 'touchstart'].forEach(t => window.addEventListener(t, unlock, { capture: true, passive: true }));
+function tone(f, d, type, vol, f2) { if (!AC || pref.mute) return; window.__sfx++; const t = AC.currentTime, o = AC.createOscillator(), g = AC.createGain();
+  o.type = type || 'square'; o.frequency.setValueAtTime(f, t); if (f2) o.frequency.exponentialRampToValueAtTime(Math.max(20, f2), t + d);
+  g.gain.setValueAtTime(vol || .08, t); g.gain.exponentialRampToValueAtTime(.0001, t + d); o.connect(g).connect(AC.destination); o.start(t); o.stop(t + d + .02); }
+function boom(d, vol) { if (!AC || pref.mute) return; window.__sfx++; const n = Math.floor(AC.sampleRate * d), b = AC.createBuffer(1, n, AC.sampleRate), c = b.getChannelData(0);
+  for (let i = 0; i < n; i++) c[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 2); const s = AC.createBufferSource(), g = AC.createGain(), fl = AC.createBiquadFilter();
+  fl.type = 'lowpass'; fl.frequency.value = 900; s.buffer = b; g.gain.value = vol || .25; s.connect(fl).connect(g).connect(AC.destination); s.start(); }
+// ---- shared loop, pause when hidden, game over ----
+let C = null, S = null;
+const imgs = {}; const IM = id => imgs[id];
+ART.forEach(a => { AP.img(a.img).then(i => imgs[a.id] = i); AP.img(a.cover).then(i => imgs['c-' + a.id] = i); });
+function ring(x, im, cx, cy, r, col) { x.save(); x.beginPath(); x.arc(cx, cy, r, 0, 7); x.closePath(); x.fillStyle = '#111'; x.fill(); x.clip(); if (im) AP.cover(x, im, cx - r, cy - r, r * 2, r * 2); x.restore();
+  x.lineWidth = Math.max(1.5, r * .16); x.strokeStyle = col || '#f3d77a'; x.beginPath(); x.arc(cx, cy, r, 0, 7); x.stroke(); }
+function bgArt(x, id, a) { const im = IM('c-' + id); if (!im) return; x.globalAlpha = a || .22; const k = Math.max(C.w / im.width, C.h / im.height); x.drawImage(im, (C.w - im.width * k) / 2, (C.h - im.height * k) / 2, im.width * k, im.height * k); x.globalAlpha = 1; }
+const L = AP.loop(dt => { if (S && !S.over && !S.paused) step(dt); }, () => draw());
+let paused = false;
+function pause() { if (!S || S.over || S.paused) return; S.paused = true; $('#msg').textContent = 'Paused\nTap to resume'; }
+function resume() { if (S && S.paused) { S.paused = false; $('#msg').textContent = ''; } }
+document.addEventListener('visibilitychange', () => { if (document.hidden) pause(); });
+$('#msg').parentElement.addEventListener('pointerdown', () => { if (S && S.paused) resume(); }, true);
+async function start() { show('play'); if (!C) C = AP.canvas($('#cv'), ASPECT, () => draw()); else C.fit(); $('#msg').textContent = ''; newRun(); L.start(); }
+function end(score, secs, moves, mode, title, text) {
+  if (!S || S.over) return; S.over = true; draw(); setTimeout(() => L.stop(), 50); if (navigator.vibrate) navigator.vibrate([40, 30, 70]);
+  const a = art(S.art || pref.art), pb = score > (pref.best || 0); if (pb) { pref.best = score; ls.set(PK, pref); }
+  S.final = { score, secs, moves, mode };
+  setTimeout(() => { modal({ art: a.img, title: pb && score > 0 ? 'New best! 🏆' : title, text, lb: score > 0,
+    buttons: [['PLAY AGAIN', () => start()], ['Leaderboard', () => lb(), 1], ['Change ANON', () => show('setup'), 1]] });
+    if (score > 0) post(GAME, score, Math.max(1, Math.round(secs)), moves, mode); }, 500);
+  gameOver();
+}
+const lb = () => openLB(GAME, TITLE, MODES, MOVES);
+$('#goBtn').onclick = () => start(); $('#againBtn').onclick = () => { if (S) S.over = true; start(); };
+$('#setBtn').onclick = $('#menuBtn').onclick = () => { if (S) S.over = true; L.stop(); show('setup'); };
+$('#lbBtn').onclick = lb;
+// hold-buttons for on-screen pads: data-k = key name
+const held = new Set(); window.__held = held;
+document.querySelectorAll('.pad [data-k]').forEach(b => { const k = b.dataset.k;
+  b.addEventListener('pointerdown', e => { e.preventDefault(); held.add(k); b.classList.add('on'); if (window.onPad) onPad(k); });
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach(t => b.addEventListener(t, () => { held.delete(k); b.classList.remove('on'); })); });
+const KM = { ArrowLeft: 'L', a: 'L', A: 'L', ArrowRight: 'R', d: 'R', D: 'R', ArrowUp: 'U', w: 'U', W: 'U', ArrowDown: 'D', s: 'D', S: 'D', ' ': 'B', Enter: 'B', x: 'B', z: 'B' };
+const playing = () => $('#play').classList.contains('on') && !document.querySelector('.modal.show,.alb-ov,.anw-ov');
+window.addEventListener('keydown', e => { const k = KM[e.key]; if (!k || !playing()) return; e.preventDefault(); if (S && S.paused) resume(); if (!held.has(k) && window.onPad) onPad(k); held.add(k); });
+window.addEventListener('keyup', e => { const k = KM[e.key]; if (k) held.delete(k); });
+
+const MODES = {"easy": "Easy", "medium": "Medium", "hard": "Hard"};
+const N = 7, MV = { UL: [-1, -1], UR: [-1, 0], DL: [1, 0], DR: [1, 1] }, DIFF = { easy: { orb: 3.2, ch: 1.15, sp: .62 }, medium: { orb: 2.4, ch: .9, sp: .5 }, hard: { orb: 1.7, ch: .66, sp: .4 } };
+const TOPS = [['#3a2f5a', '#f3d77a'], ['#3a2f5a', '#ff3d9a', '#f3d77a'], ['#3a2f5a', '#2bff88', '#f3d77a'], ['#1d3b4a', '#ff3d9a', '#2bff88']];
+function newRun() { S = { art: pref.art, diff: pref.diff, score: 0, level: 1, lives: 3, t: 0, hops: 0 }; level(); }
+function level() { const lv = S.level, mode = lv === 1 ? 0 : lv === 2 ? 1 : lv % 2 ? 2 : 3;
+  Object.assign(S, { mode, cols: TOPS[mode], c: Array.from({ length: N }, (_, r) => Array(r + 1).fill(0)), p: hopper(0, 0), en: [], next: 2.5, won: 0, d: DIFF[S.diff], coin: null, coinT: 6 });
+  $('#msg').textContent = 'Level ' + lv + (mode ? mode === 1 ? '\n2 hops per cube' : '\nCareful: hops flip back!' : ''); setTimeout(() => { if (S && /^Level/.test($('#msg').textContent)) $('#msg').textContent = ''; }, 1500); hud(); }
+const hopper = (r, c) => ({ r, c, fr: r, fc: c, k: 1, cd: 0, fall: 0 });
+const target = () => S.cols.length - 1;
+const hud = () => { $('#sc').textContent = '⭐ ' + S.score; $('#lv').textContent = 'Lv ' + S.level; $('#lf').textContent = '❤️ ' + S.lives; let left = 0; S.c.forEach(r => r.forEach(v => left += v !== target())); $('#tg').textContent = '🎯 ' + left; };
+const on = (r, c) => r >= 0 && r < N && c >= 0 && c <= r;
+function onPad(k) { k = { U: 'UR', L: 'UL', D: 'DL', R: 'DR' }[k] || k; if (MV[k]) hop(k); }
+AP.swipe($('#cv'), (d, e) => {}); // keep default swipe off; diagonal swipe below
+let sw = null; $('#cv').addEventListener('pointerdown', e => sw = { x: e.clientX, y: e.clientY }); $('#cv').addEventListener('pointerup', e => { if (!sw) return; const dx = e.clientX - sw.x, dy = e.clientY - sw.y; sw = null; if (Math.hypot(dx, dy) < 18) return; hop(dy < 0 ? (dx < 0 ? 'UL' : 'UR') : (dx < 0 ? 'DL' : 'DR')); });
+function hop(k) { const p = S && S.p; if (!p || S.over || S.paused || S.won || p.fall || p.k < 1 || p.dead) return false; const [dr, dc] = MV[k]; p.fr = p.r; p.fc = p.c; p.r += dr; p.c += dc; p.k = 0; S.hops++; tone(300 + (N - p.r) * 60, .07, 'square', .05); return true; }
+function land() { const p = S.p; if (!on(p.r, p.c)) { p.fall = 1; tone(500, .6, 'sine', .08, 80); return; }
+  let v = S.c[p.r][p.c], t = target();
+  if (S.mode === 3 || S.mode === 2 && S.level > 3) { if (v === t) { v = Math.max(0, t - 1); S.c[p.r][p.c] = v; } else { S.c[p.r][p.c] = Math.min(t, v + 1); if (S.c[p.r][p.c] === t) S.score += 25; } }
+  else if (v < t) { S.c[p.r][p.c] = v + 1; if (v + 1 === t) S.score += 25; else S.score += 10; }
+  if (S.coin && S.coin.r === p.r && S.coin.c === p.c) { S.score += 300; S.coin = null; tone(990, .15, 'triangle', .07, 1500); }
+  hud(); if (S.c.every(r => r.every(v => v === target()))) { S.won = 2; S.score += 1000; $('#msg').textContent = 'Pyramid flipped! +1000'; [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => tone(f, .18, 'square', .07), i * 120)); hud(); } }
+function step(dt) {
+  S.t += dt; const p = S.p, d = S.d;
+  if (S.won) { S.won -= dt; if (S.won <= 0) { S.level++; level(); } return; }
+  if (p.dead) { p.dead -= dt; if (p.dead <= 0) { if (S.lives <= 0) return finish(); S.p = hopper(0, 0); S.en = []; S.next = 2; } return; }
+  if (p.fall) { p.fall += dt; if (p.fall > 1.4) die(true); return; }
+  if (p.k < 1) { p.k = Math.min(1, p.k + dt / .26); if (p.k >= 1) land(); }
+  else { const k = ['UL', 'UR', 'DL', 'DR'].find(k => held.has(k)); if (k) hop(k); }
+  // enemies: skull orbs drop from the top and bounce down; one ghost chaser from level 2
+  S.next -= dt; if (S.next <= 0) { S.next = d.orb * (.7 + AP.rnd() * .6) / (1 + S.level * .06); const chaser = S.level >= 2 && !S.en.some(e => e.chase) && AP.rnd() < .35;
+    S.en.push(Object.assign(hopper(1, AP.ri(0, 1)), { k: 0, fr: -1, fc: 0, t: 0, chase: chaser, id: chaser ? 'ghost' : 'skulls', hatch: chaser ? 3 : 0 })); }
+  for (const e of S.en) { if (e.k < 1) { e.k = Math.min(1, e.k + dt / .3); continue; } e.t += dt; const per = e.chase ? d.ch : d.sp; if (e.t < per) continue; e.t = 0;
+    let mv; if (e.chase && e.r >= 3) { const opts = Object.entries(MV).filter(([k, [dr, dc]]) => on(e.r + dr, e.c + dc)); opts.sort((a, b) => Math.hypot(e.r + a[1][0] - p.r, e.c + a[1][1] - p.c - (e.r + a[1][0] - p.r) / 2) - Math.hypot(e.r + b[1][0] - p.r, e.c + b[1][1] - p.c - (e.r + b[1][0] - p.r) / 2)); mv = opts[0][1]; }
+    else mv = AP.rnd() < .5 ? MV.DL : MV.DR;
+    e.fr = e.r; e.fc = e.c; e.r += mv[0]; e.c += mv[1]; e.k = 0; if (!on(e.r, e.c)) e.gone = true; }
+  S.en = S.en.filter(e => !e.gone || e.k < 1);
+  if (p.k >= 1 && S.en.some(e => e.k >= .6 && !e.gone && e.r === p.r && e.c === p.c)) die(false);
+  S.coinT -= dt; if (!S.coin && S.coinT <= 0) { const r = AP.ri(2, N - 1); S.coin = { r, c: AP.ri(0, r), id: AP.pick(['aces', 'royals', 'eyes', 'grumpy']), t: 6 }; S.coinT = 12; } if (S.coin && (S.coin.t -= dt) <= 0) S.coin = null;
+}
+function die(fell) { S.lives--; S.p.dead = 1.2; S.p.fall = 0; boom(.4, .25); tone(220, .5, 'sawtooth', .07, 60); hud(); }
+function finish() { end(S.score, S.t, S.hops, S.diff, 'Caught! 💀', `<b>${art(S.art).name}</b> reached <b>level ${S.level}</b> with ${S.hops} hops.<br>Score <b>${S.score}</b>`); }
+function draw() {
+  if (!C) return; const x = C.x, W = C.w, H = C.h; x.fillStyle = '#05070a'; x.fillRect(0, 0, W, H); if (!S) return; bgArt(x, 'eyes', .2);
+  const s = Math.min(W / (N + 1), H / (N * .75 + 1.6)), top = s * .9, cx = W / 2;
+  const pos = (r, c) => [cx + (c - r / 2) * s, top + r * s * .75];
+  for (let r = 0; r < N; r++) for (let c = 0; c <= r; c++) { const [X, Y] = pos(r, c), h = s * .5, w = s / 2;
+    x.fillStyle = '#2a1030'; x.beginPath(); x.moveTo(X - w, Y); x.lineTo(X, Y + h * .5); x.lineTo(X, Y + h * 1.5); x.lineTo(X - w, Y + h); x.fill();
+    x.fillStyle = '#14081a'; x.beginPath(); x.moveTo(X + w, Y); x.lineTo(X, Y + h * .5); x.lineTo(X, Y + h * 1.5); x.lineTo(X + w, Y + h); x.fill();
+    x.fillStyle = S.cols[S.c[r][c]]; x.beginPath(); x.moveTo(X, Y - h * .5); x.lineTo(X + w, Y); x.lineTo(X, Y + h * .5); x.lineTo(X - w, Y); x.closePath(); x.fill(); x.strokeStyle = 'rgba(212,175,55,.7)'; x.lineWidth = 1.2; x.stroke(); }
+  // target swatch
+  x.fillStyle = S.cols[target()]; x.fillRect(8, 8, 18, 18); x.strokeStyle = '#fff'; x.strokeRect(8, 8, 18, 18); x.fillStyle = '#f3d77a'; x.font = '700 12px system-ui'; x.textAlign = 'left'; x.fillText('target', 30, 21);
+  const at = (o, lift) => { const a = on(o.fr, o.fc) || o.fr < 0 ? pos(Math.max(0, o.fr), o.fr < 0 ? o.c : o.fc) : pos(o.r, o.c), b = pos(o.r, o.c); if (o.fr < 0) a[1] -= s * 2; const k = o.k; return [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k - Math.sin(k * Math.PI) * s * .45 - lift]; };
+  if (S.coin) { const [X, Y] = pos(S.coin.r, S.coin.c); ring(x, IM(S.coin.id), X, Y - s * .25, s * .2, '#ff3d9a'); }
+  for (const e of S.en) { const [X, Y] = at(e, s * .3); if (e.chase) { x.save(); x.shadowColor = '#7a5cff'; x.shadowBlur = 14; ring(x, IM('ghost'), X, Y, s * .27, '#7a5cff'); x.restore(); } else ring(x, IM('skulls'), X, Y, s * .22, '#ff3d3d'); }
+  const p = S.p; if (!(p.dead && Math.floor(p.dead * 10) % 2)) { let [X, Y] = at(p, s * .32); if (p.fall) Y += p.fall * p.fall * H * .5; x.save(); x.shadowColor = '#ff3d9a'; x.shadowBlur = 12; ring(x, IM(S.art), X, Y, s * .28); x.restore(); }
+}
+window.G = { state: () => S, step, hop, land, level, C: () => C, L };
+
+</script>
+</body>
+</html>
