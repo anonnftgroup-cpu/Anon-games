@@ -240,6 +240,64 @@
       "added": "2026-10-19"
     },
     {
+      "id": "jigsaw",
+      "name": "ANON Jigsaw",
+      "tagline": "Piece together ANON NFT artworks",
+      "path": "jigsaw/",
+      "thumb": "jigsaw/thumb.webp",
+      "category": "Puzzle",
+      "tags": [
+        "jigsaw",
+        "puzzle",
+        "art",
+        "pieces"
+      ],
+      "status": "live",
+      "leaderboard": true,
+      "scoreLabel": "Score",
+      "order": "desc",
+      "periods": [
+        "day",
+        "all"
+      ],
+      "movesLabel": "drags",
+      "modeLabels": {
+        "p12": "12 pieces",
+        "p24": "24 pieces",
+        "p48": "48 pieces"
+      },
+      "added": "2026-10-19"
+    },
+    {
+      "id": "slide-puzzle",
+      "name": "ANON Slide Puzzle",
+      "tagline": "Slide the tiles to rebuild an ANON NFT",
+      "path": "slide-puzzle/",
+      "thumb": "slide-puzzle/thumb.webp",
+      "category": "Puzzle",
+      "tags": [
+        "sliding puzzle",
+        "15 puzzle",
+        "tiles",
+        "art"
+      ],
+      "status": "live",
+      "leaderboard": true,
+      "scoreLabel": "Score",
+      "order": "desc",
+      "periods": [
+        "day",
+        "all"
+      ],
+      "movesLabel": "moves",
+      "modeLabels": {
+        "s3": "3 × 3",
+        "s4": "4 × 4",
+        "s5": "5 × 5"
+      },
+      "added": "2026-10-19"
+    },
+    {
       "id": "ninja-memory",
       "name": "Ninja Memory",
       "tagline": "Find the hidden ANON pairs",

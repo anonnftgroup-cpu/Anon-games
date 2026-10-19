@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05070a">
+<title>ANON Jigsaw · ANON NFTs</title>
+<meta name="description" content="ANON Jigsaw: piece together ANON NFTs artwork. Free, no sign-up.">
+<link rel="icon" href="../assets/logo.webp">
+<link rel="stylesheet" href="../assets/nft/kit.css">
+<link rel="stylesheet" href="../assets/play/play.css">
+</head>
+<body>
+<header><div class="top">
+  <div class="brand"><a class="back-btn" href="../" aria-label="Back to ANON Arcade">&larr; Arcade</a><img src="../assets/logo.webp" alt=""><h1>ANON JIGSAW</h1></div>
+  <div class="top-r"><button class="icon-btn" id="lbBtn" aria-label="Leaderboard">🏆</button><button class="icon-btn" id="menuBtn" aria-label="New game">↻</button></div>
+</div></header>
+<section class="view on" id="setup">
+  <img class="hero" id="hero" alt="ANON NFTs artwork">
+  <div class="lbl">Pieces</div>
+  <div class="seg" id="diffSeg"><button data-v="p12">12</button><button data-v="p24">24</button><button data-v="p48">48</button></div>
+  <div class="lbl">Choose your ANON artwork</div>
+  <div class="chars five" id="artPick"></div>
+  <button class="go" id="goBtn">PLAY</button>
+  <p class="howto">Drag the pieces onto the board. Pieces snap into place and lock together when they fit. The faster you finish, the higher you score.</p>
+  <div class="nick" id="nick"></div>
+</section>
+<section class="view" id="play">
+  <div class="hud"><span id="left">🧩 0</span><span id="clock">⏱ 0</span></div>
+  <div class="stage" id="stage"><canvas id="cv"></canvas></div>
+  <div class="bar"><button id="peekBtn">👁 Peek</button><button id="newBtn">New puzzle</button><button id="setBtn">Settings</button></div>
+</section>
+<script src="../shared/leaderboard.js"></script>
+<script src="../shared/newsletter.js"></script>
+<script src="../assets/nft/kit.js"></script>
+<script src="../assets/play/play.js"></script>
+<script>
+'use strict';
+const { $, ls, toast, modal, post, openLB, gameOver, art } = AK;
+const GAME = 'jigsaw', TITLE = 'ANON Jigsaw';
+const LV = { p12: { c: 4, r: 3, base: 1000 }, p24: { c: 6, r: 4, base: 3000 }, p48: { c: 8, r: 6, base: 6000 } };
+const NAMES = { p12: '12 pieces', p24: '24 pieces', p48: '48 pieces' };
+const minTime = d => Math.ceil(LV[d].c * LV[d].r * 1.5);
+const score = (d, t) => Math.max(100, LV[d].base - t);
+const pref = ls.get('anonJig.pref', { diff: 'p12', art: 'anon' });
+let S = null, tick = 0, peek = false;
+const show = id => document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === id));
+const setHero = () => $('#hero').src = art(pref.art).cover;
+AK.seg($('#diffSeg'), pref.diff, v => { pref.diff = v; ls.set('anonJig.pref', pref); });
+AK.picker($('#artPick'), pref.art, id => { pref.art = id; ls.set('anonJig.pref', pref); setHero(); });
+setHero(); AK.nickLine($('#nick'));
+let C = null; // canvas
+const L = {}; // layout
+function layout() {
+  if (!S) return; const W = C.w, H = C.h;
+  const bw = Math.min(W - 16, (H * .5) * 4 / 3); L.bw = bw; L.bh = bw * 3 / 4; L.bx = (W - bw) / 2; L.by = 8;
+  L.pw = bw / S.c; L.ph = L.bh / S.r; L.m = Math.min(L.pw, L.ph) * .26; render(); draw();
+}
+// edges: hor[r][c] = tab sign on the bottom edge of (r,c); ver[r][c] = tab sign on the right edge
+function newGame() {
+  const d = pref.diff, l = LV[d], n = l.c * l.r;
+  S = { diff: d, art: pref.art, c: l.c, r: l.r, n, p: [], start: 0, end: 0, moves: 0, over: false, im: null, hor: [], ver: [], z: [] };
+  for (let r = 0; r < l.r; r++) { S.hor.push([]); S.ver.push([]); for (let c = 0; c < l.c; c++) { S.hor[r].push(AP.rnd() < .5 ? 1 : -1); S.ver[r].push(AP.rnd() < .5 ? 1 : -1); } }
+  for (let i = 0; i < n; i++) S.p.push({ i, c: i % l.c, r: (i / l.c) | 0, u: 0, v: 0, g: i, lock: false, cv: null });
+  show('play'); clearInterval(tick); tick = setInterval(hud, 300);
+  if (!C) C = AP.canvas($('#cv'), 0, layout); else C.fit();
+  layout(); scatter(); hud(); draw();
+  AP.img(art(pref.art).cover).then(im => { if (S && S.art === pref.art) { S.im = im; layout(); } });
+}
+function scatter() { // random spots in the tray below the board (piece units)
+  const trayTop = S.r + .3, trayH = Math.max(.3, (C.h - L.by) / L.ph - trayTop - 1.05), maxU = Math.max(0, (C.w - L.bx) / L.pw - 1.05), minU = Math.min(0, -L.bx / L.pw);
+  const order = AP.shuffle(S.p.slice());
+  order.forEach(p => { p.u = minU + AP.rnd() * (maxU - minU); p.v = trayTop + AP.rnd() * trayH; });
+  S.z = order.map(p => p.i);
+}
+const edge = (p, side) => { // tab sign of a side: 0 flat, 1 out, -1 in
+  if (side === 0) return p.r === 0 ? 0 : -S.hor[p.r - 1][p.c];
+  if (side === 2) return p.r === S.r - 1 ? 0 : S.hor[p.r][p.c];
+  if (side === 1) return p.c === S.c - 1 ? 0 : S.ver[p.r][p.c];
+  return p.c === 0 ? 0 : -S.ver[p.r][p.c - 1];
+};
+function path(x, p, w, h) { // jigsaw outline, origin = piece core top-left
+  const t = Math.min(w, h) * .22;
+  const side = (x0, y0, x1, y1, s, nx, ny) => { // straight with a round tab of sign s along normal (nx,ny)
+    if (!s) { x.lineTo(x1, y1); return; }
+    const mx = (x0 + x1) / 2, my = (y0 + y1) / 2, dx = (x1 - x0), dy = (y1 - y0), L2 = Math.hypot(dx, dy), ux = dx / L2, uy = dy / L2, k = t * .9;
+    x.lineTo(mx - ux * k, my - uy * k);
+    x.bezierCurveTo(mx - ux * k * 1.6 + nx * s * t * 1.3, my - uy * k * 1.6 + ny * s * t * 1.3, mx + ux * k * 1.6 + nx * s * t * 1.3, my + uy * k * 1.6 + ny * s * t * 1.3, mx + ux * k, my + uy * k);
+    x.lineTo(x1, y1);
+  };
+  x.beginPath(); x.moveTo(0, 0);
+  side(0, 0, w, 0, edge(p, 0), 0, -1); side(w, 0, w, h, edge(p, 1), 1, 0); side(w, h, 0, h, edge(p, 2), 0, 1); side(0, h, 0, 0, edge(p, 3), -1, 0); x.closePath();
+}
+function render() { // pre-render every piece once per layout
+  if (!S || !S.im || !L.pw) return; const d = C.dpr, m = L.m, w = L.pw, h = L.ph, im = S.im;
+  const sw = im.width, sh = im.width * .75, sy0 = (im.height - sh) / 2;
+  S.p.forEach(p => {
+    const cv = p.cv || document.createElement('canvas'); cv.width = Math.ceil((w + 2 * m) * d); cv.height = Math.ceil((h + 2 * m) * d);
+    const x = cv.getContext('2d'); x.setTransform(d, 0, 0, d, m * d, m * d); x.clearRect(-m, -m, w + 2 * m, h + 2 * m);
+    path(x, p, w, h); x.save(); x.clip();
+    const kx = sw / L.bw, ky = sh / L.bh; x.drawImage(im, (p.c * w - m) * kx, sy0 + (p.r * h - m) * ky, (w + 2 * m) * kx, (h + 2 * m) * ky, -m, -m, w + 2 * m, h + 2 * m);
+    x.restore(); path(x, p, w, h); x.strokeStyle = 'rgba(243,215,122,.85)'; x.lineWidth = 1.2; x.stroke(); p.cv = cv;
+  });
+}
+const px = p => ({ x: L.bx + p.u * L.pw, y: L.by + p.v * L.ph });
+function draw() {
+  if (!C || !S) return; const x = C.x;
+  x.clearRect(0, 0, C.w, C.h); x.fillStyle = 'rgba(0,0,0,.35)'; x.fillRect(0, 0, C.w, C.h);
+  x.fillStyle = 'rgba(10,16,12,.9)'; x.fillRect(L.bx, L.by, L.bw, L.bh);
+  if (S.im) { x.globalAlpha = peek ? .85 : .16; const sh = S.im.width * .75; x.drawImage(S.im, 0, (S.im.height - sh) / 2, S.im.width, sh, L.bx, L.by, L.bw, L.bh); x.globalAlpha = 1; }
+  x.strokeStyle = '#d4af37'; x.lineWidth = 2; x.strokeRect(L.bx - 1, L.by - 1, L.bw + 2, L.bh + 2);
+  const locked = S.p.filter(p => p.lock), loose = S.z.map(i => S.p[i]).filter(p => !p.lock);
+  for (const p of locked.concat(loose)) { if (!p.cv) continue; const q = px(p); x.drawImage(p.cv, q.x - L.m, q.y - L.m, L.pw + 2 * L.m, L.ph + 2 * L.m); }
+  if (S.over) { x.strokeStyle = '#ff3d9a'; x.lineWidth = 3; x.strokeRect(L.bx - 2, L.by - 2, L.bw + 4, L.bh + 4); }
+}
+function hud() { if (!S) return; $('#left').textContent = '🧩 ' + S.p.filter(p => p.lock).length + '/' + S.n; $('#clock').textContent = '⏱ ' + secs(); }
+const secs = () => S.start ? Math.ceil(((S.end || Date.now()) - S.start) / 1000) : 0;
+// dragging
+let drag = null;
+const grp = g => S.p.filter(p => p.g === g);
+function hit(X, Y) {
+  for (let k = S.z.length - 1; k >= 0; k--) { const p = S.p[S.z[k]]; if (p.lock) continue; const q = px(p), m = L.m * .6;
+    if (X >= q.x - m && X <= q.x + L.pw + m && Y >= q.y - m && Y <= q.y + L.ph + m) return p; }
+  return null;
+}
+const cvEl = $('#cv');
+const pos = e => { const r = cvEl.getBoundingClientRect(); return { X: e.clientX - r.left, Y: e.clientY - r.top }; };
+cvEl.addEventListener('pointerdown', e => {
+  if (!S || S.over) return; const { X, Y } = pos(e), p = hit(X, Y); if (!p) return;
+  if (!S.start) S.start = Date.now();
+  const g = grp(p.g); const ids = new Set(g.map(q => q.i)); S.z = S.z.filter(i => !ids.has(i)).concat([...ids]);
+  drag = { g: p.g, X, Y }; cvEl.setPointerCapture(e.pointerId); draw();
+});
+cvEl.addEventListener('pointermove', e => { if (!drag) return; const { X, Y } = pos(e); const du = (X - drag.X) / L.pw, dv = (Y - drag.Y) / L.ph; drag.X = X; drag.Y = Y;
+  const maxV = (C.h - L.by) / L.ph - .6, maxU = (C.w - L.bx) / L.pw - .6, minU = -L.bx / L.pw - .4, minV = -L.by / L.ph;
+  grp(drag.g).forEach(p => { p.u = Math.min(maxU, Math.max(minU, p.u + du)); p.v = Math.min(maxV, Math.max(minV, p.v + dv)); }); draw(); });
+const endDrag = () => { if (!drag) return; const g = drag.g; drag = null; S.moves++; drop(g); };
+cvEl.addEventListener('pointerup', endDrag); cvEl.addEventListener('pointercancel', endDrag);
+function drop(g) {
+  const T = .28; let ps = grp(g);
+  // join neighbours that sit in the right relative spot
+  const join = () => { for (const p of ps) for (const [dc, dr] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      const c = p.c + dc, r = p.r + dr; if (c < 0 || r < 0 || c >= S.c || r >= S.r) continue; const q = S.p[r * S.c + c]; if (q.g === g || p.lock) continue;
+      const eu = p.u + dc, ev = p.v + dr;
+      if (Math.abs(q.u - eu) < T && Math.abs(q.v - ev) < T) {
+        if (q.lock) { ps.forEach(z => { z.u = z.c; z.v = z.r; z.lock = true; }); return false; }
+        else { const su = eu - q.u, sv = ev - q.v; grp(q.g).forEach(z => { z.u += su; z.v += sv; z.g = g; }); }
+        ps = grp(g); return true; } } return false; };
+  for (let k = 0; k < 64 && join(); k++);
+  // snap to the board
+  const p0 = ps[0]; if (Math.abs(p0.u - p0.c) < T && Math.abs(p0.v - p0.r) < T || ps.some(p => p.lock)) ps.forEach(p => { p.u = p.c; p.v = p.r; p.lock = true; });
+  if (ps.some(p => p.lock)) { if (navigator.vibrate) navigator.vibrate(12); }
+  draw(); hud(); check();
+}
+function place(i) { const p = S.p[i]; if (!S.start) S.start = Date.now(); p.u = p.c; p.v = p.r; drop(p.g); }
+function check() {
+  if (S.over || S.p.some(p => !p.lock)) return;
+  S.over = true; S.end = Date.now(); clearInterval(tick); hud(); draw();
+  const t = Math.max(1, secs()), ok = t >= minTime(S.diff), sc = score(S.diff, t), a = art(S.art);
+  setTimeout(() => { modal({ art: a.cover, title: 'Puzzle complete! 🧩', text: `${NAMES[S.diff]} of <b>${a.name}</b> in <b>${t}s</b>.`, lb: true,
+    buttons: [['PLAY AGAIN', () => newGame()], ['Leaderboard', () => openLB(GAME, TITLE, NAMES, 'drags'), 1], ['Settings', () => show('setup'), 1]] });
+    if (ok) post(GAME, sc, t, Math.max(S.moves, 1), S.diff); else { const b = $('#lbMsg'); if (b) b.textContent = 'Too quick to verify, so this time is not posted.'; } }, 900);
+  gameOver();
+}
+$('#peekBtn').onclick = () => { peek = !peek; $('#peekBtn').classList.toggle('on', peek); draw(); };
+$('#goBtn').onclick = () => newGame(); $('#newBtn').onclick = () => newGame();
+$('#setBtn').onclick = $('#menuBtn').onclick = () => { clearInterval(tick); show('setup'); };
+$('#lbBtn').onclick = () => openLB(GAME, TITLE, NAMES, 'drags');
+window.G = { state: () => S, newGame, place, drop, redraw: draw, score, minTime, LV, L, setDiff: d => { pref.diff = d; }, px };
+</script>
+</body>
+</html>

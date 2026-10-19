@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05070a">
+<title>ANON Slide Puzzle · ANON NFTs</title>
+<meta name="description" content="ANON Slide Puzzle: slide the tiles to rebuild ANON NFTs artwork. Free, no sign-up.">
+<link rel="icon" href="../assets/logo.webp">
+<link rel="stylesheet" href="../assets/nft/kit.css">
+<link rel="stylesheet" href="../assets/play/play.css">
+<style>
+.board{position:relative;margin:auto;border:2px solid var(--gold);border-radius:10px;box-shadow:0 0 20px rgba(255,61,154,.25);background:rgba(8,12,10,.9);touch-action:none;overflow:hidden}
+.tl{position:absolute;border-radius:6px;background-repeat:no-repeat;box-shadow:inset 0 0 0 1px rgba(243,215,122,.6),0 2px 6px rgba(0,0,0,.5);transition:transform .11s ease-out;cursor:pointer}
+.tl b{position:absolute;left:3px;top:2px;font-size:12px;color:#fff;text-shadow:0 0 3px #000,0 0 3px #000;display:none}
+.nums .tl b{display:block}
+.board.won .tl{box-shadow:none;border-radius:0}
+</style>
+</head>
+<body>
+<header><div class="top">
+  <div class="brand"><a class="back-btn" href="../" aria-label="Back to ANON Arcade">&larr; Arcade</a><img src="../assets/logo.webp" alt=""><h1>ANON SLIDE PUZZLE</h1></div>
+  <div class="top-r"><button class="icon-btn" id="lbBtn" aria-label="Leaderboard">🏆</button><button class="icon-btn" id="menuBtn" aria-label="New game">↻</button></div>
+</div></header>
+<section class="view on" id="setup">
+  <img class="hero" id="hero" alt="ANON NFTs artwork">
+  <div class="lbl">Grid</div>
+  <div class="seg" id="diffSeg"><button data-v="s3">3 × 3</button><button data-v="s4">4 × 4</button><button data-v="s5">5 × 5</button></div>
+  <div class="lbl">Choose your ANON artwork</div>
+  <div class="chars five" id="artPick"></div>
+  <button class="go" id="goBtn">PLAY</button>
+  <p class="howto">Tap a tile next to the gap (or any tile in its row or column) to slide it. Arrow keys work too. Fewer moves and less time score higher. Every puzzle can be solved.</p>
+  <div class="nick" id="nick"></div>
+</section>
+<section class="view" id="play">
+  <div class="hud"><span id="mv">↔ 0</span><span id="clock">⏱ 0</span></div>
+  <div class="stage" id="stage"><div class="board" id="board"></div></div>
+  <div class="bar"><button id="numBtn"># Numbers</button><button id="peekBtn">👁 Peek</button><button id="newBtn">Shuffle</button><button id="setBtn">Settings</button></div>
+</section>
+<script src="../shared/leaderboard.js"></script>
+<script src="../shared/newsletter.js"></script>
+<script src="../assets/nft/kit.js"></script>
+<script src="../assets/play/play.js"></script>
+<script>
+'use strict';
+const { $, el, ls, toast, modal, post, openLB, gameOver, art } = AK;
+const GAME = 'slide-puzzle', TITLE = 'ANON Slide Puzzle';
+const LV = { s3: { n: 3, base: 1000, minMoves: 12 }, s4: { n: 4, base: 3000, minMoves: 30 }, s5: { n: 5, base: 6000, minMoves: 60 } };
+const NAMES = { s3: '3 × 3', s4: '4 × 4', s5: '5 × 5' };
+const score = (d, moves, t) => Math.max(10, LV[d].base - 2 * moves - t);
+const pref = ls.get('anonSlide.pref', { diff: 's3', art: 'anon', nums: false });
+let S = null, tick = 0;
+const show = id => document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === id));
+const setHero = () => $('#hero').src = art(pref.art).cover;
+AK.seg($('#diffSeg'), pref.diff, v => { pref.diff = v; ls.set('anonSlide.pref', pref); });
+AK.picker($('#artPick'), pref.art, id => { pref.art = id; ls.set('anonSlide.pref', pref); setHero(); });
+setHero(); AK.nickLine($('#nick'));
+const inv = a => { let k = 0; const b = a.filter(v => v !== 0); for (let i = 0; i < b.length; i++) for (let j = i + 1; j < b.length; j++) if (b[i] > b[j]) k++; return k; };
+const manh = (a, n) => a.reduce((s, v, i) => v ? s + Math.abs(i % n - (v - 1) % n) + Math.abs(((i / n) | 0) - (((v - 1) / n) | 0)) : s, 0);
+// solvable shuffle: gap bottom-right, even inversions, far enough from solved
+function shuffled(n) {
+  const min = LV['s' + n].minMoves;
+  for (;;) { const a = AP.shuffle([...Array(n * n - 1)].map((_, i) => i + 1)); if (inv(a) % 2) [a[0], a[1]] = [a[1], a[0]]; a.push(0); if (manh(a, n) >= min) return a; }
+}
+const solvable = (a, n) => { const i = inv(a), row = n - ((a.indexOf(0) / n) | 0); return n % 2 ? i % 2 === 0 : (i + row) % 2 === 1; };
+function newGame(tiles) {
+  const d = pref.diff, n = LV[d].n; S = { diff: d, n, art: pref.art, a: tiles || shuffled(n), moves: 0, start: 0, end: 0, over: false };
+  show('play'); size(); build(); clearInterval(tick); tick = setInterval(hud, 300); hud();
+}
+let T = 0;
+function size() { const st = $('#stage'); T = Math.floor(Math.min(st.clientWidth - 16, st.clientHeight - 16, 520) / S.n) ; const b = $('#board'); b.style.width = b.style.height = (T * S.n + 4) + 'px'; }
+function build() {
+  const b = $('#board'); b.innerHTML = ''; b.className = 'board' + (pref.nums ? ' nums' : ''); const src = art(S.art).cover;
+  for (let v = 1; v < S.n * S.n; v++) { const t = el('div', 'tl'); t.dataset.v = v; const c = (v - 1) % S.n, r = ((v - 1) / S.n) | 0;
+    t.style.width = t.style.height = (T - 2) + 'px'; t.style.backgroundImage = 'url(' + src + ')'; t.style.backgroundSize = (T * S.n) + 'px';
+    t.style.backgroundPosition = `${-c * T}px ${-r * T}px`; t.appendChild(el('b', '', v)); b.appendChild(t); }
+  place();
+}
+function place() { const b = $('#board'); S.a.forEach((v, i) => { if (!v) return; const t = b.querySelector(`[data-v="${v}"]`); t.style.left = '1px'; t.style.top = '1px'; t.style.transform = `translate(${(i % S.n) * T}px,${((i / S.n) | 0) * T}px)`; }); }
+function hud() { if (!S) return; $('#mv').textContent = '↔ ' + S.moves; $('#clock').textContent = '⏱ ' + secs(); }
+const secs = () => S.start ? Math.ceil(((S.end || Date.now()) - S.start) / 1000) : 0;
+function tapIndex(i) { // slide the run of tiles between i and the gap
+  if (!S || S.over) return false; const n = S.n, g = S.a.indexOf(0), gc = g % n, gr = (g / n) | 0, c = i % n, r = (i / n) | 0;
+  if (i === g || (c !== gc && r !== gr)) return false;
+  if (!S.start) S.start = Date.now();
+  const step = c === gc ? (r < gr ? -n : n) : (c < gc ? -1 : 1);
+  for (let k = g; k !== i; k += step) { S.a[k] = S.a[k + step]; S.a[k + step] = 0; S.moves++; }
+  place(); hud(); check(); return true;
+}
+function key(dir) { // arrow moves the tile on that side of the gap INTO the gap
+  if (!S) return; const n = S.n, g = S.a.indexOf(0), c = g % n, r = (g / n) | 0;
+  const t = { left: c < n - 1 ? g + 1 : -1, right: c > 0 ? g - 1 : -1, up: r < n - 1 ? g + n : -1, down: r > 0 ? g - n : -1 }[dir];
+  if (t >= 0) tapIndex(t);
+}
+function check() {
+  if (!S.a.every((v, i) => i === S.a.length - 1 ? v === 0 : v === i + 1)) return;
+  S.over = true; S.end = Date.now(); clearInterval(tick); hud();
+  const b = $('#board'), last = el('div', 'tl'); last.style.cssText = `left:1px;top:1px;width:${T - 2}px;height:${T - 2}px;background-image:url(${art(S.art).cover});background-size:${T * S.n}px;background-position:${-(S.n - 1) * T}px ${-(S.n - 1) * T}px;transform:translate(${(S.n - 1) * T}px,${(S.n - 1) * T}px)`;
+  b.appendChild(last); b.classList.add('won');
+  const t = Math.max(1, secs()), ok = S.moves >= LV[S.diff].minMoves && t * 4 >= S.moves && t >= 5, sc = score(S.diff, S.moves, t), a = art(S.art);
+  setTimeout(() => { modal({ art: a.cover, title: 'Artwork restored! 🧩', text: `${NAMES[S.diff]} in <b>${S.moves}</b> moves and <b>${t}s</b>. You rebuilt <b>${a.name}</b>.`, lb: true,
+    buttons: [['PLAY AGAIN', () => newGame()], ['Leaderboard', () => openLB(GAME, TITLE, NAMES, 'moves'), 1], ['Settings', () => show('setup'), 1]] });
+    if (ok) post(GAME, sc, t, S.moves, S.diff); else { const m = $('#lbMsg'); if (m) m.textContent = 'Too quick to verify, so this one is not posted.'; } }, 1100);
+  gameOver();
+}
+$('#board').addEventListener('pointerdown', e => { const t = e.target.closest('.tl'); if (!t || !S) return; tapIndex(S.a.indexOf(+t.dataset.v)); });
+AP.keys({ ArrowLeft: () => key('left'), ArrowRight: () => key('right'), ArrowUp: () => key('up'), ArrowDown: () => key('down') });
+$('#numBtn').onclick = () => { pref.nums = !pref.nums; ls.set('anonSlide.pref', pref); $('#board').classList.toggle('nums', pref.nums); $('#numBtn').classList.toggle('on', pref.nums); };
+$('#numBtn').classList.toggle('on', !!pref.nums);
+$('#peekBtn').onclick = () => modal({ art: art(S ? S.art : pref.art).cover, title: art(S ? S.art : pref.art).name, buttons: [['Back to puzzle']] });
+$('#goBtn').onclick = () => newGame(); $('#newBtn').onclick = () => newGame();
+$('#setBtn').onclick = $('#menuBtn').onclick = () => { clearInterval(tick); show('setup'); };
+$('#lbBtn').onclick = () => openLB(GAME, TITLE, NAMES, 'moves');
+window.addEventListener('resize', () => { if (S && $('#play').classList.contains('on')) { size(); build(); } });
+window.G = { state: () => S, newGame, tapIndex, key, score, shuffled, solvable, manh, inv, LV, setDiff: d => { pref.diff = d; } };
+</script>
+</body>
+</html>
