@@ -1,0 +1,47 @@
+/* ANON Arcade board-game kit (chess, checkers, minesweeper, hearts) */
+:root{--gold:#d4af37;--gold2:#f3d77a;--pink:#ff3d9a;--pink2:#ff8cc4;--green:#2bff88}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overflow:hidden;overscroll-behavior:none}
+body{display:flex;flex-direction:column;height:100vh;height:100dvh;color:#e9e3cf;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+ background:radial-gradient(ellipse at 50% 40%,rgba(255,61,154,.09),transparent 62%),linear-gradient(rgba(3,5,8,.6),rgba(3,5,8,.9)),url(../../solitaire/assets/bg.jpg) center/cover no-repeat,#05070a;
+ -webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+button{font:inherit;cursor:pointer;color:inherit}
+header{padding:calc(6px + env(safe-area-inset-top)) 10px 2px;max-width:560px;width:100%;margin:0 auto;flex:none}
+.top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.brand{display:flex;align-items:center;gap:9px;min-width:0}
+.brand img{width:34px;height:34px;border-radius:50%;box-shadow:0 0 0 1px rgba(212,175,55,.6),0 0 12px rgba(255,61,154,.25);flex:none}
+h1{margin:0;font-family:Georgia,"Times New Roman",serif;font-weight:700;font-size:clamp(15px,4.6vw,24px);letter-spacing:.08em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+ background:linear-gradient(180deg,#fff3c4 0%,#e9c858 45%,#b48a25 75%,#f5dc85 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.icon-btn{width:34px;height:34px;border-radius:50%;border:1px solid rgba(212,175,55,.6);background:rgba(0,0,0,.45);color:var(--gold2);font-weight:800;font-size:15px;flex:none;padding:0}
+.top-r{display:flex;gap:6px;flex:none}
+.back-btn{display:none;align-items:center;height:34px;padding:0 11px 0 9px;border-radius:17px;border:1px solid rgba(212,175,55,.7);background:rgba(0,0,0,.55);color:var(--gold2);font-weight:800;font-size:13px;text-decoration:none;flex:none;white-space:nowrap}
+.in-hub h1{font-size:clamp(13px,4vw,22px);letter-spacing:.04em}.in-hub .back-btn{display:inline-flex}.in-hub .brand img{display:none}
+.view{flex:1;min-height:0;display:none;flex-direction:column;width:100%;max-width:560px;margin:0 auto}
+.view.on{display:flex}
+#setup{overflow:auto;padding:4px 12px 14px}
+.lbl{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#9d9580;margin:12px 2px 6px;text-align:center}
+.seg{display:flex;gap:6px;padding:4px;border:1px solid rgba(212,175,55,.35);border-radius:14px;background:rgba(0,0,0,.4)}
+.seg button{flex:1;min-height:40px;border:0;border-radius:10px;background:transparent;color:#b9a35c;font-weight:800;font-size:14px}
+.seg button.on{background:linear-gradient(180deg,#e9c858,#a47c1f);color:#120e02}
+.chars{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+.ch{display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 3px;border-radius:12px;border:1px solid rgba(212,175,55,.3);background:rgba(0,0,0,.42);font-size:10.5px;color:#d9d2bc;font-weight:700;min-width:0}
+.ch img{width:min(56px,15vw);height:min(56px,15vw);border-radius:50%;object-fit:cover;box-shadow:0 0 0 2px rgba(212,175,55,.5)}
+.ch.on{border-color:var(--gold2);background:rgba(212,175,55,.16);box-shadow:0 0 12px rgba(243,215,122,.3)}
+.hero{display:block;width:100%;max-height:150px;object-fit:cover;border-radius:14px;border:1px solid rgba(212,175,55,.4);margin-top:6px}
+.go{display:block;width:100%;min-height:50px;margin-top:14px;border-radius:14px;border:1px solid #ff8cc4;background:linear-gradient(180deg,#ff5aab,#c41f73);color:#fff;font-weight:900;font-size:17px;letter-spacing:.08em;box-shadow:0 0 18px rgba(255,61,154,.35)}
+.go.alt{background:rgba(0,0,0,.45);border-color:rgba(212,175,55,.6);color:var(--gold2);font-size:15px;min-height:42px;margin-top:8px}
+.status{text-align:center;font-size:14px;min-height:22px;padding:4px 8px;color:var(--gold2);font-weight:700}
+.bar{display:flex;gap:6px;justify-content:center;padding:6px 8px calc(8px + env(safe-area-inset-bottom));flex:none;flex-wrap:wrap}
+.bar button{min-height:38px;padding:0 12px;border-radius:12px;border:1px solid rgba(212,175,55,.5);background:rgba(0,0,0,.5);color:var(--gold2);font-weight:800;font-size:13px}
+.bar button.on{background:linear-gradient(180deg,#ff5aab,#c41f73);color:#fff;border-color:#ff8cc4}
+.modal{position:fixed;inset:0;z-index:3000;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.6);padding:14px}
+.modal.show{display:flex}
+.mcard{width:100%;max-width:360px;max-height:100%;overflow:auto;background:linear-gradient(180deg,rgba(18,15,7,.98),rgba(5,6,9,.98));border:1px solid var(--gold);border-radius:18px;padding:16px;text-align:center;box-shadow:0 0 30px rgba(255,61,154,.25)}
+.mcard .art{width:120px;height:120px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 3px var(--gold),0 0 24px rgba(255,61,154,.45);margin:0 auto 6px;display:block}
+.mcard h2{margin:6px 0;font-family:Georgia,serif;color:var(--gold2);letter-spacing:.05em}
+.mcard p{margin:6px 0;font-size:14.5px;line-height:1.4;color:#d9d2bc}
+.lbmsg{font-size:13px;color:#cfc6ab;margin-top:6px}.lbmsg.ok{color:var(--green)}
+.lbmsg button{margin-left:6px;border-radius:10px;border:1px solid var(--pink2);background:transparent;color:var(--pink2);font-weight:800;padding:3px 9px}
+.toast{position:fixed;left:50%;bottom:70px;transform:translateX(-50%);background:rgba(0,0,0,.85);border:1px solid var(--gold);color:var(--gold2);padding:8px 14px;border-radius:12px;font-size:13.5px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:3500;max-width:90%;text-align:center}
+.toast.show{opacity:1}
+.nick{font-size:12px;color:#9d9580;text-align:center;margin-top:10px}.nick button{background:none;border:0;color:var(--pink2);font-weight:800;text-decoration:underline}

@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05070a">
+<title>ANON Minesweeper · ANON NFTs</title>
+<meta name="description" content="ANON Minesweeper: clear the field to reveal ANON NFTs artwork. Free, no sign-up.">
+<link rel="icon" href="../assets/logo.webp">
+<link rel="stylesheet" href="../assets/nft/kit.css">
+<style>
+#play{align-items:center;min-height:0}
+.hud{display:flex;gap:8px;justify-content:center;align-items:center;padding:4px;font-weight:800;color:var(--gold2);font-size:15px}
+.hud span{background:rgba(0,0,0,.5);border:1px solid rgba(212,175,55,.4);border-radius:10px;padding:4px 10px;min-width:70px;text-align:center}
+.wrap{flex:1;min-height:0;width:100%;overflow:auto;display:flex;padding:4px}
+.board{margin:auto;display:grid;position:relative;background-size:cover;background-position:center;border:2px solid var(--gold);border-radius:8px;box-shadow:0 0 20px rgba(255,61,154,.25);touch-action:manipulation}
+.t{width:var(--s);height:var(--s);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:calc(var(--s)*.62);line-height:1;
+ background:rgba(5,7,10,.35);border:.5px solid rgba(0,0,0,.35);text-shadow:0 0 3px #000,0 0 3px #000}
+.t.c{background:linear-gradient(145deg,#3a3016,#15120a);border:1px solid rgba(212,175,55,.35);box-shadow:inset 0 0 0 1px rgba(0,0,0,.4);cursor:pointer}
+.t.c:active{filter:brightness(1.4)}
+.t.f{font-size:calc(var(--s)*.66)}
+.t.m{background:radial-gradient(circle,#ff5aab,#7a0f45);font-size:calc(var(--s)*.66)}
+.t.boom{background:radial-gradient(circle,#fff,#ff3d9a 55%,#600)}
+.t.bad{background:#5a1030}
+.n1{color:#7fd4ff}.n2{color:#2bff88}.n3{color:#ff6b6b}.n4{color:#c58bff}.n5{color:#ffb347}.n6{color:#5ff}.n7{color:#fff}.n8{color:#ccc}
+.board.won .t{background:transparent;border-color:transparent;text-shadow:none;color:transparent}
+</style>
+</head>
+<body>
+<header><div class="top">
+  <div class="brand"><a class="back-btn" href="../" aria-label="Back to ANON Arcade">&larr; Arcade</a><img src="../assets/logo.webp" alt=""><h1>ANON MINESWEEPER</h1></div>
+  <div class="top-r"><button class="icon-btn" id="lbBtn" aria-label="Leaderboard">🏆</button><button class="icon-btn" id="menuBtn" aria-label="New game">↻</button></div>
+</div></header>
+<section class="view on" id="setup">
+  <img class="hero" id="hero" alt="ANON NFTs artwork">
+  <div class="lbl">Difficulty</div>
+  <div class="seg" id="diffSeg"><button data-v="beginner">Beginner</button><button data-v="intermediate">Intermediate</button><button data-v="expert">Expert</button></div>
+  <div class="lbl">Hidden artwork (clear the field to reveal it)</div>
+  <div class="chars" id="artPick"></div>
+  <button class="go" id="goBtn">PLAY</button>
+  <p class="lbl" style="text-transform:none;letter-spacing:0">Tap to reveal. Long-press, or switch on 👑 Flag mode, to plant a crown. Tap a number to clear around it. Your first tap is always safe.</p>
+  <div class="nick" id="nick"></div>
+</section>
+<section class="view" id="play">
+  <div class="hud"><span id="mines">👑 10</span><span id="clock">⏱ 0</span></div>
+  <div class="wrap"><div class="board" id="board"></div></div>
+  <div class="bar"><button id="flagBtn">👑 Flag mode</button><button id="newBtn">New game</button><button id="setBtn">Settings</button></div>
+</section>
+<script src="../shared/leaderboard.js"></script>
+<script src="../shared/newsletter.js"></script>
+<script src="../assets/nft/kit.js"></script>
+<script>
+'use strict';
+const { $, el, ls, toast, modal, post, openLB, gameOver, art } = AK;
+const GAME = 'minesweeper', TITLE = 'ANON Minesweeper';
+const LV = { beginner: { w: 9, h: 9, m: 10, base: 1000, min: 5 }, intermediate: { w: 16, h: 16, m: 40, base: 3000, min: 20 }, expert: { w: 16, h: 30, m: 99, base: 6000, min: 40 } };
+const NAMES = { beginner: 'Beginner', intermediate: 'Intermediate', expert: 'Expert' };
+const pref = ls.get('anonMS.pref', { diff: 'beginner', art: 'anon' });
+let S = null, flagMode = false, tick = 0;
+const score = (diff, t) => LV[diff].base - t;
+function setHero() { $('#hero').src = art(pref.art).cover; }
+AK.seg($('#diffSeg'), pref.diff, v => { pref.diff = v; ls.set('anonMS.pref', pref); });
+AK.picker($('#artPick'), pref.art, id => { pref.art = id; ls.set('anonMS.pref', pref); setHero(); });
+setHero(); AK.nickLine($('#nick'));
+const show = id => document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === id));
+function newGame(mines) {
+  const L = LV[pref.diff]; S = { diff: pref.diff, w: L.w, h: L.h, n: L.m, mine: null, open: new Uint8Array(L.w * L.h), flag: new Uint8Array(L.w * L.h), over: false, start: 0, end: 0, moves: 0, opened: 0 };
+  if (mines) placeFixed(mines);
+  const vw = Math.min(window.innerWidth, 560) - 14, vh = window.innerHeight - 170;
+  let s = Math.floor(Math.min(vw / S.w, (S.h > 16 ? 9999 : vh / S.h))); s = Math.max(S.h > 16 ? 22 : 24, Math.min(44, s));
+  const b = $('#board'); b.className = 'board'; b.style.setProperty('--s', s + 'px'); b.style.gridTemplateColumns = `repeat(${S.w}, ${s}px)`;
+  b.style.backgroundImage = 'url(' + art(pref.art).cover + ')'; b.innerHTML = '';
+  for (let i = 0; i < S.w * S.h; i++) { const t = el('div', 't c'); t.dataset.i = i; b.appendChild(t); }
+  clearInterval(tick); hud(); show('play');
+}
+const nb = i => { const x = i % S.w, y = (i / S.w) | 0, r = []; for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { if (!dx && !dy) continue; const a = x + dx, b = y + dy; if (a >= 0 && b >= 0 && a < S.w && b < S.h) r.push(b * S.w + a); } return r; };
+function placeFixed(list) { S.mine = new Uint8Array(S.w * S.h); list.forEach(i => S.mine[i] = 1); S.n = list.length; }
+function place(safe) {
+  S.mine = new Uint8Array(S.w * S.h); const ban = new Set([safe, ...nb(safe)]); const cells = [];
+  for (let i = 0; i < S.w * S.h; i++) if (!ban.has(i)) cells.push(i);
+  for (let k = 0; k < S.n; k++) { const j = k + Math.floor(Math.random() * (cells.length - k)); [cells[k], cells[j]] = [cells[j], cells[k]]; S.mine[cells[k]] = 1; }
+}
+const count = i => nb(i).reduce((a, j) => a + S.mine[j], 0);
+const T = i => $('#board').children[i];
+function hud() { const f = S.flag.reduce((a, b) => a + b, 0); $('#mines').textContent = '👑 ' + (S.n - f); $('#clock').textContent = '⏱ ' + secs(); }
+const secs = () => S.start ? Math.min(999, Math.ceil(((S.end || Date.now()) - S.start) / 1000)) : 0;
+function reveal(i) {
+  if (S.over || S.flag[i]) return;
+  if (!S.mine) place(i);
+  if (!S.start) { S.start = Date.now(); tick = setInterval(hud, 250); }
+  if (S.open[i]) return chord(i);
+  S.moves++;
+  if (S.mine[i]) return lose(i);
+  flood(i); check();
+}
+function flood(i) {
+  const st = [i];
+  while (st.length) { const k = st.pop(); if (S.open[k] || S.flag[k] || S.mine[k]) continue; S.open[k] = 1; S.opened++;
+    const c = count(k), t = T(k); t.className = 't' + (c ? ' n' + c : ''); t.textContent = c || '';
+    if (!c) nb(k).forEach(j => { if (!S.open[j]) st.push(j); }); }
+}
+function chord(i) {
+  const c = count(i), around = nb(i); if (!c || around.filter(j => S.flag[j]).length !== c) return;
+  S.moves++; for (const j of around) if (!S.open[j] && !S.flag[j]) { if (S.mine[j]) return lose(j); flood(j); } check();
+}
+function flag(i) { if (S.over || S.open[i]) return; S.flag[i] ^= 1; const t = T(i); t.className = 't c' + (S.flag[i] ? ' f' : ''); t.textContent = S.flag[i] ? '👑' : ''; if (navigator.vibrate) navigator.vibrate(15); hud(); }
+function lose(i) {
+  S.over = true; S.end = Date.now(); clearInterval(tick); hud();
+  for (let k = 0; k < S.w * S.h; k++) { const t = T(k); if (S.mine[k] && !S.flag[k]) { t.className = 't m' + (k === i ? ' boom' : ''); t.textContent = '💀'; } else if (!S.mine[k] && S.flag[k]) t.className = 't bad'; }
+  if (navigator.vibrate) navigator.vibrate([60, 40, 90]);
+  setTimeout(() => modal({ art: art(pref.art).img, title: 'Boom! 💀', text: 'You hit a skull gem. The ANON art stays hidden… for now.', buttons: [['TRY AGAIN', () => newGame()], ['Settings', () => show('setup'), 1]] }), 900);
+  gameOver();
+}
+function check() {
+  if (S.opened !== S.w * S.h - S.n) return;
+  S.over = true; S.end = Date.now(); clearInterval(tick);
+  for (let k = 0; k < S.w * S.h; k++) if (S.mine[k] && !S.flag[k]) { S.flag[k] = 1; T(k).className = 't c f'; T(k).textContent = '👑'; }
+  hud(); $('#board').classList.add('won');
+  const t = Math.max(1, secs()), ok = t >= LV[S.diff].min, sc = score(S.diff, t);
+  const a = art(pref.art);
+  setTimeout(() => { modal({ art: a.img, title: 'Field cleared! 👑', text: `${NAMES[S.diff]} in <b>${t}s</b>. You uncovered <b>${a.name}</b>.`, lb: true,
+    buttons: [['PLAY AGAIN', () => newGame()], ['Leaderboard', () => openLB(GAME, TITLE, NAMES, 'clicks'), 1], ['Settings', () => show('setup'), 1]] });
+    if (ok) post(GAME, sc, t, S.moves, S.diff); else { const b = $('#lbMsg'); if (b) b.textContent = 'Too quick to verify, so this time is not posted.'; } }, 1600);
+  gameOver();
+}
+// input: tap reveals (or flags in flag mode), long-press flags
+let lp = 0, lpFired = false, sx = 0, sy = 0;
+const board = $('#board');
+board.addEventListener('pointerdown', e => { const t = e.target.closest('.t'); if (!t) return; lpFired = false; sx = e.clientX; sy = e.clientY; clearTimeout(lp); lp = setTimeout(() => { lpFired = true; flag(+t.dataset.i); }, 420); });
+board.addEventListener('pointermove', e => { if (Math.abs(e.clientX - sx) + Math.abs(e.clientY - sy) > 12) clearTimeout(lp); });
+board.addEventListener('pointerup', () => clearTimeout(lp));
+board.addEventListener('pointercancel', () => clearTimeout(lp));
+board.addEventListener('click', e => { const t = e.target.closest('.t'); if (!t || lpFired) { lpFired = false; return; } const i = +t.dataset.i; if (flagMode && !S.open[i]) flag(i); else reveal(i); });
+board.addEventListener('contextmenu', e => { e.preventDefault(); const t = e.target.closest('.t'); if (t && !lpFired) flag(+t.dataset.i); lpFired = false; });
+$('#flagBtn').onclick = () => { flagMode = !flagMode; $('#flagBtn').classList.toggle('on', flagMode); toast(flagMode ? 'Flag mode on: taps plant crowns' : 'Flag mode off: taps reveal'); };
+$('#goBtn').onclick = () => newGame(); $('#newBtn').onclick = () => newGame(); $('#setBtn').onclick = $('#menuBtn').onclick = () => { clearInterval(tick); show('setup'); };
+$('#lbBtn').onclick = () => openLB(GAME, TITLE, NAMES, 'clicks');
+window.ANON_MS = { state: () => S, newGame, reveal, flag, score, LV, setDiff: d => { pref.diff = d; } };
+</script>
+</body>
+</html>

@@ -45,6 +45,35 @@
       "added": "2026-10-19"
     },
     {
+      "id": "minesweeper",
+      "name": "ANON Minesweeper",
+      "tagline": "Clear the field to reveal ANON art",
+      "path": "minesweeper/",
+      "thumb": "minesweeper/thumb.webp",
+      "category": "Puzzle",
+      "tags": [
+        "minesweeper",
+        "mines",
+        "puzzle",
+        "logic"
+      ],
+      "status": "live",
+      "leaderboard": true,
+      "scoreLabel": "Score",
+      "order": "desc",
+      "periods": [
+        "day",
+        "all"
+      ],
+      "movesLabel": "clicks",
+      "modeLabels": {
+        "beginner": "Beginner",
+        "intermediate": "Intermediate",
+        "expert": "Expert"
+      },
+      "added": "2026-10-19"
+    },
+    {
       "id": "ninja-memory",
       "name": "Ninja Memory",
       "tagline": "Find the hidden ANON pairs",
