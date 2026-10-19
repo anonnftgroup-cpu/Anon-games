@@ -3,7 +3,7 @@
   'use strict';
   const B = (document.currentScript && document.currentScript.src || '').replace(/kit\.js.*$/, '');
   const ART = [
-    { id: 'anon', name: 'ANON Revenue Share NFTs' }, { id: 'apes', name: 'ANON Apes' }, { id: 'royals', name: 'ANON Apes King & Queen' },
+    { id: 'anon', name: 'ANON Originals' }, { id: 'apes', name: 'ANON Apes' }, { id: 'royals', name: 'ANON Apes King & Queen' },
     { id: 'aces', name: 'Aces by BESC' }, { id: 'ghost', name: 'Ghost Dead Hand Aces' }, { id: 'skulls', name: 'ANON Skulls' },
     { id: 'eyes', name: 'ANON Eyes' }, { id: 'lake', name: 'Lake District NFTs' }, { id: 'venge', name: 'Vengeance' }, { id: 'grumpy', name: 'Grumpy Cat' }
   ].map(a => Object.assign(a, { img: B + 'p-' + a.id + '.webp', cover: B + 'c-' + a.id + '.webp' }));

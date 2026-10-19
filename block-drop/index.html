@@ -6,10 +6,22 @@
 <meta name="theme-color" content="#05070a">
 <title>ANON Block Drop · ANON NFTs</title>
 <meta name="description" content="ANON Block Drop: an original falling-blocks puzzle made of ANON NFT art tiles. Free, no sign-up.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ANON Arcade">
+<meta property="og:title" content="ANON Block Drop">
+<meta property="og:description" content="ANON Block Drop: an original falling-blocks puzzle made of ANON NFT art tiles. Free, no sign-up.">
+<meta property="og:url" content="https://anonnftgroup-cpu.github.io/Anon-games/block-drop/">
+<meta property="og:image" content="https://anonnftgroup-cpu.github.io/Anon-games/block-drop/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ANON Block Drop">
+<meta name="twitter:description" content="ANON Block Drop: an original falling-blocks puzzle made of ANON NFT art tiles. Free, no sign-up.">
+<meta name="twitter:image" content="https://anonnftgroup-cpu.github.io/Anon-games/block-drop/og.jpg">
 <link rel="icon" href="../assets/logo.webp">
 <link rel="stylesheet" href="../assets/nft/kit.css">
 <link rel="stylesheet" href="../assets/play/play.css">
-<style>.bar button{min-width:44px}#nextCv{width:54px;height:36px;border:1px solid rgba(212,175,55,.4);border-radius:8px;background:rgba(0,0,0,.5)}</style>
+<style>.bar button{min-width:44px}#nextCv{width:78px;height:52px;border:1px solid rgba(212,175,55,.4);border-radius:8px;background:rgba(0,0,0,.5)}</style>
 </head>
 <body>
 <header><div class="top">
@@ -23,7 +35,7 @@
   <div class="nick" id="nick"></div>
 </section>
 <section class="view" id="play">
-  <div class="hud"><span id="sc">⭐ 0</span><span id="ln">▤ 0</span><span id="lv">Lv 1</span><canvas id="nextCv" width="108" height="72"></canvas></div>
+  <div class="hud"><span id="sc">⭐ 0</span><span id="ln">▤ 0</span><span id="lv">Lv 1</span><canvas id="nextCv" width="156" height="104"></canvas></div>
   <div class="stage"><canvas id="cv"></canvas><div class="tap" id="msg"></div></div>
   <div class="bar"><button data-k="L" aria-label="Left">◀</button><button data-k="R" aria-label="Turn">⟳</button><button data-k="Rt" aria-label="Right">▶</button><button data-k="D" aria-label="Soft drop">▼</button><button data-k="H" aria-label="Drop">⤓</button><button id="setBtn">Menu</button></div>
 </section>
@@ -81,7 +93,7 @@ function draw() {
   x.strokeStyle = '#d4af37'; x.lineWidth = 2; x.strokeRect(ox - 1, oy - 1, cs * W + 2, cs * H + 2);
   if (S.over) { x.fillStyle = 'rgba(255,61,154,.15)'; x.fillRect(ox, oy, cs * W, cs * H); }
 }
-function drawNext() { const c = $('#nextCv'), x = c.getContext('2d'); x.clearRect(0, 0, c.width, c.height); const k = S.q[0], sh = SH[k], s = 16, w = Math.max(...sh.map(p => p[0])) + 1, h = Math.max(...sh.map(p => p[1])) + 1;
+function drawNext() { const c = $('#nextCv'), x = c.getContext('2d'); x.clearRect(0, 0, c.width, c.height); const k = S.q[0], sh = SH[k], s = 24, w = Math.max(...sh.map(p => p[0])) + 1, h = Math.max(...sh.map(p => p[1])) + 1;
   sh.forEach(([cx, cy]) => cell(x, k, (c.width - w * s) / 2 + cx * s, (c.height - h * s) / 2 + cy * s, s)); }
 const L = AP.loop(step, draw); L.onHide = () => { if (S && !S.over) { L.stop(); S.paused = true; $('#msg').textContent = 'Paused. Tap to carry on'; } };
 function end() {
