@@ -48,7 +48,7 @@
 
   /* ---------- game info from games.json (name, scoreLabel, order) ---------- */
   let META = null;
-  const metaP = fetch(ROOT + 'games.json', { cache: 'no-cache' }).then(r => r.ok ? r.json() : null).then(j => { META = (j && j.games) || []; return META; }).catch(() => (META = []));
+  const metaP = (window.ANON_GAMES_P || (window.ANON_GAMES_P = fetch(ROOT + 'games.json', { cache: 'no-cache' }).then(r => r.ok ? r.json() : null))).then(j => { META = (j && j.games) || []; return META; }).catch(() => (META = []));
   function info(game) {
     const list = META || [];
     const g = list.find(x => x.id === game) || list.find(x => x.path === FOLDER) || {};

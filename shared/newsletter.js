@@ -3,7 +3,9 @@
    Every game calls ANONNews.gameOver() when a game ends (win or loss).
    - shows a beat after the game's own result screen (default 2.6 s)
    - waits while a nickname prompt / leaderboard (.alb-ov) is open
-   - at most once per day per device (UK date); never again after Subscribe
+   - not before the device's 3rd game over, at most once per day (UK date)
+   - never in the same game over as a leaderboard name prompt
+   - Subscribe opens Kit in a new tab; we can't see if the form was sent, so it snoozes for 30 days
    ===================================================================== */
 (function () {
   'use strict';
@@ -13,7 +15,9 @@
   const st = () => { try { return JSON.parse(localStorage.getItem(K)) || {}; } catch (e) { return {}; } };
   const put = v => { try { localStorage.setItem(K, JSON.stringify(Object.assign(st(), v))); } catch (e) {} };
   const ukDate = () => { try { return new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/London' }).format(new Date()); } catch (e) { return new Date().toISOString().slice(0, 10); } };
-  const allowed = () => { const s = st(); return !s.subscribed && s.last !== ukDate(); };
+  const DAY = 864e5, MIN_GAMES = 3;
+  (function migrate() { const s = st(); if (s.subscribed && !s.snooze) put({ subscribed: false, snooze: Date.now() + 30 * DAY }); })();
+  const allowed = () => { const s = st(); return !(s.snooze > Date.now()) && s.last !== ukDate(); };
   let timer = 0, open = null;
 
   function css() {
@@ -58,7 +62,7 @@
     };
     ov.querySelector('.anw-x').onclick = close;
     ov.querySelector('.anw-later').onclick = close;
-    ov.querySelector('.anw-sub').addEventListener('click', () => { put({ subscribed: true }); setTimeout(close, 50); });
+    ov.querySelector('.anw-sub').addEventListener('click', () => { put({ snooze: Date.now() + 30 * DAY }); setTimeout(close, 50); });
     ov.addEventListener('click', e => { if (e.target === ov) close(); });
     document.addEventListener('keydown', key, true);
     document.body.appendChild(ov); open = ov;
@@ -68,12 +72,18 @@
   // call when a game ends. opts.delay = ms after the end (default 2600)
   function gameOver(opts) {
     opts = opts || {};
-    if (window.ANON_NEWS_OFF || !allowed()) return;          // ANON_NEWS_OFF: test hook
+    if (window.ANON_NEWS_OFF) return;                          // ANON_NEWS_OFF: test hook
+    const now = Date.now(), last = st().lastOver || 0, n = (st().overs || 0) + (now - last > 5000 ? 1 : 0);
+    put({ overs: n, lastOver: now });                          // count game overs per device (double calls within 5 s count once)
+    if (n < MIN_GAMES || !allowed()) return;
+    const promptedAt = () => window.__anonNickPromptAt || 0;
+    if (now - promptedAt() < 60000) return;                    // a name prompt already showed for this game over
     clearTimeout(timer);
     const deadline = Date.now() + 180000;
     const tryShow = () => {
       if (!allowed() || open) return;
-      if (document.querySelector('.alb-ov') && Date.now() < deadline) { timer = setTimeout(tryShow, 700); return; } // nickname prompt / leaderboard open
+      if (Date.now() - promptedAt() < 60000) return;      // name prompt appeared after this game ended: skip this time
+      if (document.querySelector('.alb-ov') && Date.now() < deadline) { timer = setTimeout(tryShow, 700); return; } // leaderboard open
       if (Date.now() < deadline) show();
     };
     timer = setTimeout(tryShow, window.ANON_NEWS_DELAY != null ? window.ANON_NEWS_DELAY : opts.delay == null ? 2600 : opts.delay);

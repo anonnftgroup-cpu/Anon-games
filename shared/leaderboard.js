@@ -34,7 +34,7 @@ const SUPABASE_ANON_KEY = 'sb_publishable_-f0lT5SuVJ-TbFzlfMd7kA_hH6ZXp-N';
     get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
     set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
   };
-  const K_NICK = 'anonLB.nick', K_OPTOUT = 'anonLB.optout', K_LOCAL = g => 'anonLB.local.' + g, K_LAST = g => 'anonLB.last.' + g;
+  const K_GAMES = 'anonLB.scoredGames', K_NICK = 'anonLB.nick', K_OPTOUT = 'anonLB.optout', K_LOCAL = g => 'anonLB.local.' + g, K_LAST = g => 'anonLB.last.' + g;
 
   /* ---------- per-game sanity rules (mirror these in supabase-setup.sql) ---------- */
   const RULES = {
@@ -248,6 +248,10 @@ const SUPABASE_ANON_KEY = 'sb_publishable_-f0lT5SuVJ-TbFzlfMd7kA_hH6ZXp-N';
     let nick = getNickname();
     if (!nick) {
       if (ls.get(K_OPTOUT, false)) return { status: 'local', message: 'Saved on this device. Set a nickname in Leaderboards to go global.' };
+      // No name prompt on a device's first scored game: it stays local and the "Post score" button can still post it.
+      const n = ls.get(K_GAMES, 0) + 1; ls.set(K_GAMES, n);
+      if (n < 2 && !s.manual) return { status: 'local', message: 'Saved on this device. Play again to join the global leaderboard.' };
+      window.__anonNickPromptAt = Date.now();
       nick = await promptNickname({ saveLabel: 'Save & post score' });
       if (!nick) return { status: 'local', message: 'Saved on this device only.' };
     }
@@ -368,7 +372,7 @@ const SUPABASE_ANON_KEY = 'sb_publishable_-f0lT5SuVJ-TbFzlfMd7kA_hH6ZXp-N';
   }
 
   window.ANONLB = {
-    version: '1.5.0', isConfigured: configured, submit, fetchTop, renderBoard, openBoard, promptNickname,
+    version: '1.6.0', isConfigured: configured, submit, fetchTop, renderBoard, openBoard, promptNickname,
     getNickname, setNickname, validateNickname, isCleanName, randomNickname, seedLocal, sane, weekStart, ukDayStart, _cfg: CFG
   };
 })();
@@ -379,6 +383,27 @@ const SUPABASE_ANON_KEY = 'sb_publishable_-f0lT5SuVJ-TbFzlfMd7kA_hH6ZXp-N';
     if (window.ANONChallenge || document.querySelector('script[src*="shared/challenge.js"]')) return;
     const me = document.currentScript && document.currentScript.src; if (!me) return;
     const s = document.createElement('script'); s.src = me.replace(/leaderboard\.js(\?.*)?$/, 'challenge.js?v=1'); s.defer = true; document.head.appendChild(s);
+  } catch (e) {}
+})();
+
+/* Outside the Arcade (challenge links, direct visits): a "← ANON Arcade" button to anonnfts.com/anon-games in the top window. */
+(function () {
+  try {
+    const me = document.currentScript && document.currentScript.src; if (!me) return;
+    const root = me.replace(/shared\/leaderboard\.js(\?.*)?$/, ''), here = location.href.split(/[?#]/)[0];
+    if (here.indexOf(root) !== 0 || !here.slice(root.length).replace(/index\.html?$/, '')) return; // games only, not the hub
+    const framed = (function () { try { return window.self !== window.top; } catch (e) { return true; } })();
+    if (framed && /[?&]hub=1\b/.test(location.search)) return; // inside the anonnfts.com Arcade already
+    const add = () => {
+      if (document.getElementById('anonHome')) return;
+      const st = document.createElement('style'); st.textContent = '#anonHome{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(6px + env(safe-area-inset-bottom));z-index:4700;display:inline-flex;align-items:center;gap:4px;height:30px;padding:0 13px;border-radius:15px;border:1px solid #d4af37;background:rgba(5,7,10,.92);color:#f3d77a;font:700 12.5px system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;letter-spacing:.04em;text-decoration:none;box-shadow:0 0 12px rgba(43,255,136,.25)}#anonHome:focus-visible{outline:3px solid #2bff88;outline-offset:2px}html.anon-home-on body{padding-bottom:calc(40px + env(safe-area-inset-bottom))}';
+      document.head.appendChild(st);
+      const a = document.createElement('a'); a.id = 'anonHome'; a.href = 'https://anonnfts.com/anon-games'; a.target = '_top'; a.rel = 'noopener'; a.textContent = '← ANON Arcade';
+      a.setAttribute('aria-label', 'Go to the ANON Arcade on anonnfts.com');
+      document.body.appendChild(a); document.documentElement.classList.add('anon-home-on');
+    };
+    if (document.body) add(); document.addEventListener('DOMContentLoaded', add);
+    new MutationObserver(() => { if (document.body && !document.getElementById('anonHome')) add(); }).observe(document.documentElement, { childList: true, subtree: true });
   } catch (e) {}
 })();
 
