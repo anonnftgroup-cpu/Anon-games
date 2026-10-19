@@ -997,6 +997,31 @@
       "movesLabel": "checks",
       "hideMode": true,
       "added": "2026-10-19"
+    },
+    {
+      "id": "hype-pop",
+      "name": "Hype Balloon Pop",
+      "tagline": "Pop the hype, catch the facts",
+      "path": "hype-pop/",
+      "thumb": "hype-pop/thumb.webp",
+      "category": "Learn",
+      "tags": [
+        "learn",
+        "pop",
+        "arcade",
+        "backing"
+      ],
+      "status": "live",
+      "leaderboard": true,
+      "scoreLabel": "Score",
+      "order": "desc",
+      "periods": [
+        "day",
+        "all"
+      ],
+      "movesLabel": "facts",
+      "hideMode": true,
+      "added": "2026-10-19"
     }
   ]
 }

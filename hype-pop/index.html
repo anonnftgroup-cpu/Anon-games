@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05070a">
+<title>Hype Balloon Pop · ANON NFTs</title>
+<meta name="description" content="Hype Balloon Pop: pop the NFT hype balloons, catch the fact bubbles and never pop a fact. Free, no sign-up.">
+<link rel="icon" href="../assets/logo.webp">
+<link rel="stylesheet" href="../assets/nft/kit.css">
+<link rel="stylesheet" href="../assets/play/play.css">
+<link rel="stylesheet" href="bk.css">
+</head>
+<body>
+<header><div class="top">
+  <div class="brand"><a class="back-btn" href="../" aria-label="Back to ANON Arcade">&larr; Arcade</a><img src="../assets/logo.webp" alt=""><h1>HYPE BALLOON POP</h1></div>
+  <div class="top-r"><button class="icon-btn" id="sndBtn" aria-label="Sound">🔊</button><button class="icon-btn" id="lbBtn" aria-label="Leaderboard">🏆</button><button class="icon-btn" id="menuBtn" aria-label="Menu">↻</button></div>
+</div></header>
+<section class="view on" id="setup">
+  <img class="hero" id="hero" alt="ANON NFTs artwork">
+  <div class="lbl">Choose your ANON</div>
+  <div class="chars five" id="artPick"></div>
+  <button class="go" id="goBtn">POP THE HYPE</button>
+  <p class="howto"><b>Tap the pink hype balloons</b> to pop them (+10, quick pops build a combo). <b>Green fact bubbles</b> drift down: <b>drag your ANON</b> along the bottom (or ← →) to <b>catch</b> them (+25). <b>Never pop a fact</b>: that costs a life. Let 5 hype balloons escape and you lose a life too.</p>
+  <div class="nick" id="nick"></div>
+  <p class="risk-foot">The hype slogans are made-up examples of warning signs. NFTs and cryptoassets are high-risk. Not financial advice. <a href="https://anonnfts.com/check-backing-on-chain-1" target="_top" rel="noopener">How to check backing on-chain</a></p>
+</section>
+<section class="view" id="play">
+  <div class="hud"><span id="lv">❤️❤️❤️</span><span id="hy">🎈 0/5</span><span id="sc">⭐ 0</span></div>
+  <div class="stage" id="stage"><canvas id="cv"></canvas><div class="tap" id="msg"></div></div>
+  <div class="bar"><button id="againBtn">Restart</button><button id="setBtn">Change ANON</button></div>
+</section>
+<script src="../shared/leaderboard.js"></script>
+<script src="../shared/newsletter.js"></script>
+<script src="../assets/nft/kit.js"></script>
+<script src="../assets/play/play.js"></script>
+<script src="bk.js"></script>
+<script>
+'use strict';
+const { $, ls, post, openLB, gameOver, art, ART } = AK;
+const GAME = 'hype-pop', TITLE = 'Hype Balloon Pop';
+const NAMES = Object.fromEntries(ART.map(a => [a.id, a.name.replace(/^ANON /, '')]));
+// made-up hype slogans: shown only as things to pop
+const HYPE = ['100x!', 'GUARANTEED!', 'TRUST ME BRO', 'WAGMI', 'LAMBO SOON', 'BUY NOW!', 'NO RISK!', 'TO THE MOON', 'CAN\'T LOSE', 'LAST CHANCE', '1000x', 'FOMO!', 'APE IN!', 'ONLY UP', 'SECRET ALPHA', 'PUMP IT', 'FREE MONEY', 'MOON RUG CLUB', 'SOLD OUT SOON'];
+const FACTS = ['CHECK IT ON-CHAIN', 'POOL ON-CHAIN', 'PROOF OF WORK', 'CONTRACT PUBLIC', 'RISK WARNING', 'READ-ONLY CHECK', '≥50% FUSD AT MINT', 'DATED FIGURES', 'TYPE THE URL', 'RIGHT CHAIN?', 'FLOOR ≠ BACKING', 'NOT ADVICE'];
+const pref = ls.get('anonHype.pref', { art: 'venge', best: 0 });
+const show = id => document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === id));
+const setHero = () => $('#hero').src = art(pref.art).cover;
+AK.picker($('#artPick'), pref.art, id => { pref.art = id; ls.set('anonHype.pref', pref); setHero(); });
+setHero(); AK.nickLine($('#nick')); BK.muteBtn($('#sndBtn'));
+let C = null, S = null, ME = null, BG = null; const SPR = {};
+AP.img('../assets/nft/c-venge.webp').then(i => BG = i);
+function mkSprite(im) { const d = 2, R = 48, c = document.createElement('canvas'); c.width = c.height = R * 2 * d; const x = c.getContext('2d'); x.scale(d, d);
+  x.save(); x.beginPath(); x.arc(R, R, R - 4, 0, 7); x.clip(); if (im) AP.cover(x, im, 4, 4, R * 2 - 8, R * 2 - 8); x.restore();
+  x.lineWidth = 5; x.strokeStyle = '#2bff88'; x.beginPath(); x.arc(R, R, R - 3, 0, 7); x.stroke(); return c; }
+async function newRun() {
+  const a = art(pref.art); ME = SPR[a.id] || (SPR[a.id] = mkSprite(await AP.img(a.img)));
+  show('play'); if (!C) C = AP.canvas($('#cv'), .72, () => draw()); else C.fit();
+  S = { t: 0, score: 0, lives: 3, esc: 0, popped: 0, caught: 0, factPops: 0, combo: 0, lastPop: -9, b: [], fx: [], nextH: .6, nextF: 2.5, px: C.w / 2, over: false, count: 1.6, art: a.id, flash: 0, shake: 0 };
+  hud(); L.start();
+}
+const hud = () => { $('#lv').textContent = '❤️'.repeat(Math.max(0, S.lives)) + '🖤'.repeat(3 - Math.max(0, S.lives)); $('#hy').textContent = '🎈 ' + S.esc + '/5'; $('#sc').textContent = '⭐ ' + S.score; };
+const lvl = () => Math.min(1, S.t / 90);
+function spawn(kind) { const W = C.w, H = C.h, r = Math.max(30, W * .085) * (kind === 'h' ? 1 : .92);
+  if (kind === 'h') S.b.push({ k: 'h', x: r + AP.rnd() * (W - 2 * r), y: H + r, r, vy: -(H * (.16 + .14 * lvl()) * (.8 + AP.rnd() * .5)), sw: AP.rnd() * 6, t: AP.pick(HYPE), hue: AP.ri(0, 2) });
+  else S.b.push({ k: 'f', x: r + AP.rnd() * (W - 2 * r), y: -r, r, vy: H * (.12 + .06 * lvl()), sw: AP.rnd() * 6, t: AP.pick(FACTS) }); }
+function step(dt) {
+  if (!S || S.over) return;
+  if (S.count > 0) { S.count -= dt; $('#msg').textContent = S.count > 0 ? 'Get ready… ' + Math.ceil(S.count) : ''; return; }
+  S.t += dt; S.nextH -= dt; S.nextF -= dt; if (S.flash > 0) S.flash -= dt; if (S.shake > 0) S.shake -= dt;
+  if (S.nextH <= 0) { spawn('h'); S.nextH = (.9 - .5 * lvl()) * (.6 + AP.rnd() * .8); }
+  if (S.nextF <= 0) { spawn('f'); S.nextF = (2.6 - .9 * lvl()) * (.7 + AP.rnd() * .6); }
+  const ks = C.w * 1.3; if (keyv) S.px = Math.max(20, Math.min(C.w - 20, S.px + keyv * ks * dt));
+  const cy = C.h - C.h * .09, cr = Math.max(26, C.w * .075);
+  for (const b of S.b) { b.y += b.vy * dt; b.x += Math.sin(S.t * 1.6 + b.sw) * 14 * dt;
+    if (b.k === 'h' && b.y < -b.r) { b.gone = true; S.esc++; BK.play('tick'); if (S.esc >= 5) { S.esc = 0; loseLife('Too much hype escaped!'); } }
+    if (b.k === 'f' && !b.gone && Math.hypot(b.x - S.px, b.y - cy) < b.r + cr * .8) { b.gone = true; S.caught++; S.score += 25; BK.play('good'); S.fx.push({ x: b.x, y: b.y, t: '+25 ✔', c: '#2bff88', life: .8 }); }
+    if (b.k === 'f' && b.y > C.h + b.r) b.gone = true; }
+  S.b = S.b.filter(b => !b.gone); S.fx.forEach(f => { f.life -= dt; f.y -= 40 * dt; }); S.fx = S.fx.filter(f => f.life > 0);
+  if (S.lives <= 0) return finish(); hud();
+}
+function loseLife(why) { S.lives--; S.flash = .5; S.shake = .3; BK.play('bad'); if (navigator.vibrate) navigator.vibrate(80); S.fx.push({ x: C.w / 2, y: C.h * .4, t: why, c: '#ff5a5a', life: 1.4 }); hud(); }
+function popAt(px, py) { if (!S || S.over || S.count > 0) return false;
+  for (let i = S.b.length - 1; i >= 0; i--) { const b = S.b[i]; if (Math.hypot(b.x - px, b.y - py) < b.r * 1.08) {
+    b.gone = true; S.b.splice(i, 1);
+    if (b.k === 'h') { S.combo = S.t - S.lastPop < 1.2 ? S.combo + 1 : 0; S.lastPop = S.t; const pts = 10 + 2 * Math.min(5, S.combo); S.score += pts; S.popped++; BK.play('pop');
+      S.fx.push({ x: b.x, y: b.y, t: '+' + pts + (S.combo ? ' x' + (S.combo + 1) : ''), c: '#ff8cc4', life: .7 }); }
+    else { S.factPops++; S.combo = 0; loseLife('Don\'t pop the facts! Catch them.'); }
+    hud(); return true; } } return false; }
+function draw() {
+  if (!C) return; const x = C.x, W = C.w, H = C.h; x.save(); if (S && S.shake > 0) x.translate((AP.rnd() - .5) * 10, 0);
+  const g = x.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#0a0614'); g.addColorStop(1, '#05070a'); x.fillStyle = g; x.fillRect(0, 0, W, H);
+  if (BG) { x.globalAlpha = .28; const k = Math.max(W / BG.width, H / BG.height); x.drawImage(BG, (W - BG.width * k) / 2, (H - BG.height * k) / 2, BG.width * k, BG.height * k); x.globalAlpha = 1; }
+  if (!S) { x.restore(); return; }
+  for (const b of S.b) {
+    if (b.k === 'h') { const cols = [['#ff9ccc', '#ff3d9a', '#8a0f4d'], ['#ffd27a', '#e9a21f', '#7a4a06'], ['#c79cff', '#8a3dff', '#3b1278']][b.hue];
+      x.strokeStyle = 'rgba(255,255,255,.4)'; x.lineWidth = 1.2; x.beginPath(); x.moveTo(b.x, b.y + b.r * 1.15); x.quadraticCurveTo(b.x + 8, b.y + b.r * 1.6, b.x - 2, b.y + b.r * 2.1); x.stroke();
+      const gr = x.createRadialGradient(b.x - b.r * .35, b.y - b.r * .4, b.r * .1, b.x, b.y, b.r * 1.1); gr.addColorStop(0, cols[0]); gr.addColorStop(.55, cols[1]); gr.addColorStop(1, cols[2]);
+      x.fillStyle = gr; x.beginPath(); x.ellipse(b.x, b.y, b.r * .92, b.r * 1.08, 0, 0, 7); x.fill(); x.beginPath(); x.moveTo(b.x - 5, b.y + b.r * 1.12); x.lineTo(b.x + 5, b.y + b.r * 1.12); x.lineTo(b.x, b.y + b.r * 1.02); x.fill(); }
+    else { x.save(); x.shadowColor = '#2bff88'; x.shadowBlur = 14; x.fillStyle = 'rgba(43,255,136,.16)'; x.strokeStyle = '#2bff88'; x.lineWidth = 2.5; x.beginPath(); x.arc(b.x, b.y, b.r, 0, 7); x.fill(); x.stroke(); x.restore();
+      x.fillStyle = 'rgba(255,255,255,.5)'; x.beginPath(); x.arc(b.x - b.r * .4, b.y - b.r * .45, b.r * .14, 0, 7); x.fill(); }
+    x.fillStyle = b.k === 'h' ? '#fff' : '#d9ffe9'; x.textAlign = 'center'; x.textBaseline = 'middle'; const words = b.t.split(' ');
+    let fs = Math.round(b.r * (b.k === 'h' ? .36 : .3)); x.font = '900 ' + fs + 'px system-ui'; const lines = words.length > 1 && x.measureText(b.t).width > b.r * 1.7 ? [words.slice(0, Math.ceil(words.length / 2)).join(' '), words.slice(Math.ceil(words.length / 2)).join(' ')] : [b.t];
+    lines.forEach((l, i) => { while (x.measureText(l).width > b.r * 1.75 && fs > 8) { fs--; x.font = '900 ' + fs + 'px system-ui'; } x.fillText(l, b.x, b.y + (i - (lines.length - 1) / 2) * fs * 1.1); });
+  }
+  const cy = H - H * .09, cr = Math.max(26, W * .075);
+  x.fillStyle = 'rgba(43,255,136,.08)'; x.fillRect(0, H - H * .18, W, H * .18); x.strokeStyle = 'rgba(43,255,136,.25)'; x.setLineDash([6, 6]); x.beginPath(); x.moveTo(0, H - H * .18); x.lineTo(W, H - H * .18); x.stroke(); x.setLineDash([]);
+  if (ME) { x.save(); x.shadowColor = '#2bff88'; x.shadowBlur = 14; x.drawImage(ME, S.px - cr, cy - cr, cr * 2, cr * 2); x.restore(); }
+  x.font = 'bold 11px system-ui'; x.fillStyle = 'rgba(217,255,233,.6)'; x.textAlign = 'center'; x.fillText('drag here to catch facts', W / 2, H - 6);
+  for (const f of S.fx) { x.globalAlpha = Math.min(1, f.life * 2); x.fillStyle = f.c; x.font = '900 ' + (f.t.length > 12 ? 15 : 20) + 'px system-ui'; x.fillText(f.t, f.x, f.y); x.globalAlpha = 1; }
+  if (S.flash > 0) { x.fillStyle = 'rgba(255,40,60,' + (S.flash * .5) + ')'; x.fillRect(0, 0, W, H); }
+  x.restore();
+}
+const L = AP.loop(step, draw);
+const P = BK.autoPause({ running: () => !!S && !S.over && L.running, pause: () => L.stop(), resume: () => { S.count = 1.2; L.start(); }, host: $('#stage') });
+function finish() {
+  S.over = true; L.stop(); draw(); BK.play('lose');
+  const secs = Math.max(1, Math.ceil(S.t)), a = art(S.art), pb = S.score > (pref.best || 0); if (pb) { pref.best = S.score; ls.set('anonHype.pref', pref); }
+  setTimeout(() => { BK.end({ art: a.img, title: pb ? 'New best! 🏆' : 'Hype overload! 🎈', lb: S.score >= 10,
+    text: `You popped <b>${S.popped}</b> hype balloons and caught <b>${S.caught}</b> facts in ${secs}s.` + (S.factPops ? ` You popped ${S.factPops} fact${S.factPops > 1 ? 's' : ''} by mistake.` : ''),
+    fact: 'Hype is loud, facts are quiet. Slogans like "100x" or "can\'t lose" are warning signs. Look for records you can check on-chain.',
+    buttons: [['PLAY AGAIN', () => newRun()], ['Leaderboard', () => openLB(GAME, TITLE, NAMES, 'facts'), 1], ['Change ANON', () => show('setup'), 1]] });
+    if (S.score >= 10) post(GAME, S.score, secs, S.caught, S.art); }, 600);
+  gameOver();
+}
+// input: tap pops; press in the bottom catch zone drags the catcher
+const cv = $('#cv'); let drag = false, keyv = 0;
+const pt = e => { const r = cv.getBoundingClientRect(); return { x: (e.clientX - r.left - 2) * C.w / (r.width - 4), y: (e.clientY - r.top - 2) * C.h / (r.height - 4) }; };
+cv.addEventListener('pointerdown', e => { if (!S || S.over) return; e.preventDefault(); const p = pt(e);
+  if (p.y > C.h * .82 && !popAt(p.x, p.y)) { drag = true; S.px = Math.max(20, Math.min(C.w - 20, p.x)); try { cv.setPointerCapture(e.pointerId); } catch (_) {} } else popAt(p.x, p.y); });
+cv.addEventListener('pointermove', e => { if (!drag || !S) return; S.px = Math.max(20, Math.min(C.w - 20, pt(e).x)); });
+['pointerup', 'pointercancel'].forEach(t => cv.addEventListener(t, () => drag = false));
+window.addEventListener('keydown', e => { if (!$('#play').classList.contains('on') || document.querySelector('.modal.show,.alb-ov,.anw-ov')) return; if (/^(ArrowLeft|a)$/.test(e.key)) keyv = -1; if (/^(ArrowRight|d)$/.test(e.key)) keyv = 1; });
+window.addEventListener('keyup', e => { if (/^(ArrowLeft|a|ArrowRight|d)$/.test(e.key)) keyv = 0; });
+$('#goBtn').onclick = () => newRun(); $('#againBtn').onclick = () => { L.stop(); newRun(); };
+$('#setBtn').onclick = $('#menuBtn').onclick = () => { L.stop(); if (S) S.over = true; show('setup'); };
+$('#lbBtn').onclick = () => openLB(GAME, TITLE, NAMES, 'facts');
+window.G = { state: () => S, newRun, step, draw, popAt, spawn, L, P, C: () => C, HYPE, FACTS };
+</script>
+</body>
+</html>
