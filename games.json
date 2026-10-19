@@ -1292,6 +1292,35 @@
         "hard": "4 suits"
       },
       "added": "2026-10-19"
+    },
+    {
+      "id": "reversi",
+      "name": "ANON Reversi",
+      "tagline": "Flip the board to your ANON",
+      "path": "reversi/",
+      "thumb": "reversi/thumb.webp",
+      "category": "Strategy",
+      "tags": [
+        "reversi",
+        "board game",
+        "discs",
+        "vs computer"
+      ],
+      "status": "live",
+      "leaderboard": true,
+      "scoreLabel": "Score",
+      "order": "desc",
+      "periods": [
+        "day",
+        "all"
+      ],
+      "movesLabel": "moves",
+      "modeLabels": {
+        "easy": "Easy",
+        "medium": "Medium",
+        "hard": "Hard"
+      },
+      "added": "2026-10-19"
     }
   ]
 }

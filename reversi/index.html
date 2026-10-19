@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05070a">
+<title>ANON Reversi · ANON NFTs</title>
+<meta name="description" content="ANON Reversi: flip the discs with your ANON NFT against the computer. Easy, medium and hard. Free, no sign-up.">
+<link rel="icon" href="../assets/logo.webp">
+<link rel="stylesheet" href="../assets/nft/kit.css">
+<link rel="stylesheet" href="../assets/play/play.css">
+<style>
+.pad{display:flex;gap:6px;justify-content:center;align-items:center;padding:4px 4px 2px;flex:none;user-select:none;-webkit-user-select:none;flex-wrap:wrap}
+.pad button{min-width:52px;min-height:44px;border-radius:12px;border:1px solid rgba(212,175,55,.6);background:rgba(0,0,0,.55);color:var(--gold2);font-size:17px;font-weight:900;touch-action:none;padding:0 8px}
+.pad button.on{background:rgba(255,61,154,.35)}.pad .big{min-width:84px;background:linear-gradient(180deg,#ff5aab,#c41f73);color:#fff;font-size:15px}
+.pad button:disabled{opacity:.35}
+.dpad{display:grid;grid-template-columns:repeat(3,48px);grid-template-rows:repeat(2,40px);gap:4px}.dpad button{min-width:0;min-height:0}
+.dpad [data-k=U]{grid-column:2}.dpad [data-k=L]{grid-column:1;grid-row:2}.dpad [data-k=D]{grid-column:2;grid-row:2}.dpad [data-k=R]{grid-column:3;grid-row:2}
+.seg.wrap{flex-wrap:wrap}.seg.wrap button{flex:1 1 22%}
+@media (max-height:700px){.pad button{min-height:38px}}
+</style>
+</head>
+<body>
+<header><div class="top">
+  <div class="brand"><a class="back-btn" href="../" aria-label="Back to ANON Arcade">&larr; Arcade</a><img src="../assets/logo.webp" alt=""><h1>REVERSI</h1></div>
+  <div class="top-r"><button class="icon-btn" id="lbBtn" aria-label="Leaderboard">🏆</button><button class="icon-btn" id="menuBtn" aria-label="Menu">↻</button></div>
+</div></header>
+<section class="view on" id="setup">
+  <img class="hero" id="hero" alt="ANON NFTs artwork">
+  <div class="lbl">Choose your ANON</div>
+  <div class="chars five" id="artPick"></div>
+  <div class="lbl">Difficulty</div><div class="seg" id="diff"><button data-v="easy">Easy</button><button data-v="medium">Medium</button><button data-v="hard">Hard</button></div>
+  <button class="go" id="goBtn">PLAY</button>
+  <p class="howto">Place a disc so it traps a line of rival discs between two of yours: they flip to your ANON. Dots show your legal moves. No move? You pass. When the board is full (or nobody can move), most discs wins. Corners can never be flipped. Win to score: harder levels and bigger wins score more.</p>
+  <div class="nick" id="nick"></div>
+</section>
+<section class="view" id="play">
+  <div class="hud"><span id="me"></span><span id="ai"></span><span id="tn"></span></div>
+  <div class="stage"><canvas id="cv"></canvas><div class="tap" id="msg"></div></div>
+  
+  <div class="bar"><button id="againBtn">New game</button><button id="setBtn">Change ANON</button></div>
+</section>
+<script src="../shared/leaderboard.js"></script>
+<script src="../shared/newsletter.js"></script>
+<script src="../assets/nft/kit.js"></script>
+<script src="../assets/play/play.js"></script>
+<script>
+const GAME = 'reversi', TITLE = 'ANON Reversi', PK = 'anonB.reversi', ASPECT = 1, MOVES = 'moves', DEFMODE = 'medium';
+'use strict';
+const { $, ls, modal, post, openLB, gameOver, art, ART } = AK;
+const NAMES = Object.fromEntries(ART.map(a => [a.id, a.name.replace(/^ANON /, '')]));
+const DIFFN = { easy: 'Easy', medium: 'Medium', hard: 'Hard' };
+const pref = ls.get(PK, { art: 'anon', diff: DEFMODE, best: 0 }); if (window.MODELIST && !MODELIST.includes(pref.diff)) pref.diff = DEFMODE;
+const show = id => document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === id));
+const setHero = () => $('#hero').src = art(pref.art).cover;
+AK.picker($('#artPick'), pref.art, id => { pref.art = id; ls.set(PK, pref); setHero(); });
+if ($('#diff') && ![...$('#diff').children].some(b => b.dataset.v === pref.diff)) pref.diff = DEFMODE;
+if ($('#diff')) AK.seg($('#diff'), pref.diff, v => { pref.diff = v; ls.set(PK, pref); });
+setHero(); AK.nickLine($('#nick'));
+// ---- sound: generated in the browser, nothing plays before the first tap/key ----
+let AC = null; window.__sfx = 0;
+const unlock = () => { if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } if (AC && AC.state === 'suspended') AC.resume(); };
+['pointerdown', 'keydown', 'touchstart'].forEach(t => window.addEventListener(t, unlock, { capture: true, passive: true }));
+function tone(f, d, type, vol, f2) { if (!AC || pref.mute) return; window.__sfx++; const t = AC.currentTime, o = AC.createOscillator(), g = AC.createGain();
+  o.type = type || 'square'; o.frequency.setValueAtTime(f, t); if (f2) o.frequency.exponentialRampToValueAtTime(Math.max(20, f2), t + d);
+  g.gain.setValueAtTime(vol || .08, t); g.gain.exponentialRampToValueAtTime(.0001, t + d); o.connect(g).connect(AC.destination); o.start(t); o.stop(t + d + .02); }
+function boom(d, vol) { if (!AC || pref.mute) return; window.__sfx++; const n = Math.floor(AC.sampleRate * d), b = AC.createBuffer(1, n, AC.sampleRate), c = b.getChannelData(0);
+  for (let i = 0; i < n; i++) c[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 2); const s = AC.createBufferSource(), g = AC.createGain(), fl = AC.createBiquadFilter();
+  fl.type = 'lowpass'; fl.frequency.value = 900; s.buffer = b; g.gain.value = vol || .25; s.connect(fl).connect(g).connect(AC.destination); s.start(); }
+// ---- shared loop, pause when hidden, game over ----
+let C = null, S = null;
+const imgs = {}; const IM = id => imgs[id];
+ART.forEach(a => { AP.img(a.img).then(i => { imgs[a.id] = i; dirty = true; }); AP.img(a.cover).then(i => { imgs['c-' + a.id] = i; dirty = true; }); });
+function ring(x, im, cx, cy, r, col) { x.save(); x.beginPath(); x.arc(cx, cy, r, 0, 7); x.closePath(); x.fillStyle = '#111'; x.fill(); x.clip(); if (im) AP.cover(x, im, cx - r, cy - r, r * 2, r * 2); x.restore();
+  x.lineWidth = Math.max(1.5, r * .16); x.strokeStyle = col || '#f3d77a'; x.beginPath(); x.arc(cx, cy, r, 0, 7); x.stroke(); }
+function bgArt(x, id, a) { const im = IM('c-' + id); if (!im) return; x.globalAlpha = a || .22; const k = Math.max(C.w / im.width, C.h / im.height); x.drawImage(im, (C.w - im.width * k) / 2, (C.h - im.height * k) / 2, im.width * k, im.height * k); x.globalAlpha = 1; }
+const L = AP.loop(dt => { if (S && !S.over && !S.paused) step(dt); }, () => draw());
+let paused = false;
+function pause() { if (!S || S.over || S.paused) return; S.paused = true; $('#msg').textContent = 'Paused\nTap to resume'; }
+function resume() { if (S && S.paused) { S.paused = false; $('#msg').textContent = ''; } }
+document.addEventListener('visibilitychange', () => { if (document.hidden) pause(); });
+$('#msg').parentElement.addEventListener('pointerdown', () => { if (S && S.paused) resume(); }, true);
+async function start() { show('play'); if (!C) C = AP.canvas($('#cv'), ASPECT, () => draw()); else C.fit(); $('#msg').textContent = ''; newRun(); L.start(); }
+function end(score, secs, moves, mode, title, text) {
+  if (!S || S.over) return; S.over = true; draw(); setTimeout(() => L.stop(), 50); if (navigator.vibrate) navigator.vibrate([40, 30, 70]);
+  const a = art(S.art || pref.art), pb = score > (pref.best || 0); if (pb) { pref.best = score; ls.set(PK, pref); }
+  S.final = { score, secs, moves, mode };
+  setTimeout(() => { modal({ art: a.img, title: pb && score > 0 ? 'New best! 🏆' : title, text, lb: score > 0,
+    buttons: [['PLAY AGAIN', () => start()], ['Leaderboard', () => lb(), 1], ['Change ANON', () => show('setup'), 1]] });
+    if (score > 0) post(GAME, score, Math.max(1, Math.round(secs)), moves, mode); }, 500);
+  gameOver();
+}
+const lb = () => openLB(GAME, TITLE, MODES, MOVES);
+$('#goBtn').onclick = () => start(); $('#againBtn').onclick = () => { if (S) S.over = true; start(); };
+$('#setBtn').onclick = $('#menuBtn').onclick = () => { if (S) S.over = true; L.stop(); show('setup'); };
+$('#lbBtn').onclick = lb;
+// hold-buttons for on-screen pads: data-k = key name
+const held = new Set(); window.__held = held;
+document.querySelectorAll('.pad [data-k]').forEach(b => { const k = b.dataset.k;
+  b.addEventListener('pointerdown', e => { e.preventDefault(); held.add(k); b.classList.add('on'); if (window.onPad) onPad(k); });
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach(t => b.addEventListener(t, () => { held.delete(k); b.classList.remove('on'); })); });
+const KM = { ArrowLeft: 'L', a: 'L', A: 'L', ArrowRight: 'R', d: 'R', D: 'R', ArrowUp: 'U', w: 'U', W: 'U', ArrowDown: 'D', s: 'D', S: 'D', ' ': 'B', Enter: 'B', x: 'B', z: 'B' };
+const playing = () => $('#play').classList.contains('on') && !document.querySelector('.modal.show,.alb-ov,.anw-ov');
+window.addEventListener('keydown', e => { const k = KM[e.key]; if (!k || !playing()) return; e.preventDefault(); if (S && S.paused) resume(); if (!held.has(k) && window.onPad) onPad(k); held.add(k); });
+window.addEventListener('keyup', e => { const k = KM[e.key]; if (k) held.delete(k); });
+
+// pointer -> canvas CSS coords (canvas has a 2px border)
+function P(e) { const r = $('#cv').getBoundingClientRect(); return { x: (e.clientX - r.left - 2) * C.w / (r.width - 4), y: (e.clientY - r.top - 2) * C.h / (r.height - 4) }; }
+const ukDay = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/London' }).format(new Date());
+function hashStr(s) { let h = 2166136261; for (const c of s) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
+function txt(x, s, X, Y, size, col, align, weight, font) { x.font = `${weight || 800} ${size}px ${font || 'system-ui,sans-serif'}`; x.fillStyle = col || '#f3d77a'; x.textAlign = align || 'center'; x.textBaseline = 'middle'; x.fillText(s, X, Y); }
+var dirty = true; window.addEventListener('resize', () => dirty = true); window.addEventListener('pointerup', () => dirty = true);
+const fmt = s => Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
+
+const MODES = {"easy": "Easy", "medium": "Medium", "hard": "Hard"};
+// ANON Reversi vs computer
+const BASE = { easy: 100, medium: 300, hard: 600 };
+const WT = [100, -20, 10, 5, 5, 10, -20, 100, -20, -40, -2, -2, -2, -2, -40, -20, 10, -2, 1, 1, 1, 1, -2, 10, 5, -2, 1, 0, 0, 1, -2, 5, 5, -2, 1, 0, 0, 1, -2, 5, 10, -2, 1, 1, 1, 1, -2, 10, -20, -40, -2, -2, -2, -2, -40, -20, 100, -20, 10, 5, 5, 10, -20, 100];
+const DIRS = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]];
+function flips(b, i, p) { if (b[i]) return []; const r0 = i >> 3, c0 = i & 7, out = [];
+  for (const [dr, dc] of DIRS) { let r = r0 + dr, c = c0 + dc; const run = []; while (r >= 0 && r < 8 && c >= 0 && c < 8 && b[r * 8 + c] === -p) { run.push(r * 8 + c); r += dr; c += dc; }
+    if (run.length && r >= 0 && r < 8 && c >= 0 && c < 8 && b[r * 8 + c] === p) out.push(...run); } return out; }
+const legal = (b, p) => { const o = []; for (let i = 0; i < 64; i++) if (!b[i] && flips(b, i, p).length) o.push(i); return o; };
+function play(b, i, p) { const f = flips(b, i, p), n = b.slice(); n[i] = p; f.forEach(j => n[j] = p); return n; }
+function evalB(b, p) { let s = 0, e = 0; for (let i = 0; i < 64; i++) { s += b[i] * WT[i]; if (!b[i]) e++; }
+  // corners captured make adjacent X/C squares safe
+  [[0, 1, 8, 9], [7, 6, 15, 14], [56, 57, 48, 49], [63, 62, 55, 54]].forEach(([c, a, d, x]) => { if (b[c]) { s -= b[a] * WT[a] + b[d] * WT[d] + b[x] * WT[x]; s += (b[a] + b[d]) * 8 * (b[c] === b[a] ? 1 : 0); } });
+  const m = legal(b, 1).length - legal(b, -1).length; s += m * 6; if (e < 12) { let d = 0; for (let i = 0; i < 64; i++) d += b[i]; s += d * (12 - e); } return s * p; }
+function ab(b, p, d, a, bt) { const ms = legal(b, p); if (!ms.length) { if (!legal(b, -p).length) { let t = 0; for (const v of b) t += v; return t * p * 1000; } return -ab(b, -p, d, -bt, -a); }
+  if (d <= 0) return evalB(b, p); ms.sort((u, v) => WT[v] - WT[u]); for (const i of ms) { const v = -ab(play(b, i, p), -p, d - 1, -bt, -a); if (v > a) a = v; if (a >= bt) break; } return a; }
+function aiMove(b, p, lvl) { const ms = legal(b, p); if (!ms.length) return -1;
+  if (lvl === 'easy') { if (AP.rnd() < .5) return AP.pick(ms); return ms.reduce((x, y) => flips(b, y, p).length > flips(b, x, p).length ? y : x); }
+  const empt = b.filter(v => !v).length, d = lvl === 'medium' ? 1 : empt <= 8 ? 8 : 3; let best = ms[0], bv = -1e9;
+  for (const i of AP.shuffle(ms.slice())) { const v = -ab(play(b, i, p), -p, d - 1, -1e9, 1e9) + (lvl === 'medium' ? AP.rnd() * 18 : AP.rnd() * 2); if (v > bv) { bv = v; best = i; } } return best; }
+const RIVAL = a => a === 'skulls' ? 'ghost' : 'skulls';
+function newRun() { const b = Array(64).fill(0); b[27] = b[36] = -1; b[28] = b[35] = 1; S = { art: pref.art, mode: pref.diff, b, turn: 1, moves: 0, t: 0, wait: 0, last: -1, flipT: 0, flipped: [] }; hud(); dirty = true; }
+const count = p => S.b.filter(v => v === p).length;
+const hud = () => { $('#me').textContent = '🟡 You ' + count(1); $('#ai').textContent = '💀 CPU ' + count(-1); $('#tn').textContent = S.over ? 'Game over' : S.turn === 1 ? 'Your move' : 'Thinking…'; };
+function doMove(i, p) { S.flipped = flips(S.b, i, p); S.b = play(S.b, i, p); S.last = i; S.flipT = .35; if (p === 1) S.moves++; tone(p === 1 ? 520 : 330, .07, 'triangle', .07); dirty = true; next(-p); }
+function next(p) { if (legal(S.b, p).length) { S.turn = p; if (p === -1) S.wait = .55; hud(); return; }
+  if (legal(S.b, -p).length) { S.turn = -p; AK.toast((p === 1 ? 'You have' : 'CPU has') + ' no move: pass'); if (-p === -1) S.wait = .8; hud(); return; } finish(); }
+function finish() { S.turn = 0; const me = count(1), ai = count(-1); hud(); const win = me > ai, sc = win ? BASE[S.mode] + (me - ai) * 5 : 0;
+  end(sc, S.t, S.moves, S.mode, win ? 'You win! 🏆' : me === ai ? 'Draw 🤝' : 'CPU wins 💀', `${MODES[S.mode]}: you <b>${me}</b> – <b>${ai}</b> CPU.` + (win ? `<br>Score <b>${sc}</b>` : '<br>Try again!')); }
+$('#cv').addEventListener('pointerdown', e => { if (!S || S.paused || S.over || S.turn !== 1) return; const p = P(e), q = Math.min(C.w, C.h) / 8; const i = Math.floor(p.y / q) * 8 + Math.floor(p.x / q);
+  if (p.x < 0 || p.y < 0 || p.x >= q * 8 || p.y >= q * 8) return; if (flips(S.b, i, 1).length) doMove(i, 1); else tone(150, .08, 'square', .04); });
+function step(dt) { S.t += dt; if (S.flipT > 0) { S.flipT -= dt; dirty = true; } if (S.turn === -1 && S.wait > 0) { S.wait -= dt; if (S.wait <= 0) { const m = aiMove(S.b, -1, S.mode); if (m >= 0) doMove(m, -1); else next(1); } } }
+function draw() { if (!C || !dirty) return; dirty = false; const x = C.x, q = Math.min(C.w, C.h) / 8; x.fillStyle = '#0a1a12'; x.fillRect(0, 0, C.w, C.h); if (!S) return; bgArt(x, S.art, .1);
+  for (let i = 0; i < 64; i++) { const r = i >> 3, c = i & 7; x.fillStyle = (r + c) % 2 ? 'rgba(10,40,26,.82)' : 'rgba(14,52,34,.82)'; x.fillRect(c * q, r * q, q, q); }
+  x.strokeStyle = 'rgba(212,175,55,.55)'; x.lineWidth = 1; for (let k = 0; k <= 8; k++) { x.beginPath(); x.moveTo(k * q, 0); x.lineTo(k * q, q * 8); x.moveTo(0, k * q); x.lineTo(q * 8, k * q); x.stroke(); }
+  const lg = S.turn === 1 ? legal(S.b, 1) : [];
+  for (let i = 0; i < 64; i++) { const cx = (i & 7) * q + q / 2, cy = (i >> 3) * q + q / 2, v = S.b[i];
+    if (v) { let rr = q * .42; if (S.flipT > 0 && (S.flipped.includes(i) || i === S.last)) rr *= .6 + .4 * (1 - S.flipT / .35); ring(x, IM(v === 1 ? S.art : RIVAL(S.art)), cx, cy, rr, v === 1 ? '#f3d77a' : '#ff3d9a'); if (i === S.last) { x.fillStyle = '#2bff88'; x.beginPath(); x.arc(cx, cy - q * .38, q * .07, 0, 7); x.fill(); } }
+    else if (lg.includes(i)) { x.fillStyle = 'rgba(243,215,122,.5)'; x.beginPath(); x.arc(cx, cy, q * .11, 0, 7); x.fill(); } } }
+window.G = { state: () => S, doMove, aiMove, legal, play, flips, C: () => C, L };
+
+</script>
+</body>
+</html>
