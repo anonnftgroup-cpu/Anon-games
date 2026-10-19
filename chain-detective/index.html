@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05070a">
+<title>On-Chain Detective · ANON NFTs</title>
+<meta name="description" content="On-Chain Detective: inspect made-up NFT project records and decide which are backed and which are unbacked. Free, no sign-up.">
+<link rel="icon" href="../assets/logo.webp">
+<link rel="stylesheet" href="../assets/nft/kit.css">
+<link rel="stylesheet" href="../assets/play/play.css">
+<link rel="stylesheet" href="bk.css">
+<style>
+#play{position:relative}
+.file{flex:1;min-height:0;overflow:auto;width:100%;padding:4px 12px 12px}
+.brief{display:flex;align-items:center;gap:10px;margin:2px 0 8px}
+.brief img{width:46px;height:46px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 2px var(--gold),0 0 12px rgba(43,255,136,.35);flex:none}
+.brief div{font-size:12.5px;color:#cfc6ab;line-height:1.35}
+.timer{height:7px;border-radius:4px;background:rgba(255,255,255,.08);overflow:hidden;margin-bottom:8px}.timer i{display:block;height:100%;background:linear-gradient(90deg,#2bff88,var(--gold2));transform-origin:left}
+.rec{border:1px solid rgba(212,175,55,.45);border-radius:14px;background:linear-gradient(180deg,rgba(18,15,7,.95),rgba(6,7,10,.95));padding:10px 11px;margin-bottom:9px;position:relative}
+.rec h3{margin:0 0 6px;font-size:15px;display:flex;align-items:center;gap:8px;color:#f1ead2}.rec h3 .em{font-size:22px}
+.rec table{width:100%;border-collapse:collapse;font-size:13px}.rec td{padding:2px 0;color:#d9d2bc}.rec td:last-child{text-align:right;font-weight:800;font-family:ui-monospace,Menlo,Consolas,monospace;color:#f3d77a}
+.rec td.warn{color:#ffb86b!important}
+.rec .claim{font-size:12px;color:#9d9580;font-style:italic;margin-top:4px}
+.stamps{display:flex;gap:8px;margin-top:8px}.stamps button{flex:1;min-height:44px;border-radius:12px;font-weight:900;font-size:14px;letter-spacing:.03em}
+.stamps .b{border:1px solid #8affc0;background:linear-gradient(180deg,#1fc66a,#0b5e31);color:#fff}.stamps .u{border:1px solid #ff8a8a;background:linear-gradient(180deg,#e2384b,#7e0f1d);color:#fff}
+.verdict{margin-top:8px;font-size:13px;line-height:1.38;border-radius:10px;padding:7px 9px}.verdict.ok{background:rgba(43,255,136,.1);color:#d9f5e3;border:1px solid rgba(43,255,136,.4)}.verdict.no{background:rgba(255,90,90,.1);color:#ffe0e0;border:1px solid rgba(255,90,90,.45)}
+.stamp{position:absolute;right:10px;top:8px;font-weight:900;font-size:13px;padding:2px 8px;border:2px solid;border-radius:8px;transform:rotate(8deg)}
+.stamp.b{color:var(--green)}.stamp.u{color:#ff6b6b}
+</style>
+</head>
+<body>
+<header><div class="top">
+  <div class="brand"><a class="back-btn" href="../" aria-label="Back to ANON Arcade">&larr; Arcade</a><img src="../assets/logo.webp" alt=""><h1>ON-CHAIN DETECTIVE</h1></div>
+  <div class="top-r"><button class="icon-btn" id="sndBtn" aria-label="Sound">🔊</button><button class="icon-btn" id="lbBtn" aria-label="Leaderboard">🏆</button><button class="icon-btn" id="menuBtn" aria-label="Menu">↻</button></div>
+</div></header>
+<section class="view on" id="setup">
+  <img class="hero" id="hero" alt="ANON NFTs artwork">
+  <div class="lbl">Choose your ANON detective</div>
+  <div class="chars five" id="artPick"></div>
+  <button class="go" id="goBtn">OPEN CASE FILE #1</button>
+  <p class="howto">Each case file has records for <b>made-up</b> NFT projects. In this game, a project counts as <b>BACKED</b> when its <b>pool, found on-chain</b>, holds <b>at least 50%</b> of what the mint raised (mint price × NFTs minted). Otherwise it's <b>UNBACKED</b>. Website claims and screenshots don't count: only the chain does. Cases get harder and faster. 3 lives.</p>
+  <div class="nick" id="nick"></div>
+  <p class="risk-foot">All projects and figures are made up. NFTs and cryptoassets are high-risk. Not financial advice. <a href="https://anonnfts.com/check-backing-on-chain-1" target="_top" rel="noopener">How to check backing on-chain</a></p>
+</section>
+<section class="view" id="play">
+  <div class="hud"><span id="cs">📁 #1</span><span id="lv">❤️❤️❤️</span><span id="sc">⭐ 0</span></div>
+  <div class="file" id="file"><div class="brief"><img id="det" alt=""><div id="brief"></div></div><div class="timer"><i id="bar"></i></div><div id="recs"></div></div>
+</section>
+<script src="../shared/leaderboard.js"></script>
+<script src="../shared/newsletter.js"></script>
+<script src="../assets/nft/kit.js"></script>
+<script src="../assets/play/play.js"></script>
+<script src="bk.js"></script>
+<script>
+'use strict';
+const { $, el, ls, post, openLB, gameOver, art, modal } = AK;
+const GAME = 'chain-detective', TITLE = 'On-Chain Detective';
+const NAMES = ['Moon Rug Club', 'Hype Hamsters', 'Pump Pals', 'Fomo Frogs', 'Rocket Raccoons', 'Lucky Lizards', 'Shiny Snails', 'Velvet Vultures', 'Glitter Goblins', 'Mystery Mint Co.', 'Pixel Possums', 'Cosmic Crabs', 'Neon Newts', 'Turbo Turtles', 'Velvet Voles', 'Laser Lemurs', 'Disco Dodos', 'Bubble Bats', 'Pocket Pandas', 'Jelly Jackals'];
+const EM = ['🐹', '🐸', '🦝', '🦎', '🐌', '🦅', '👺', '🦀', '🐢', '🦇', '🐼', '🦤', '🐒', '🦊', '🐙'];
+const fmt = n => Math.round(n).toLocaleString('en-GB');
+const pref = ls.get('anonDet.pref', { art: 'eyes', best: 0 });
+const show = id => document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === id));
+const setHero = () => $('#hero').src = art(pref.art).cover;
+AK.picker($('#artPick'), pref.art, id => { pref.art = id; ls.set('anonDet.pref', pref); setHero(); });
+setHero(); AK.nickLine($('#nick')); BK.muteBtn($('#sndBtn'));
+// ---- case generation ----
+function record(lv, used) {
+  let name; do name = AP.pick(NAMES); while (used.has(name)); used.add(name);
+  const backed = AP.rnd() < .5, tight = lv >= 6 && AP.rnd() < .35 + Math.min(.35, lv * .02);
+  const ratio = backed ? (tight ? .5 + AP.rnd() * .06 : .55 + AP.rnd() * .4) : (tight ? .42 + AP.rnd() * .07 : AP.rnd() * .4);
+  const price = AP.pick([5, 8, 10, 12, 15, 20, 25, 40, 50]), minted = AP.ri(4, 60) * 25, raised = price * minted; let pool = Math.floor(raised * ratio);
+  if (backed && pool < raised / 2) pool = Math.ceil(raised / 2); if (!backed && pool >= raised / 2) pool = Math.floor(raised / 2) - 1;
+  const r = { name, em: AP.pick(EM), price, minted, raised, pool, truth: backed ? 'b' : 'u', trick: null, claim: null };
+  // tricks from case 10: claims that don't match the chain
+  if (lv >= 10 && AP.rnd() < .3) r.claim = AP.pick(['"100% backed!"', '"Fully backed, trust us"', '"Backed by our community"', '"Biggest pool in the space"']);
+  if (lv >= 12 && AP.rnd() < .22) { r.trick = 'shot'; r.truth = 'u'; }
+  else if (lv >= 15 && AP.rnd() < .18) { r.trick = 'devwallet'; r.truth = 'u'; }
+  r.mode = lv <= 2 ? 'pct' : lv <= 5 ? 'raised' : 'full'; return r;
+}
+function makeCase(lv) { const n = lv <= 2 ? 2 : lv <= 6 ? 3 : 4, used = new Set(); return { lv, recs: Array.from({ length: n }, () => record(lv, used)), time: Math.max(18, 44 - lv * 1.6) * (n / 3) }; }
+function why(r) { const pct = Math.floor(r.pool / r.raised * 100);
+  if (r.trick === 'shot') return 'The pool figure is only a screenshot. Screenshots can be edited, so there is nothing to check on-chain: treat it as unbacked.';
+  if (r.trick === 'devwallet') return 'The "pool" is a normal dev wallet the team can empty whenever they like. That isn\'t backing you can rely on.';
+  return `Pool ${fmt(r.pool)} ÷ raised ${fmt(r.raised)} (${r.price} × ${fmt(r.minted)}) = ${pct}%. ${r.pool * 2 >= r.raised ? 'At least 50%: backed.' : 'Below 50%: unbacked.'}` + (r.claim ? ' The website claim doesn\'t change the chain record.' : ''); }
+function rows(r) { const t = [];
+  if (r.mode === 'pct' && !r.trick) t.push(['Backing found on-chain', Math.floor(r.pool / r.raised * 100) + '%']);
+  else { if (r.mode === 'full') { t.push(['Mint price', r.price + ' FUSD']); t.push(['NFTs minted', fmt(r.minted)]); } else t.push(['Mint raised', fmt(r.raised) + ' FUSD']);
+    if (r.trick === 'shot') t.push(['Pool balance', '📷 screenshot only', 'warn']); else t.push(['Pool balance (on-chain)', fmt(r.pool) + ' FUSD']);
+    if (r.trick === 'devwallet') t.push(['Pool held in', 'dev\'s personal wallet', 'warn']); else if (r.mode !== 'pct') t.push(['Pool held in', r.trick === 'shot' ? '?' : 'pool contract']); }
+  return t; }
+// ---- run ----
+let S = null; const L = AP.loop(step, () => {});
+const P = BK.autoPause({ running: () => !!S && !S.over && !S.between && L.running, pause: () => L.stop(), resume: () => L.start(), host: $('#file') });
+function newRun() { show('play'); $('#det').src = art(pref.art).img; S = { lv: 0, score: 0, lives: 3, solved: 0, wrong: 0, t: 0, over: false, art: pref.art }; nextCase(); }
+function nextCase() { S.lv++; S.c = makeCase(S.lv); S.ct = 0; S.between = false; S.left = S.c.recs.length; render(); L.start(); }
+function hud() { $('#cs').textContent = '📁 #' + S.lv; $('#lv').textContent = '❤️'.repeat(Math.max(0, S.lives)) + '🖤'.repeat(3 - Math.max(0, S.lives)); $('#sc').textContent = '⭐ ' + S.score;
+  $('#bar').style.transform = 'scaleX(' + Math.max(0, 1 - S.ct / S.c.time) + ')'; }
+function render() {
+  const lv = S.lv; $('#brief').innerHTML = `<b>Case file #${lv}</b>: ${S.c.recs.length} records, ${Math.round(S.c.time)}s. ` + (lv <= 2 ? 'Read the backing % and stamp each one.' : lv <= 5 ? 'Work out pool ÷ mint raised.' : lv < 10 ? 'Mint raised = price × minted. Some are close to 50%!' : 'Watch out: claims, screenshots and dev wallets aren\'t on-chain backing.');
+  const box = $('#recs'); box.innerHTML = '';
+  S.c.recs.forEach((r, i) => { const d = el('div', 'rec'); d.id = 'rec' + i;
+    d.innerHTML = `<h3><span class="em">${r.em}</span>${BK.esc(r.name)}</h3><table>${rows(r).map(([a, b, c]) => `<tr><td>${a}</td><td class="${c || ''}">${b}</td></tr>`).join('')}</table>` + (r.claim ? `<div class="claim">Website says: ${BK.esc(r.claim)}</div>` : '');
+    const st = el('div', 'stamps'); const bb = el('button', 'b', '✔ BACKED'), ub = el('button', 'u', '✖ UNBACKED'); bb.onclick = () => verdict(i, 'b'); ub.onclick = () => verdict(i, 'u'); st.append(bb, ub); d.appendChild(st); box.appendChild(d); });
+  hud(); }
+function verdict(i, v) {
+  if (!S || S.over || S.between) return false; const r = S.c.recs[i]; if (r.done) return false; r.done = true; S.left--;
+  const good = v === r.truth, d = $('#rec' + i); d.querySelector('.stamps').remove();
+  const s = el('div', 'stamp ' + v, v === 'b' ? 'BACKED' : 'UNBACKED'); d.appendChild(s);
+  if (good) { const pts = 100 + Math.round(50 * Math.max(0, 1 - S.ct / S.c.time) / 5) * 5; S.score += pts; S.solved++; BK.play('good'); d.appendChild(Object.assign(el('div', 'verdict ok'), { innerHTML: '<b>Correct +' + pts + '.</b> ' + BK.esc(why(r)) })); }
+  else { S.lives--; S.wrong++; BK.play('bad'); if (navigator.vibrate) navigator.vibrate(70); d.appendChild(Object.assign(el('div', 'verdict no'), { innerHTML: '<b>Not quite.</b> ' + BK.esc(why(r)) })); }
+  hud(); if (S.lives <= 0) { const run = S; setTimeout(() => { if (S === run) finish(); }, 900); S.between = true; L.stop(); return true; }
+  if (S.left === 0) caseDone(); return true;
+}
+function caseDone() { S.between = true; L.stop(); S.t += S.ct; BK.play('win');
+  const run = S; setTimeout(() => { if (S !== run || S.over) return; modal({ art: art(S.art).img, title: 'Case #' + S.lv + ' closed 🔎', text: `Score so far <b>${S.score}</b>.` + BK.factHTML(S.lv - 1), buttons: [['NEXT CASE →', () => nextCase()]] }); }, 900); }
+function step(dt) { if (!S || S.over || S.between) return; S.ct += dt;
+  if (S.ct >= S.c.time) { // time up: every unstamped record counts as wrong
+    S.c.recs.forEach((r, i) => { if (!r.done && S.lives > 0 && !S.over) { const v = r.truth === 'b' ? 'u' : 'b'; verdict(i, v); } }); if (!S.between && S.lives > 0) caseDone(); }
+  hud(); }
+function finish() {
+  if (S.over) return; S.over = true; L.stop(); S.t += S.ct; const a = art(S.art), secs = Math.max(2 * S.solved, Math.ceil(S.t)), pb = S.score > (pref.best || 0);
+  if (pb) { pref.best = S.score; ls.set('anonDet.pref', pref); } BK.play('lose');
+  BK.end({ art: a.img, title: pb ? 'New best! 🏆' : 'Case closed', lb: S.score >= 100,
+    text: `You reached case <b>#${S.lv}</b> and got <b>${S.solved}</b> records right.`, fact: 'In real life, check the pool on the marketplace and a block explorer yourself. Claims and screenshots aren\'t proof.',
+    buttons: [['PLAY AGAIN', () => newRun()], ['Leaderboard', () => openLB(GAME, TITLE, null, 'cases'), 1], ['Menu', () => show('setup'), 1]] });
+  if (S.score >= 100) post(GAME, S.score, secs, S.solved, null);
+  gameOver();
+}
+$('#goBtn').onclick = () => newRun();
+$('#menuBtn').onclick = () => { L.stop(); if (S) S.over = true; AK.closeModal(); show('setup'); };
+$('#lbBtn').onclick = () => openLB(GAME, TITLE, null, 'cases');
+window.G = { state: () => S, newRun, nextCase, verdict, step, makeCase, why, L, P };
+</script>
+</body>
+</html>

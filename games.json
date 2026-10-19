@@ -1077,6 +1077,31 @@
       "movesLabel": "levels",
       "hideMode": true,
       "added": "2026-10-19"
+    },
+    {
+      "id": "chain-detective",
+      "name": "On-Chain Detective",
+      "tagline": "Inspect the records: backed or unbacked?",
+      "path": "chain-detective/",
+      "thumb": "chain-detective/thumb.webp",
+      "category": "Learn",
+      "tags": [
+        "learn",
+        "detective",
+        "puzzle",
+        "backing"
+      ],
+      "status": "live",
+      "leaderboard": true,
+      "scoreLabel": "Score",
+      "order": "desc",
+      "periods": [
+        "day",
+        "all"
+      ],
+      "movesLabel": "cases",
+      "hideMode": true,
+      "added": "2026-10-19"
     }
   ]
 }
