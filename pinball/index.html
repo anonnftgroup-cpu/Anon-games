@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05070a">
+<title>ANON Galaxy Pinball · ANON NFTs</title>
+<meta name="description" content="ANON Galaxy Pinball: a free space pinball table from ANON NFTs. Pink gem bumpers, crown targets, missions and ranks from Shadow Recruit to ANON King. No sign-up.">
+<link rel="icon" href="../assets/logo.webp">
+<link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
+<link rel="stylesheet" href="../assets/nft/kit.css">
+<style>
+#play{min-height:0;position:relative}
+.bg{display:grid;grid-template-columns:50px 1fr auto;grid-template-rows:auto auto;gap:1px 9px;align-items:center;margin:2px 8px 4px;padding:5px 9px;border-radius:13px;flex:none;
+ background:linear-gradient(180deg,rgba(28,10,40,.92),rgba(6,8,14,.92));border:1px solid rgba(212,175,55,.6);box-shadow:inset 0 0 18px rgba(255,61,154,.18),0 0 14px rgba(43,255,136,.08)}
+.bg img{grid-row:1/3;width:48px;height:48px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 2px var(--gold),0 0 12px rgba(255,61,154,.5)}
+.sc{font-family:Georgia,serif;font-weight:700;font-size:23px;line-height:1.05;color:#fff3c4;letter-spacing:.04em;text-shadow:0 0 10px rgba(243,215,122,.45);font-variant-numeric:tabular-nums}
+.bi{font-size:11.5px;font-weight:800;color:var(--gold2);text-align:right;white-space:nowrap;letter-spacing:.04em}
+.bi b{color:var(--pink2)}
+.ms{grid-column:2/4;font-size:11.5px;color:#d9d2bc;display:flex;align-items:center;gap:7px;min-width:0}
+.ms .rk{color:var(--green);font-weight:800;white-space:nowrap}
+.ms .mn{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pb{width:54px;height:6px;border-radius:3px;background:rgba(255,255,255,.12);overflow:hidden;flex:none}.pb i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--pink),var(--gold2));transition:width .2s}
+.cw{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;position:relative;touch-action:none}
+canvas{display:block;border-radius:14px;box-shadow:0 0 0 1px rgba(212,175,55,.55),0 0 26px rgba(255,61,154,.22);touch-action:none}
+.bar{padding-top:4px}.bar button{min-height:34px;padding:0 11px}
+.pause{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.55);z-index:20}
+.pause.show{display:flex}
+.pause .mcard h2{margin-top:0}
+#help{font-size:13.5px;text-align:left;line-height:1.45;color:#d9d2bc;margin:6px 0 0;padding-left:18px}
+#help li{margin:2px 0}
+.keys{font-size:12px;color:#9d9580;text-align:center;margin-top:8px}
+.hero{max-height:170px}
+</style>
+</head>
+<body>
+<header><div class="top">
+  <div class="brand"><a class="back-btn" href="../" aria-label="Back to ANON Arcade">&larr; Arcade</a><img src="../assets/logo.webp" alt=""><h1>ANON GALAXY PINBALL</h1></div>
+  <div class="top-r"><button class="icon-btn" id="lbBtn" aria-label="Leaderboard">🏆</button></div>
+</div></header>
+<section class="view on" id="setup">
+  <img class="hero" src="../assets/nft/c-royals.webp" alt="ANON NFTs artwork">
+  <div class="lbl">Table: ANON Galaxy</div>
+  <ul id="help">
+    <li><b>Flippers:</b> tap the left or right half of the table.</li>
+    <li><b>Launch:</b> hold the right side (or swipe down), then let go. Longer hold = stronger shot.</li>
+    <li><b>Missions:</b> collect pink gems, hit the crown targets, spell A-N-O-N and escape the shadow forest to rise from Shadow Recruit to <b>ANON King</b>.</li>
+    <li>Every third mission starts <b>Galaxy Multiball</b>. Loop the forest during multiball for a jackpot.</li>
+    <li><b>Nudge</b> to save a ball, but nudge too often and you'll TILT.</li>
+  </ul>
+  <button class="go" id="goBtn">PLAY</button>
+  <div class="keys">Keyboard: Z / M or ← / → flippers · Space to launch · N nudge · P pause</div>
+  <div class="nick" id="nick"></div>
+</section>
+<section class="view" id="play">
+  <div class="bg"><img id="rkImg" alt=""><div class="sc" id="sc">0</div><div class="bi" id="bi">BALL 1/3</div>
+    <div class="ms"><span class="rk" id="rk">Shadow Recruit</span><span class="mn" id="mn"></span><span class="pb"><i id="pg"></i></span></div></div>
+  <div class="cw" id="cw"><canvas id="cv" aria-label="ANON Galaxy pinball table"></canvas>
+    <div class="pause" id="pause"><div class="mcard"><h2>Paused</h2><p>Take a breather, ninja.</p>
+      <button class="go" id="resBtn">RESUME</button><button class="go alt" id="newBtn2">New game</button><button class="go alt" id="lbBtn2">Leaderboard</button></div></div>
+  </div>
+  <div class="bar"><button id="pauseBtn">⏸ Pause</button><button id="nudgeBtn">🫸 Nudge</button><button id="launchBtn">🚀 Launch</button><button id="sndBtn" aria-label="Sound on or off">🔊</button></div>
+</section>
+<script src="../shared/leaderboard.js"></script>
+<script src="../shared/newsletter.js"></script>
+<script src="../assets/nft/kit.js"></script>
+<script src="engine.js"></script>
+<script src="sound.js"></script>
+<script>
+'use strict';
+(function () {
+const { $, ls, toast, modal, post, openLB, gameOver, art } = AK;
+const GAME = 'pinball', TITLE = 'ANON Galaxy Pinball', E = PBEngine, S = PBSound;
+const RANK_ART = ['anon', 'ghost', 'eyes', 'lake', 'skulls', 'venge', 'aces', 'apes', 'royals'];
+const TARGET_ART = ['anon', 'royals', 'venge'];
+const cv = $('#cv'), cx = cv.getContext('2d'), cw = $('#cw');
+const qs = new URLSearchParams(location.search);
+let G = null, paused = false, scale = 1, dpr = 1, staticLayer = null, last = 0, msgs = [], charge = null, best = ls.get('anonPB.best', 0);
+const perf = { frames: 0, work: [], gaps: [] };
+const img = src => { const i = new Image(); i.src = src; i.onload = () => { staticLayer = null; }; return i; };
+const IM = { logo: img('../assets/logo.webp'), tgt: TARGET_ART.map(a => img(art(a).img)) };
+/* ---------- sound button ---------- */
+const paintSnd = () => { $('#sndBtn').textContent = S.isMuted() ? '🔇 Sound' : '🔊 Sound'; };
+paintSnd();
+$('#sndBtn').onclick = () => { S.unlock(); S.toggle(); paintSnd(); toast(S.isMuted() ? 'Sound off' : 'Sound on'); };
+const firstGesture = () => S.unlock();
+addEventListener('pointerdown', firstGesture, true); addEventListener('keydown', firstGesture, true);
+/* ---------- setup ---------- */
+AK.nickLine($('#nick'));
+const show = id => document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === id));
+$('#lbBtn').onclick = $('#lbBtn2').onclick = () => openLB(GAME, TITLE, null, 'missions');
+$('#goBtn').onclick = () => newGame();
+$('#newBtn2').onclick = () => { setPause(false); newGame(); };
+$('#resBtn').onclick = () => setPause(false);
+$('#pauseBtn').onclick = () => setPause(!paused);
+$('#nudgeBtn').onclick = () => { if (G && !paused) G.nudge(); };
+$('#launchBtn').onclick = () => { if (G && !paused && G.canLaunch()) G.launch(0.85); };
+function setPause(p) { if (!G || G.over) p = false; paused = p; $('#pause').classList.toggle('show', p); $('#pauseBtn').textContent = p ? '▶ Resume' : '⏸ Pause'; last = 0; }
+document.addEventListener('visibilitychange', () => { if (document.hidden && G && !G.over) setPause(true); });
+function newGame(seed) {
+  AK.closeModal(); show('play'); resize();
+  G = E.createGame({ seed: seed != null ? seed : (qs.get('seed') ? +qs.get('seed') : undefined), onEvent });
+  G.start(); msgs = []; charge = null; setPause(false); hud(); say('ANON GALAXY', 'Hold right side, release to launch', 2.6);
+}
+/* ---------- events -> sound, messages ---------- */
+function say(a, b, dur) { msgs.push({ a, b: b || '', until: performance.now() + (dur || 1.5) * 1000 }); if (msgs.length > 3) msgs.shift(); }
+function onEvent(e) {
+  S.play(e.type, e); if (window.__pbLog) window.__pbLog.push(e.type);
+  switch (e.type) {
+    case 'sling': flash['sling' + e.side] = performance.now(); break;
+    case 'mission': say('MISSION COMPLETE', '+' + e.pts.toLocaleString() + (e.promoted ? ' · Rank: ' + E.RANKS[e.rank] : ''), 2.4); break;
+    case 'multiball': say('GALAXY MULTIBALL!', 'Loop the forest for a JACKPOT', 2.4); break;
+    case 'jackpot': say('JACKPOT!', '+5,000', 2); break;
+    case 'skill': say('SKILL SHOT!', '+2,000', 1.8); break;
+    case 'saved': say('BALL SAVED', 'The crown protects you', 1.6); break;
+    case 'tilt': say('TILT', 'Flippers off until the ball drains', 2.6); if (navigator.vibrate) navigator.vibrate(200); break;
+    case 'tiltWarn': say('DANGER', 'One more nudge and you tilt', 1.5); break;
+    case 'spell': say('A-N-O-N!', 'Bonus ×' + e.mult, 1.8); break;
+    case 'bank': say('CROWN BANK', '+1,000', 1.4); break;
+    case 'orbit': say('FOREST ESCAPE', '', 1.3); break;
+    case 'bonus': say('END OF BALL', 'Bonus ' + e.bonus.toLocaleString() + (e.mult > 1 ? ' (×' + e.mult + ')' : ''), 1.8); break;
+    case 'ball': say('BALL ' + e.n, 'Hold right side, release to launch', 2); break;
+    case 'gameover': setTimeout(endGame, 700); break;
+  }
+}
+function endGame() {
+  if (!G) return; const sc = G.score, t = Math.max(1, Math.round(G.t)), m = G.missionsDone, rk = E.RANKS[G.rank];
+  const isBest = sc > best; if (isBest) { best = sc; ls.set('anonPB.best', best); }
+  window.ANON_PB_LAST = { score: sc, time: t, missions: m };
+  modal({ art: art(RANK_ART[G.rank]).cover, title: 'GAME OVER', lb: true,
+    text: '<b style="font-size:22px;color:#fff3c4">' + sc.toLocaleString() + '</b>' + (isBest ? ' 👑 new best!' : '') + '<br>Rank: <b>' + rk + '</b> · Missions: ' + m + ' · ' + t + ' s',
+    buttons: [['PLAY AGAIN', () => newGame()], ['Leaderboard', () => openLB(GAME, TITLE, null, 'missions'), 1]] });
+  if (sc > 0) post(GAME, sc, t, m, null).then(r => { window.ANON_PB_POST = r; });
+  gameOver();
+}
+function hud() {
+  if (!G) return; const s = G.status();
+  $('#sc').textContent = s.score.toLocaleString();
+  $('#bi').innerHTML = (s.tilted ? '<b>TILT</b> · ' : s.multiball ? '<b>MULTIBALL</b> · ' : '') + 'BALL ' + Math.min(3, s.ball) + '/3' + (s.mult > 1 ? ' · <b>×' + s.mult + '</b>' : '');
+  $('#rk').textContent = s.rank; $('#mn').textContent = s.mission || ''; $('#pg').style.width = Math.min(100, 100 * s.prog / (s.need || 1)) + '%';
+  const a = art(RANK_ART[s.rankIdx]).img; if ($('#rkImg').getAttribute('src') !== a) $('#rkImg').src = a;
+  $('#launchBtn').style.visibility = G.canLaunch() ? 'visible' : 'hidden';
+}
+/* ---------- input ---------- */
+const ptrs = new Map();
+function sideOf(e) { const r = cv.getBoundingClientRect(); return e.clientX < r.left + r.width / 2 ? 'L' : 'R'; }
+function syncFlippers() { if (!G) return; const L = [...ptrs.values()].some(p => p.side === 'L') || keys.L, R = [...ptrs.values()].some(p => p.side === 'R') || keys.R; G.flip('L', L); G.flip('R', R); }
+cw.addEventListener('pointerdown', e => {
+  if (!G || paused || G.over || e.target.closest('.pause')) return; e.preventDefault();
+  const side = sideOf(e); ptrs.set(e.pointerId, { side, y: e.clientY });
+  if (side === 'R' && G.canLaunch() && !charge) { charge = { id: e.pointerId, t0: performance.now(), y0: e.clientY, swipe: 0 }; S.play('pull'); }
+  syncFlippers(); try { cw.setPointerCapture(e.pointerId); } catch (x) {}
+});
+cw.addEventListener('pointermove', e => { if (charge && charge.id === e.pointerId) charge.swipe = Math.max(charge.swipe, (e.clientY - charge.y0) / (90 * scale)); });
+const up = e => { ptrs.delete(e.pointerId); if (charge && charge.id === e.pointerId) release(); syncFlippers(); };
+cw.addEventListener('pointerup', up); cw.addEventListener('pointercancel', up); cw.addEventListener('lostpointercapture', up);
+cw.addEventListener('contextmenu', e => e.preventDefault());
+function chargeLevel() { if (!charge) return 0; return Math.max(0, Math.min(1, Math.max((performance.now() - charge.t0) / 900, charge.swipe))); }
+function release() { if (!charge) return; const p = chargeLevel(); charge = null; if (G && G.canLaunch()) G.launch(Math.max(0.3, p)); }
+const keys = { L: false, R: false };
+const KL = ['KeyZ', 'ArrowLeft', 'ShiftLeft', 'KeyA'], KR = ['KeyM', 'ArrowRight', 'ShiftRight', 'Slash', 'KeyL'], KP = ['Space', 'ArrowDown', 'Enter'];
+addEventListener('keydown', e => {
+  if (!G || !document.getElementById('play').classList.contains('on') || document.querySelector('.alb-ov')) return;
+  const c = e.code; if ([...KL, ...KR, ...KP, 'KeyN', 'KeyT', 'ArrowUp', 'KeyP', 'Escape'].includes(c)) e.preventDefault(); else return;
+  if (c === 'KeyP' || c === 'Escape') { if (!e.repeat) setPause(!paused); return; }
+  if (paused || G.over) return;
+  if (KL.includes(c)) keys.L = true; else if (KR.includes(c)) keys.R = true;
+  else if (KP.includes(c)) { if (!charge && G.canLaunch()) { charge = { id: 'key', t0: performance.now(), swipe: 0 }; S.play('pull'); } }
+  else if (!e.repeat) G.nudge(c === 'ArrowUp' ? 0 : (c === 'KeyN' ? -1 : 1));
+  syncFlippers();
+});
+addEventListener('keyup', e => { const c = e.code; if (KL.includes(c)) keys.L = false; else if (KR.includes(c)) keys.R = false; else if (KP.includes(c) && charge && charge.id === 'key') release(); syncFlippers(); });
+addEventListener('blur', () => { keys.L = keys.R = false; ptrs.clear(); syncFlippers(); });
+/* ---------- layout ---------- */
+function resize() {
+  const r = cw.getBoundingClientRect(), w = Math.max(100, r.width - 8), h = Math.max(100, r.height - 6);
+  scale = Math.min(w / E.W, h / E.H); dpr = Math.min(2, window.devicePixelRatio || 1);
+  cv.style.width = Math.floor(E.W * scale) + 'px'; cv.style.height = Math.floor(E.H * scale) + 'px';
+  cv.width = Math.floor(E.W * scale * dpr); cv.height = Math.floor(E.H * scale * dpr); staticLayer = null;
+}
+addEventListener('resize', () => { if (G) resize(); });
+/* ---------- drawing ---------- */
+function rngOf(seed) { let a = seed; return () => { a = (a * 1664525 + 1013904223) >>> 0; return a / 4294967296; }; }
+function drawStatic() {
+  const T = G.T, c = document.createElement('canvas'); c.width = cv.width; c.height = cv.height; const x = c.getContext('2d');
+  x.setTransform(scale * dpr, 0, 0, scale * dpr, 0, 0);
+  // deep space
+  let gr = x.createLinearGradient(0, 0, 0, E.H); gr.addColorStop(0, '#0d0624'); gr.addColorStop(.45, '#070d1c'); gr.addColorStop(1, '#020805'); x.fillStyle = gr; x.fillRect(0, 0, E.W, E.H);
+  const glow = (gx, gy, r, col) => { const g2 = x.createRadialGradient(gx, gy, 0, gx, gy, r); g2.addColorStop(0, col); g2.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g2; x.fillRect(gx - r, gy - r, 2 * r, 2 * r); };
+  glow(120, 170, 170, 'rgba(255,61,154,.22)'); glow(300, 300, 160, 'rgba(120,60,255,.18)'); glow(186, 400, 150, 'rgba(43,255,136,.12)'); glow(80, 520, 120, 'rgba(255,61,154,.10)');
+  // galaxy swirl round the crown
+  x.save(); x.translate(186, 398); x.rotate(-0.35);
+  for (let i = 0; i < 3; i++) { x.beginPath(); x.ellipse(0, 0, 112 - i * 22, 40 - i * 7, 0, 0, Math.PI * 2); x.strokeStyle = `rgba(243,215,122,${0.10 + i * 0.05})`; x.lineWidth = 1.2; x.stroke(); }
+  x.restore();
+  const R = rngOf(7); for (let i = 0; i < 170; i++) { const sx = R() * 360 + 14, sy = R() * 560 + 20, s = R() < 0.1 ? 1.6 : 0.8; x.fillStyle = R() < 0.2 ? 'rgba(255,190,225,.9)' : 'rgba(255,255,255,.75)'; x.fillRect(sx, sy, s, s); }
+  // shadow forest silhouettes
+  const pine = (px, py, h, col) => { x.fillStyle = col; x.beginPath(); for (let k = 0; k < 3; k++) { const yy = py - h * (0.35 + k * 0.28), ww = h * (0.32 - k * 0.07); x.moveTo(px, yy - h * 0.32); x.lineTo(px - ww, yy + h * 0.12); x.lineTo(px + ww, yy + h * 0.12); } x.fill(); x.fillRect(px - h * 0.03, py - h * 0.3, h * 0.06, h * 0.3); };
+  const R2 = rngOf(3);
+  for (let i = 0; i < 16; i++) pine(14 + i * 24 + R2() * 10, 724, 70 + R2() * 70, 'rgba(6,30,18,.85)');
+  for (let i = 0; i < 9; i++) pine(16 + R2() * 40, 470 + i * 28, 40 + R2() * 30, 'rgba(4,22,13,.9)');
+  for (let i = 0; i < 9; i++) pine(318 + R2() * 36, 470 + i * 28, 40 + R2() * 30, 'rgba(4,22,13,.9)');
+  // shooter lane
+  x.fillStyle = 'rgba(0,0,0,.45)'; x.fillRect(361, 230, 26, 490);
+  x.save(); x.translate(377, 560); x.rotate(-Math.PI / 2); x.font = '700 10px Georgia,serif'; x.fillStyle = 'rgba(243,215,122,.55)'; x.textAlign = 'center'; x.fillText('LAUNCH ▶', 0, 3); x.restore();
+  // orbit channel tint + label
+  x.save(); x.beginPath(); x.moveTo(14, 280); x.lineTo(14, 200); x.arc(200, 200, 186, Math.PI, 232 * Math.PI / 180); x.lineTo(200 + 152 * Math.cos(232 * Math.PI / 180), 200 + 152 * Math.sin(232 * Math.PI / 180)); x.arc(200, 200, 152, 232 * Math.PI / 180, Math.PI, true); x.lineTo(48, 280); x.closePath();
+  x.fillStyle = 'rgba(10,40,20,.55)'; x.fill(); x.restore();
+  x.save(); x.translate(31, 238); x.rotate(-Math.PI / 2); x.font = '700 8.5px system-ui,sans-serif'; x.fillStyle = 'rgba(43,255,136,.7)'; x.textAlign = 'center'; x.fillText('SHADOW FOREST', 0, 3); x.restore();
+  // crowned hooded ANON logo
+  x.save(); x.beginPath(); x.arc(186, 395, 47, 0, Math.PI * 2); x.closePath(); x.shadowColor = 'rgba(255,61,154,.6)'; x.shadowBlur = 22; x.fillStyle = '#05070a'; x.fill(); x.shadowBlur = 0; x.clip();
+  if (IM.logo.complete && IM.logo.naturalWidth) x.drawImage(IM.logo, 139, 348, 94, 94); x.restore();
+  x.beginPath(); x.arc(186, 395, 48, 0, Math.PI * 2); x.strokeStyle = '#d4af37'; x.lineWidth = 2.5; x.stroke();
+  x.font = '700 15px Georgia,serif'; x.textAlign = 'center'; x.fillStyle = '#f3d77a'; x.shadowColor = 'rgba(0,0,0,.9)'; x.shadowBlur = 6; x.fillText('ANON GALAXY', 186, 466); x.shadowBlur = 0;
+  // inlane arrows
+  x.fillStyle = 'rgba(243,215,122,.35)'; [[60, 520], [312, 520]].forEach(([ax, ay]) => { x.beginPath(); x.moveTo(ax, ay); x.lineTo(ax - 5, ay - 9); x.lineTo(ax + 5, ay - 9); x.fill(); });
+  // rails
+  for (const s of T.segs) {
+    if (s.kind === 'target' || s.kind === 'sling' || s.kind === 'gate' || s.kind === 'plunger') continue;
+    x.lineCap = 'round'; x.beginPath(); x.moveTo(s.ax, s.ay); x.lineTo(s.bx, s.by);
+    x.strokeStyle = '#5c4512'; x.lineWidth = s.r * 2 + 2; x.stroke(); x.strokeStyle = '#d4af37'; x.lineWidth = s.r * 2 - 1; x.stroke(); x.strokeStyle = 'rgba(255,243,196,.75)'; x.lineWidth = 1; x.stroke();
+  }
+  for (const s of T.segs) if (s.kind === 'gate') { x.beginPath(); x.moveTo(s.ax, s.ay); x.lineTo(s.bx, s.by); x.strokeStyle = 'rgba(200,210,230,.7)'; x.lineWidth = 2; x.setLineDash([3, 3]); x.stroke(); x.setLineDash([]); }
+  // sling bodies
+  const sl = T.segs.filter(s => s.kind === 'sling');
+  sl.forEach(s => { const B = s.side === 'L' ? [88, 512] : [284, 512]; x.beginPath(); x.moveTo(s.ax, s.ay); x.lineTo(B[0], B[1]); x.lineTo(s.bx, s.by); x.closePath(); x.fillStyle = 'rgba(40,10,30,.9)'; x.fill(); });
+  staticLayer = c;
+}
+function gem(x, cxp, cyp, r, lit) {
+  x.save(); x.translate(cxp, cyp);
+  if (lit) { x.shadowColor = '#ff3d9a'; x.shadowBlur = 24; }
+  x.beginPath(); x.arc(0, 0, r, 0, Math.PI * 2); x.fillStyle = '#2a0a1c'; x.fill(); x.lineWidth = 3; x.strokeStyle = '#d4af37'; x.stroke(); x.shadowBlur = 0;
+  const k = r * 0.78; x.beginPath(); for (let i = 0; i < 6; i++) { const a = i * Math.PI / 3 + Math.PI / 6; x.lineTo(Math.cos(a) * k, Math.sin(a) * k); } x.closePath();
+  const g2 = x.createLinearGradient(-k, -k, k, k); g2.addColorStop(0, lit ? '#ffe0f0' : '#ff8cc4'); g2.addColorStop(.5, lit ? '#ff5aab' : '#ff3d9a'); g2.addColorStop(1, '#7a0f45'); x.fillStyle = g2; x.fill();
+  x.beginPath(); for (let i = 0; i < 6; i++) { const a = i * Math.PI / 3 + Math.PI / 6; x.lineTo(Math.cos(a) * k * 0.5, Math.sin(a) * k * 0.5); } x.closePath(); x.fillStyle = 'rgba(255,255,255,' + (lit ? .7 : .28) + ')'; x.fill();
+  x.strokeStyle = 'rgba(255,255,255,.35)'; x.lineWidth = 0.8; for (let i = 0; i < 6; i++) { const a = i * Math.PI / 3 + Math.PI / 6; x.beginPath(); x.moveTo(Math.cos(a) * k * 0.5, Math.sin(a) * k * 0.5); x.lineTo(Math.cos(a) * k, Math.sin(a) * k); x.stroke(); }
+  x.restore();
+}
+function rr(x, X, Y, w, h, r) { x.beginPath(); x.moveTo(X + r, Y); x.arcTo(X + w, Y, X + w, Y + h, r); x.arcTo(X + w, Y + h, X, Y + h, r); x.arcTo(X, Y + h, X, Y, r); x.arcTo(X, Y, X + w, Y, r); x.closePath(); }
+const flash = {};
+function render(now) {
+  const x = cx, T = G.T, t = G.t, blink = Math.floor(now / 250) % 2 === 0;
+  if (!staticLayer) drawStatic();
+  x.setTransform(1, 0, 0, 1, 0, 0); x.drawImage(staticLayer, 0, 0); x.setTransform(scale * dpr, 0, 0, scale * dpr, 0, 0);
+  // lane lights A N O N
+  T.sensors.filter(s => s.kind === 'lane').forEach(s => {
+    const on = G.lanes[s.i], sk = G.skillUntil > t && G.skillLane === s.i || (!G.balls.some(b => b.live) && G.skillLane === s.i && blink);
+    x.beginPath(); x.arc(s.x, s.y + 22, 8, 0, Math.PI * 2); x.fillStyle = on ? '#f3d77a' : sk ? '#2bff88' : 'rgba(60,45,15,.9)'; if (on) { x.shadowColor = '#f3d77a'; x.shadowBlur = 12; } x.fill(); x.shadowBlur = 0;
+    x.font = '800 10px system-ui,sans-serif'; x.textAlign = 'center'; x.fillStyle = on ? '#120e02' : '#c9b06a'; x.fillText(s.ch, s.x, s.y + 25.5);
+  });
+  // orbit arrow (lit when the mission wants it or during multiball)
+  const wantOrbit = G.multiball || (G.mission && G.mission.stat === 'orbit');
+  x.save(); x.translate(70, 300); x.rotate(-2.2); x.beginPath(); x.moveTo(14, 0); x.lineTo(-6, -8); x.lineTo(-6, 8); x.closePath();
+  x.fillStyle = wantOrbit && blink ? '#2bff88' : 'rgba(43,255,136,.22)'; x.fill(); x.restore();
+  const wantTargets = G.mission && G.mission.stat === 'target';
+  x.save(); x.translate(312, 354); x.beginPath(); x.moveTo(14, 0); x.lineTo(-4, -8); x.lineTo(-4, 8); x.closePath(); x.fillStyle = wantTargets && blink ? '#f3d77a' : 'rgba(243,215,122,.22)'; x.fill(); x.restore();
+  // bumpers
+  T.circs.forEach(c => gem(x, c.x, c.y, c.r, c.flash && t - c.flash < 0.12));
+  // drop targets with NFT art
+  T.segs.filter(s => s.kind === 'target').forEach(s => {
+    const up = G.targets[s.i], X = s.ax - 7, Y = s.ay - 3, h = s.by - s.ay + 6;
+    if (up) { x.save(); rr(x, X, Y, 15, h, 3); x.clip(); const im = IM.tgt[s.i]; if (im.complete && im.naturalWidth) x.drawImage(im, 40, 0, 112, 192, X, Y, 15, h); else { x.fillStyle = '#ff3d9a'; x.fillRect(X, Y, 15, h); } x.restore();
+      rr(x, X, Y, 15, h, 3); x.strokeStyle = wantTargets && blink ? '#2bff88' : '#d4af37'; x.lineWidth = 1.5; x.stroke(); }
+    else { rr(x, X + 3, Y + 4, 6, h - 8, 2); x.fillStyle = 'rgba(0,0,0,.6)'; x.fill(); x.strokeStyle = 'rgba(212,175,55,.35)'; x.lineWidth = 1; x.stroke(); }
+  });
+  // slingshot rubbers
+  T.segs.filter(s => s.kind === 'sling').forEach(s => { const lit = flash['sling' + s.side] && now - flash['sling' + s.side] < 110;
+    x.lineCap = 'round'; x.beginPath(); x.moveTo(s.ax, s.ay); x.lineTo(s.bx, s.by); x.strokeStyle = lit ? '#fff' : '#ff3d9a'; x.lineWidth = 7; if (lit) { x.shadowColor = '#ff3d9a'; x.shadowBlur = 16; } x.stroke(); x.shadowBlur = 0; });
+  // multiplier + ball save lights
+  [2, 3, 4, 5].forEach((m, i) => { x.beginPath(); x.arc(150 + i * 24, 588, 8, 0, Math.PI * 2); const on = G.mult >= m; x.fillStyle = on ? '#ff3d9a' : 'rgba(70,15,40,.9)'; x.fill();
+    x.font = '800 8px system-ui'; x.textAlign = 'center'; x.fillStyle = on ? '#fff' : '#b06a8a'; x.fillText(m + '×', 150 + i * 24, 591); });
+  const save = G.saveUntil - t; const sv = save > 0 && (save > 2 || blink);
+  x.font = '800 9px system-ui'; x.textAlign = 'center'; x.fillStyle = sv ? '#2bff88' : 'rgba(43,255,136,.18)'; if (sv) { x.shadowColor = '#2bff88'; x.shadowBlur = 10; }
+  x.fillText('👑 CROWN SAVE', 186, 700); x.shadowBlur = 0;
+  // plunger
+  const ch = chargeLevel(), py = 712 + ch * 18;
+  x.strokeStyle = '#9a8a5a'; x.lineWidth = 1.5; x.beginPath(); for (let i = 0; i <= 8; i++) x.lineTo(i % 2 ? 368 : 380, py + 4 + i * (736 - py - 4) / 8); x.stroke();
+  x.fillStyle = '#d4af37'; x.fillRect(363, py - 2, 22, 6);
+  // flippers
+  T.flippers.forEach(f => {
+    const ca = Math.cos(f.a), sa = Math.sin(f.a), tx = f.px + ca * f.len, ty = f.py + sa * f.len, nx = -sa, ny = ca;
+    x.beginPath(); x.moveTo(f.px + nx * f.rp, f.py + ny * f.rp); x.lineTo(tx + nx * f.rt, ty + ny * f.rt); x.arc(tx, ty, f.rt, f.a + Math.PI / 2, f.a - Math.PI / 2, true);
+    x.lineTo(f.px - nx * f.rp, f.py - ny * f.rp); x.arc(f.px, f.py, f.rp, f.a - Math.PI / 2, f.a + Math.PI / 2, true); x.closePath();
+    const g2 = x.createLinearGradient(f.px, f.py - 9, f.px, f.py + 9); g2.addColorStop(0, '#fff3c4'); g2.addColorStop(.5, '#d4af37'); g2.addColorStop(1, '#7a5a14');
+    x.fillStyle = G.tilted ? '#555' : g2; x.fill(); x.strokeStyle = '#ff3d9a'; x.lineWidth = 2; x.stroke();
+    x.beginPath(); x.arc(f.px, f.py, 3.2, 0, Math.PI * 2); x.fillStyle = '#120e02'; x.fill();
+  });
+  // balls
+  G.balls.forEach(b => {
+    const by = !b.live && b.x > 360 && b.y > 640 ? b.y + ch * 18 : b.y;
+    const g2 = x.createRadialGradient(b.x - 3, by - 3, 1, b.x, by, E.BR); g2.addColorStop(0, '#ffffff'); g2.addColorStop(.45, '#c9cfdc'); g2.addColorStop(1, '#3b3f4d');
+    x.beginPath(); x.arc(b.x, by, E.BR, 0, Math.PI * 2); x.fillStyle = g2; x.shadowColor = 'rgba(255,61,154,.55)'; x.shadowBlur = 8; x.fill(); x.shadowBlur = 0;
+  });
+  // messages
+  msgs = msgs.filter(m => m.until > now); const m = msgs[msgs.length - 1];
+  if (m) { x.textAlign = 'center'; x.font = '700 26px Georgia,serif'; x.lineWidth = 4; x.strokeStyle = 'rgba(0,0,0,.85)'; x.strokeText(m.a, 186, 505); x.fillStyle = '#fff3c4'; x.shadowColor = '#ff3d9a'; x.shadowBlur = 14; x.fillText(m.a, 186, 505); x.shadowBlur = 0;
+    if (m.b) { x.font = '700 12px system-ui,sans-serif'; x.lineWidth = 3; x.strokeText(m.b, 186, 524); x.fillStyle = '#2bff88'; x.fillText(m.b, 186, 524); } }
+  if (G.canLaunch() && !m) { x.textAlign = 'center'; x.font = '700 11px system-ui'; x.fillStyle = blink ? '#2bff88' : 'rgba(43,255,136,.5)'; x.fillText(charge ? 'POWER ' + Math.round(ch * 100) + '%' : 'HOLD & RELEASE ▶', 300, 690); }
+}
+function frame(now) {
+  requestAnimationFrame(frame);
+  if (!G || !document.getElementById('play').classList.contains('on')) { last = 0; return; }
+  const t0 = performance.now();
+  if (last) perf.gaps.push(now - last); const dt = last ? Math.min(1 / 30, (now - last) / 1000) : 1 / 60; last = now;
+  if (!paused && !G.over) { if (window.ANON_PB_BOT) window.ANON_PB_BOT(); G.step(dt); } G.events.length = 0;
+  render(now); if (perf.frames++ % 6 === 0) hud();
+  perf.work.push(performance.now() - t0); if (perf.work.length > 2000) { perf.work.shift(); perf.gaps.shift(); }
+}
+requestAnimationFrame(frame);
+window.ANON_PB = { get game() { return G; }, newGame, perf, setPause, endGame, sound: S, isPaused: () => paused, charge: () => chargeLevel() };
+if (qs.get('autostart') === '1') newGame();
+})();
+</script>
+</body>
+</html>

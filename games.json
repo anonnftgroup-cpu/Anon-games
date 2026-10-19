@@ -520,6 +520,32 @@
         "fast": "Fast"
       },
       "added": "2026-10-19"
+    },
+    {
+      "id": "pinball",
+      "name": "ANON Galaxy Pinball",
+      "tagline": "Space pinball: pink gems, crown targets, rise to ANON King",
+      "path": "pinball/",
+      "thumb": "pinball/thumb.webp",
+      "category": "Arcade",
+      "tags": [
+        "pinball",
+        "space",
+        "flippers",
+        "multiball",
+        "missions"
+      ],
+      "status": "live",
+      "leaderboard": true,
+      "scoreLabel": "Score",
+      "order": "desc",
+      "periods": [
+        "day",
+        "all"
+      ],
+      "movesLabel": "missions",
+      "hideMode": true,
+      "added": "2026-10-19"
     }
   ]
 }
