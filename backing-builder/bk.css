@@ -1,0 +1,9 @@
+/* backing games: small additions on top of kit.css + play.css */
+.bk-risk,.mcard .bk-risk{font-size:11px;line-height:1.35;color:#9d9580;margin:10px 2px 0!important}
+.bk-risk a,.mcard .bk-risk a{color:var(--pink2);font-weight:800;white-space:nowrap}
+.bk-fact,.mcard .bk-fact{margin:10px 0 2px;padding:9px 11px;border:1px solid rgba(43,255,136,.45);border-radius:12px;background:rgba(43,255,136,.07);font-size:13.5px;line-height:1.4;color:#d9f5e3;text-align:left}
+.bk-fact b{display:block;color:var(--green);font-size:12px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px}
+.bk-pause{position:absolute;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.62);color:var(--gold2);font-size:17px;text-align:center;cursor:pointer;border-radius:10px}
+.bk-pause b{font-size:24px;font-family:Georgia,serif}
+.risk-foot{font-size:10.5px;color:#7f7866;text-align:center;margin:12px 4px 0;line-height:1.35}
+.risk-foot a{color:var(--pink2)}

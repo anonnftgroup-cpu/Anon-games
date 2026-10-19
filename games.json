@@ -1102,6 +1102,31 @@
       "movesLabel": "cases",
       "hideMode": true,
       "added": "2026-10-19"
+    },
+    {
+      "id": "backing-builder",
+      "name": "Backing Builder",
+      "tagline": "Stack FUSD blocks under your NFT",
+      "path": "backing-builder/",
+      "thumb": "backing-builder/thumb.webp",
+      "category": "Learn",
+      "tags": [
+        "learn",
+        "stacking",
+        "tower",
+        "backing"
+      ],
+      "status": "live",
+      "leaderboard": true,
+      "scoreLabel": "Score",
+      "order": "desc",
+      "periods": [
+        "day",
+        "all"
+      ],
+      "movesLabel": "blocks",
+      "hideMode": true,
+      "added": "2026-10-19"
     }
   ]
 }

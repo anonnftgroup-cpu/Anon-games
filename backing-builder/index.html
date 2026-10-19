@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05070a">
+<title>Backing Builder · ANON NFTs</title>
+<meta name="description" content="Backing Builder: stack FUSD blocks under your NFT. Every level ends with a fact card about NFT liquidity backing. Free, no sign-up.">
+<link rel="icon" href="../assets/logo.webp">
+<link rel="stylesheet" href="../assets/nft/kit.css">
+<link rel="stylesheet" href="../assets/play/play.css">
+<link rel="stylesheet" href="bk.css">
+</head>
+<body>
+<header><div class="top">
+  <div class="brand"><a class="back-btn" href="../" aria-label="Back to ANON Arcade">&larr; Arcade</a><img src="../assets/logo.webp" alt=""><h1>BACKING BUILDER</h1></div>
+  <div class="top-r"><button class="icon-btn" id="sndBtn" aria-label="Sound">🔊</button><button class="icon-btn" id="lbBtn" aria-label="Leaderboard">🏆</button><button class="icon-btn" id="menuBtn" aria-label="Menu">↻</button></div>
+</div></header>
+<section class="view on" id="setup">
+  <img class="hero" id="hero" alt="ANON NFTs artwork">
+  <div class="lbl">Choose the NFT to build under</div>
+  <div class="chars five" id="artPick"></div>
+  <button class="go" id="goBtn">BUILD</button>
+  <p class="howto"><b>Tap</b> (or Space) to drop the sliding <b>FUSD block</b>. Line it up with the block below: anything hanging over the edge is sliced off. A <b>perfect</b> drop keeps the full width (+25). Stack enough blocks to finish the level and get a fact card. Miss completely and the build is over.</p>
+  <div class="nick" id="nick"></div>
+  <p class="risk-foot">A game, not a model of real prices. NFTs and cryptoassets are high-risk. Not financial advice. <a href="https://anonnfts.com/check-backing-on-chain-1" target="_top" rel="noopener">How to check backing on-chain</a></p>
+</section>
+<section class="view" id="play">
+  <div class="hud"><span id="lvl">🏗️ Lv 1</span><span id="blk">🧱 0/8</span><span id="sc">⭐ 0</span></div>
+  <div class="stage" id="stage"><canvas id="cv"></canvas><div class="tap" id="msg"></div></div>
+  <div class="bar"><button id="dropBtn">⬇ Drop</button><button id="againBtn">Restart</button><button id="setBtn">Change NFT</button></div>
+</section>
+<script src="../shared/leaderboard.js"></script>
+<script src="../shared/newsletter.js"></script>
+<script src="../assets/nft/kit.js"></script>
+<script src="../assets/play/play.js"></script>
+<script src="bk.js"></script>
+<script>
+'use strict';
+const { $, ls, post, openLB, gameOver, art, ART, modal } = AK;
+const GAME = 'backing-builder', TITLE = 'Backing Builder';
+const NAMES = Object.fromEntries(ART.map(a => [a.id, a.name.replace(/^ANON /, '')]));
+const BH = 26, PERFECT = 5; // block height and perfect tolerance (px)
+const target = lv => Math.min(20, 6 + lv * 2);
+const pref = ls.get('anonBuild.pref', { art: 'royals', best: 0 });
+const show = id => document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === id));
+const setHero = () => $('#hero').src = art(pref.art).cover;
+AK.picker($('#artPick'), pref.art, id => { pref.art = id; ls.set('anonBuild.pref', pref); setHero(); });
+setHero(); AK.nickLine($('#nick')); BK.muteBtn($('#sndBtn'));
+let C = null, S = null, NFT = null, BG = null;
+async function newRun() { const a = art(pref.art); NFT = await AP.img(a.img); BG = await AP.img(a.cover);
+  show('play'); if (!C) C = AP.canvas($('#cv'), .72, () => draw()); else C.fit();
+  S = { lv: 1, score: 0, placed: 0, perfects: 0, levels: 0, t: 0, over: false, art: a.id, falling: [], fx: [], cam: 0, between: false, combo: 0 }; startLevel(); L.start(); }
+function startLevel() { const w = C.w * .55; S.stack = [{ x: (C.w - w) / 2, w }]; S.n = 0; S.cam = 0; spawn(); S.between = false; hud(); }
+function spawn() { const top = S.stack[S.stack.length - 1]; const sp = (C.w * .42) * (1 + (S.lv - 1) * .12 + S.n * .02); S.mv = { x: AP.rnd() < .5 ? -top.w : C.w, w: top.w, v: sp, dir: 0 }; S.mv.dir = S.mv.x < 0 ? 1 : -1; S.cool = .25; }
+const hud = () => { $('#lvl').textContent = '🏗️ Lv ' + S.lv; $('#blk').textContent = '🧱 ' + S.n + '/' + target(S.lv); $('#sc').textContent = '⭐ ' + S.score; };
+function drop() {
+  if (!S || S.over || S.between || !S.mv || S.cool > 0) return false;
+  const top = S.stack[S.stack.length - 1], m = S.mv; let l = Math.max(m.x, top.x), r = Math.min(m.x + m.w, top.x + top.w);
+  if (r - l <= 0) { S.falling.push({ x: m.x, w: m.w, y: 0, vy: 0, lvl: S.stack.length }); S.mv = null; BK.play('lose'); return finish(), true; }
+  let pts = 10, perfect = Math.abs(m.x - top.x) <= PERFECT;
+  if (perfect) { l = top.x; r = top.x + top.w; pts = 25; S.perfects++; S.combo++; BK.play('perfect'); S.fx.push({ t: 'PERFECT +25', life: .9 });
+    if (S.combo >= 3 && top.w < C.w * .55) { const g = Math.min(C.w * .55 - top.w, 10); l -= g / 2; r += g / 2; } }
+  else { S.combo = 0; BK.play('drop'); const cutL = m.x < l ? { x: m.x, w: l - m.x } : null, cutR = m.x + m.w > r ? { x: r, w: m.x + m.w - r } : null;
+    [cutL, cutR].forEach(c => c && c.w > 0 && S.falling.push({ x: c.x, w: c.w, y: 0, vy: 0, lvl: S.stack.length })); }
+  S.stack.push({ x: l, w: r - l }); S.n++; S.placed++; S.score += pts; S.mv = null; hud();
+  if (S.n >= target(S.lv)) { levelDone(); } else spawn(); return true;
+}
+function levelDone() { S.between = true; S.levels++; S.score += 50; BK.play('win'); hud(); const lv = S.lv, run = S;
+  setTimeout(() => { if (S !== run || S.over) return; modal({ art: art(S.art).img, title: 'Level ' + lv + ' built! 🧱', text: `<b>${target(lv)}</b> FUSD blocks stacked, <b>+50</b> level bonus. Score <b>${S.score}</b>.` + BK.factHTML(lv - 1),
+    buttons: [['NEXT LEVEL →', () => { S.lv++; startLevel(); }], ['Leaderboard', () => openLB(GAME, TITLE, NAMES, 'blocks'), 1]] }); }, 700); }
+function step(dt) {
+  if (!S || S.over) return; S.t += dt; if (S.cool > 0) S.cool -= dt;
+  if (S.mv) { S.mv.x += S.mv.v * S.mv.dir * dt; if (S.mv.x + S.mv.w > C.w + 10) { S.mv.x = C.w + 10 - S.mv.w; S.mv.dir = -1; } if (S.mv.x < -10) { S.mv.x = -10; S.mv.dir = 1; } }
+  const want = Math.max(0, (S.stack.length + 2) * BH - C.h * .55); S.cam += (want - S.cam) * Math.min(1, dt * 6);
+  S.falling.forEach(f => { f.vy += 900 * dt; f.y += f.vy * dt; }); S.falling = S.falling.filter(f => f.y < C.h * 2);
+  S.fx.forEach(f => f.life -= dt); S.fx = S.fx.filter(f => f.life > 0);
+}
+function block(x, X, Y, w, a) { const g = x.createLinearGradient(0, Y, 0, Y + BH); g.addColorStop(0, '#fff0b3'); g.addColorStop(.45, '#e9c858'); g.addColorStop(1, '#8a6414'); x.globalAlpha = a == null ? 1 : a; x.fillStyle = g; AP.rr(x, X, Y, w, BH - 2, 5); x.fill();
+  x.strokeStyle = '#5a400a'; x.lineWidth = 1.5; x.stroke(); if (w > 46) { x.fillStyle = 'rgba(60,40,5,.85)'; x.font = '900 12px system-ui'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('FUSD', X + w / 2, Y + BH / 2); } x.globalAlpha = 1; }
+function draw() {
+  if (!C) return; const x = C.x, W = C.w, H = C.h; x.fillStyle = '#05070a'; x.fillRect(0, 0, W, H);
+  if (BG) { x.globalAlpha = .25; const k = Math.max(W / BG.width, H / BG.height); x.drawImage(BG, (W - BG.width * k) / 2, (H - BG.height * k) / 2 + (S ? S.cam * .2 : 0), BG.width * k, BG.height * k); x.globalAlpha = 1; }
+  if (!S) return; const base = H - 30 + S.cam, Y = i => base - (i + 1) * BH;
+  x.fillStyle = '#1b1610'; x.fillRect(0, base, W, H); x.fillStyle = 'rgba(212,175,55,.5)'; x.fillRect(0, base, W, 2);
+  S.stack.forEach((b, i) => block(x, b.x, Y(i), b.w));
+  S.falling.forEach(f => block(x, f.x, Y(f.lvl) + f.y, f.w, .7));
+  const top = S.stack[S.stack.length - 1], ty = Y(S.stack.length - 1);
+  // the NFT rides on top of the backing
+  const nr = Math.min(42, Math.max(26, top.w * .32)), nx = (S.mv && !S.between ? top.x + top.w / 2 : top.x + top.w / 2), ny = (S.mv ? ty - BH - nr - 8 : ty - nr - 4);
+  if (NFT) { x.save(); x.shadowColor = '#ff3d9a'; x.shadowBlur = 18; x.beginPath(); x.arc(nx, ny, nr, 0, 7); x.clip(); AP.cover(x, NFT, nx - nr, ny - nr, nr * 2, nr * 2); x.restore(); x.strokeStyle = '#f3d77a'; x.lineWidth = 3; x.beginPath(); x.arc(nx, ny, nr, 0, 7); x.stroke(); }
+  if (S.mv) block(x, S.mv.x, ty - BH, S.mv.w);
+  // backing meter
+  const tg = target(S.lv), fr = Math.min(1, S.n / tg); x.fillStyle = 'rgba(0,0,0,.55)'; AP.rr(x, 10, 10, 18, H * .5, 9); x.fill(); x.fillStyle = '#2bff88'; AP.rr(x, 12, 12 + (H * .5 - 4) * (1 - fr), 14, (H * .5 - 4) * fr, 7); x.fill();
+  x.fillStyle = '#d9f5e3'; x.font = 'bold 11px system-ui'; x.textAlign = 'left'; x.fillText('BACKING', 34, 22); x.fillText(S.n + '/' + tg, 34, 36);
+  for (const f of S.fx) { x.globalAlpha = Math.min(1, f.life * 2); x.fillStyle = '#2bff88'; x.font = '900 22px system-ui'; x.textAlign = 'center'; x.fillText(f.t, W / 2, H * .3 - (1 - f.life) * 30); x.globalAlpha = 1; }
+}
+const L = AP.loop(step, draw);
+const P = BK.autoPause({ running: () => !!S && !S.over && !S.between && L.running, pause: () => L.stop(), resume: () => L.start(), host: $('#stage') });
+function finish() {
+  S.over = true; const a = art(S.art), secs = Math.max(1, Math.ceil(S.t)), pb = S.score > (pref.best || 0); if (pb) { pref.best = S.score; ls.set('anonBuild.pref', pref); }
+  if (navigator.vibrate) navigator.vibrate([40, 30, 60]);
+  setTimeout(() => { L.stop(); BK.end({ art: a.img, title: pb ? 'New best! 🏆' : 'Build over 🧱', lb: S.score >= 10,
+    text: `<b>${S.placed}</b> FUSD blocks stacked under <b>${a.name}</b> (${S.perfects} perfect), <b>${S.levels}</b> level${S.levels === 1 ? '' : 's'} built.`,
+    buttons: [['BUILD AGAIN', () => newRun()], ['Leaderboard', () => openLB(GAME, TITLE, NAMES, 'blocks'), 1], ['Change NFT', () => show('setup'), 1]] });
+    if (S.score >= 10) post(GAME, S.score, secs, S.placed, S.art); }, 900);
+  gameOver();
+}
+const cv = $('#cv'); cv.addEventListener('pointerdown', e => { e.preventDefault(); drop(); });
+AP.keys({ ' ': drop, Space: drop, Enter: drop, ArrowDown: drop });
+$('#dropBtn').onclick = drop; $('#goBtn').onclick = () => newRun(); $('#againBtn').onclick = () => { L.stop(); newRun(); };
+$('#setBtn').onclick = $('#menuBtn').onclick = () => { L.stop(); if (S) S.over = true; show('setup'); };
+$('#lbBtn').onclick = () => openLB(GAME, TITLE, NAMES, 'blocks');
+window.G = { state: () => S, newRun, step, draw, drop, startLevel, target, L, P, C: () => C };
+</script>
+</body>
+</html>
