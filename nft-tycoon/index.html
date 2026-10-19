@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05070a">
+<title>ANON NFT Tycoon · ANON NFTs</title>
+<meta name="description" content="ANON NFT Tycoon: a hectic 3-minute trading game with made-up NFT projects and in-game coins. Learn why checking backing matters. Free, no sign-up, no real money.">
+<link rel="icon" href="../assets/logo.webp">
+<link rel="stylesheet" href="../assets/nft/kit.css">
+<link rel="stylesheet" href="bk.css">
+<style>
+#play{position:relative;min-height:0}
+.hud{display:flex;gap:5px;justify-content:center;padding:3px 6px;flex:none;flex-wrap:nowrap}
+.hud span{background:rgba(0,0,0,.55);border:1px solid rgba(212,175,55,.4);border-radius:10px;padding:3px 7px;font-weight:800;font-size:13px;color:var(--gold2);white-space:nowrap}
+.hud #tm.hyper{color:#fff;background:#c41f73;border-color:#ff8cc4;animation:pulse .5s infinite alternate}
+@keyframes pulse{to{transform:scale(1.08)}}
+.ticker{flex:none;overflow:hidden;white-space:nowrap;border-top:1px solid rgba(212,175,55,.25);border-bottom:1px solid rgba(212,175,55,.25);background:rgba(0,0,0,.6);font-size:12.5px;height:24px;line-height:24px;position:relative}
+.ticker div{display:inline-block;padding-left:100%;animation:tick 26s linear infinite}
+.ticker b{margin-right:26px;font-weight:700}.ticker .rug{color:#ff6b6b}.ticker .hype{color:#ff8cc4}.ticker .whale{color:#7fd3ff}.ticker .fud{color:#ffb86b}.ticker .mint{color:#2bff88}.ticker .sold{color:var(--gold2)}.ticker .info{color:#cfc6ab}
+@keyframes tick{to{transform:translateX(-100%)}}
+.tabs{display:flex;gap:5px;overflow-x:auto;padding:5px 8px;flex:none;scrollbar-width:none}.tabs::-webkit-scrollbar{display:none}
+.tabs button{flex:none;min-height:32px;padding:0 11px;border-radius:16px;border:1px solid rgba(212,175,55,.45);background:rgba(0,0,0,.5);color:#d9d2bc;font-weight:800;font-size:12.5px}
+.tabs button.on{background:linear-gradient(180deg,#e9c858,#a47c1f);color:#120e02}
+.pane{flex:1;min-height:0;overflow:auto;padding:0 8px 8px;display:none}.pane.on{display:block}
+.row{display:grid;grid-template-columns:44px 1fr auto;gap:8px;align-items:center;padding:7px 8px;margin-bottom:6px;border-radius:12px;border:1px solid rgba(212,175,55,.28);background:rgba(10,9,6,.88);cursor:pointer}
+.row.dead{filter:grayscale(1);opacity:.55}
+.row .art{width:44px;height:44px;border-radius:10px}
+.row .nm{font-weight:800;font-size:13.5px;color:#f1ead2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .meta{font-size:11px;color:#9d9580;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .rt{text-align:right}.row .px{font-weight:900;font-size:14.5px;font-family:ui-monospace,Menlo,Consolas,monospace;color:#f3d77a;padding:1px 4px;border-radius:6px;transition:background .3s}
+.px.up{background:rgba(43,255,136,.3)}.px.dn{background:rgba(255,70,90,.32)}
+.pct{font-size:11.5px;font-weight:800}.pct.u{color:var(--green)}.pct.d{color:#ff6b6b}
+.spark{display:block;width:62px;height:20px;margin-left:auto}
+.badge{display:inline-block;font-size:10px;font-weight:900;padding:1px 6px;border-radius:7px;margin-left:4px;vertical-align:1px}
+.badge.b{background:rgba(43,255,136,.18);color:var(--green);border:1px solid rgba(43,255,136,.5)}.badge.u{background:rgba(255,90,90,.15);color:#ff8a8a;border:1px solid rgba(255,90,90,.5)}
+.badge.q{background:rgba(127,211,255,.12);color:#7fd3ff;border:1px solid rgba(127,211,255,.5)}.badge.w{background:#2bff88;color:#04150b}
+.nav{display:flex;flex:none;border-top:1px solid rgba(212,175,55,.35);background:rgba(0,0,0,.7);padding-bottom:env(safe-area-inset-bottom)}
+.nav button{flex:1;min-height:48px;border:0;background:none;color:#b9a35c;font-weight:800;font-size:13px}.nav button.on{color:#fff;background:rgba(212,175,55,.14)}
+.sheet{position:absolute;left:0;right:0;bottom:0;z-index:40;max-height:88%;overflow:auto;background:linear-gradient(180deg,rgba(20,17,8,.99),rgba(5,6,9,.99));border:1px solid var(--gold);border-bottom:0;border-radius:18px 18px 0 0;padding:12px 12px calc(12px + env(safe-area-inset-bottom));transform:translateY(105%);transition:transform .22s ease;box-shadow:0 -8px 30px rgba(0,0,0,.6)}
+.sheet.show{transform:none}
+.sheet .x{position:absolute;right:10px;top:8px;width:34px;height:34px;border-radius:50%;border:1px solid rgba(212,175,55,.5);background:rgba(0,0,0,.4);color:var(--gold2)}
+.sh-top{display:flex;gap:10px;align-items:center}.sh-top .art{width:76px;height:76px;border-radius:14px;flex:none}
+.sh-top h3{margin:0;font-size:17px;color:#f1ead2}.sh-top .meta{font-size:12px;color:#9d9580}
+.stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin:10px 0}.stats div{background:rgba(0,0,0,.45);border:1px solid rgba(212,175,55,.22);border-radius:10px;padding:5px;text-align:center;font-size:10.5px;color:#9d9580}.stats b{display:block;font-size:14px;color:#f3d77a;font-family:ui-monospace,Menlo,Consolas,monospace}
+.big-spark{width:100%;height:70px;display:block;border-radius:10px;background:rgba(0,0,0,.4)}
+.acts{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:9px}.acts button{min-height:46px;border-radius:12px;font-weight:900;font-size:13.5px;border:1px solid rgba(212,175,55,.6);background:rgba(0,0,0,.5);color:var(--gold2);line-height:1.15}
+.acts button small{display:block;font-size:10.5px;font-weight:700;opacity:.85}
+.acts .buy{background:linear-gradient(180deg,#ff5aab,#c41f73);color:#fff;border-color:#ff8cc4}.acts .sell{background:linear-gradient(180deg,#e9c858,#a47c1f);color:#120e02}
+.acts .pool{background:linear-gradient(180deg,#1fc66a,#0b5e31);color:#fff;border-color:#8affc0}.acts .chk{background:rgba(127,211,255,.12);color:#7fd3ff;border-color:rgba(127,211,255,.6)}
+.acts button:disabled{opacity:.4}
+.listbox{margin-top:9px;padding:8px;border-radius:12px;border:1px dashed rgba(212,175,55,.45)}.listbox .lp{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}.listbox .lp button{flex:1;min-width:58px;min-height:38px;border-radius:10px;border:1px solid rgba(212,175,55,.5);background:rgba(0,0,0,.5);color:#f1ead2;font-weight:800;font-size:12px}
+.note{font-size:12px;color:#cfc6ab;line-height:1.38;margin-top:8px}
+.nobid{color:#ff8a8a;font-weight:800}
+.lrow{padding:8px;border-radius:12px;border:1px solid rgba(212,175,55,.28);background:rgba(10,9,6,.88);margin-bottom:6px;font-size:12.5px}
+.lrow .tp{display:flex;justify-content:space-between;align-items:center;gap:6px}.lrow b{color:#f1ead2}
+.dem{display:flex;gap:2px;align-items:flex-end;height:16px}.dem i{width:5px;background:#2bff88;border-radius:2px}.dem i.off{background:rgba(255,255,255,.12)}
+.lrow .ab{display:flex;gap:6px;margin-top:6px}.lrow .ab button{flex:1;min-height:34px;border-radius:10px;border:1px solid rgba(212,175,55,.5);background:rgba(0,0,0,.5);color:var(--gold2);font-weight:800;font-size:12px}
+.stale{color:#ffb86b;font-weight:800;margin-top:4px}
+.prow{display:grid;grid-template-columns:40px 1fr auto;gap:8px;align-items:center;padding:7px 8px;border-radius:12px;border:1px solid rgba(212,175,55,.28);background:rgba(10,9,6,.88);margin-bottom:6px;cursor:pointer}
+.prow .art{width:40px;height:40px;border-radius:9px}.pl.u{color:var(--green);font-weight:900}.pl.d{color:#ff6b6b;font-weight:900}
+.sum{display:flex;justify-content:space-between;padding:8px 10px;margin:4px 0 8px;border-radius:12px;background:rgba(0,0,0,.5);border:1px solid rgba(212,175,55,.35);font-size:13px;font-weight:800;color:#f1ead2}
+.drop{position:absolute;left:8px;right:8px;top:4px;z-index:30;display:none;padding:9px 10px;border-radius:14px;border:2px solid #2bff88;background:rgba(4,21,11,.97);box-shadow:0 0 22px rgba(43,255,136,.35)}
+.drop.show{display:flex;gap:9px;align-items:center}.drop .art{width:46px;height:46px;border-radius:10px;flex:none}.drop .tx{flex:1;font-size:12.5px;color:#d9f5e3;line-height:1.3}.drop .tx b{color:#fff;font-size:13.5px}
+.drop button{min-height:40px;padding:0 10px;border-radius:10px;border:1px solid #8affc0;background:linear-gradient(180deg,#1fc66a,#0b5e31);color:#fff;font-weight:900;font-size:12.5px}
+.shake{animation:shake .45s}@keyframes shake{20%{transform:translate(-7px,2px)}40%{transform:translate(6px,-3px)}60%{transform:translate(-5px,3px)}80%{transform:translate(4px,-1px)}}
+.toast2{position:absolute;left:50%;top:38%;transform:translate(-50%,-50%);z-index:60;pointer-events:none;font-weight:900;font-size:22px;color:#2bff88;text-shadow:0 0 10px #000,0 0 18px #000;opacity:0;transition:opacity .2s}
+.toast2.show{opacity:1}
+.ver{font-size:10px;color:#6f6858;text-align:center;margin-top:8px}
+.disc{font-size:12.5px;color:#ffe0a8;text-align:center;border:1px solid rgba(255,184,107,.45);background:rgba(255,184,107,.08);border-radius:12px;padding:8px 10px;margin-top:10px;line-height:1.4}
+.empty{text-align:center;color:#9d9580;font-size:13px;padding:20px 10px}
+</style>
+</head>
+<body>
+<header><div class="top">
+  <div class="brand"><a class="back-btn" href="../" aria-label="Back to ANON Arcade">&larr; Arcade</a><img src="../assets/logo.webp" alt=""><h1>ANON NFT TYCOON</h1></div>
+  <div class="top-r"><button class="icon-btn" id="sndBtn" aria-label="Sound">🔊</button><button class="icon-btn" id="lbBtn" aria-label="Leaderboard">🏆</button><button class="icon-btn" id="menuBtn" aria-label="Menu">↻</button></div>
+</div></header>
+<section class="view on" id="setup">
+  <img class="hero" src="../assets/nft/c-royals.webp" alt="ANON NFTs artwork" style="object-position:50% 30%">
+  <p class="disc"><b>This is a game with made-up projects. Real NFT prices and backing can fall. Not financial advice.</b><br>You play with in-game coins, not real money.</p>
+  <button class="go" id="goBtn">ENTER THE SHADOW MARKET</button>
+  <p class="howto">Welcome to the <b>ANON Shadow Market</b>. You start with <b>🪙 100 coins</b> and <b>3 minutes</b>. Buy and sell made-up NFT collections and end with the highest <b>net worth</b>.</p>
+  <p class="howto"><b>Every market sale pays a 20% tax.</b> Quick flips can lose coins. <b>🔍 Check backing</b> before you buy. In this game, <b>backed</b> collections have a pool worth 50% of mint price per NFT. It only grows as sale fees flow in, the price never shows below it, and you can <b>Redeem to pool</b> for the backing at any time, tax-free. <b>Unbacked</b> ones can swing wildly, run out of buyers, or get rug-pulled to zero.</p>
+  <p class="howto">Watch for 🆕 surprise mints, streak bonuses for quick winning trades, and a HYPER final 30 seconds.</p>
+  <div class="nick" id="nick"></div>
+  <p class="risk-foot">NFTs and cryptoassets are high-risk. Not financial advice. <a href="https://anonnfts.com/check-backing-on-chain-1" target="_top" rel="noopener">How to check backing on-chain</a></p>
+  <div class="ver" id="ver"></div>
+</section>
+<section class="view" id="play">
+  <div class="hud"><span id="tm">⏱ 3:00</span><span id="cash">🪙 100</span><span id="nw">💼 100</span><span id="cb">🔥 0</span></div>
+  <div class="ticker" id="ticker"><div id="tickTxt"></div></div>
+  <div class="tabs" id="tabs"></div>
+  <div class="pane on" id="pMarket"></div>
+  <div class="pane" id="pPort"></div>
+  <div class="pane" id="pList"></div>
+  <div class="nav" id="nav"><button data-p="pMarket" class="on">🏪 Market</button><button data-p="pPort">💼 Portfolio</button><button data-p="pList">🏷️ Listings <span id="lc"></span></button></div>
+  <div class="drop" id="drop"></div>
+  <div class="sheet" id="sheet"></div>
+  <div class="toast2" id="t2"></div>
+</section>
+<script src="../shared/leaderboard.js"></script>
+<script src="../shared/newsletter.js"></script>
+<script src="../assets/nft/kit.js"></script>
+<script src="../assets/play/play.js"></script>
+<script src="bk.js"></script>
+<script src="game.js"></script>
+<script>
+'use strict';
+const { $, ls, post, openLB, gameOver, modal } = AK;
+const GAME = 'nft-tycoon', TITLE = 'ANON NFT Tycoon';
+$('#ver').textContent = 'ANON NFT Tycoon ' + VERSION + ' · ANON Shadow Market';
+AK.nickLine($('#nick')); BK.muteBtn($('#sndBtn'));
+const pref = ls.get('anonTycoon.pref', { best: 0, tip: false });
+const show = id => document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === id));
+const f2 = n => (n >= 100 ? n.toFixed(0) : n.toFixed(2)), fmt = n => Math.round(n).toLocaleString('en-GB');
+let S = null, tab = 'trending', pane = 'pMarket', openId = null, listOpen = false; const ART = {};
+// original generated card art: seeded shapes + a creature, nothing real
+function artFor(c) { if (ART[c.id]) return ART[c.id]; const cv = document.createElement('canvas'); cv.width = cv.height = 96; const x = cv.getContext('2d');
+  const g = x.createLinearGradient(0, 0, 96, 96); g.addColorStop(0, `hsl(${c.hue},70%,45%)`); g.addColorStop(1, `hsl(${c.hue2},70%,22%)`); x.fillStyle = g; x.fillRect(0, 0, 96, 96);
+  let sd = c.id * 9973; const r = () => (sd = (sd * 16807) % 2147483647) / 2147483647;
+  for (let i = 0; i < 7; i++) { x.globalAlpha = .18 + r() * .25; x.fillStyle = `hsl(${(c.hue + r() * 120) | 0},80%,${40 + r() * 30 | 0}%)`; const k = r(); x.beginPath();
+    if (k < .4) x.arc(r() * 96, r() * 96, 8 + r() * 26, 0, 7); else if (k < .7) x.rect(r() * 96, r() * 96, 10 + r() * 30, 10 + r() * 30); else { x.moveTo(r() * 96, r() * 96); x.lineTo(r() * 96, r() * 96); x.lineTo(r() * 96, r() * 96); } x.fill(); }
+  x.globalAlpha = 1; x.font = '52px serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(c.face, 48, 52);
+  x.fillStyle = 'rgba(0,0,0,.45)'; x.fillRect(0, 78, 96, 18); x.fillStyle = '#fff'; x.font = 'bold 11px system-ui'; x.fillText('#' + (100 + c.id * 37 % 900), 48, 88);
+  return ART[c.id] = cv.toDataURL('image/png'); }
+function spark(cv, h, w, hh) { const d = Math.min(2, devicePixelRatio || 1); cv.width = w * d; cv.height = hh * d; const x = cv.getContext('2d'); x.scale(d, d); if (h.length < 2) return;
+  const mn = Math.min(...h), mx = Math.max(...h), rg = mx - mn || 1; x.strokeStyle = h[h.length - 1] >= h[0] ? '#2bff88' : '#ff6b6b'; x.lineWidth = 1.6; x.beginPath();
+  h.forEach((v, i) => { const px = i / (h.length - 1) * (w - 2) + 1, py = hh - 2 - (v - mn) / rg * (hh - 4); i ? x.lineTo(px, py) : x.moveTo(px, py); }); x.stroke(); }
+const pct = c => c.open ? (c.price - c.open) / c.open * 100 : 0;
+const badge = c => c.dead ? '<span class="badge u">💀 DEAD</span>' : !c.checked ? '<span class="badge q">🔍 check</span>' : c.backed ? '<span class="badge b">BACKED</span>' : '<span class="badge u">UNBACKED</span>';
+function sorted() { const L = S.cols.filter(c => tab === 'dead' ? c.dead : !c.dead);
+  const k = { trending: c => c.vol * (1 + Math.abs(pct(c)) / 50), hot: c => c.demand + c.hype, volume: c => c.vol, new: c => (c.window && S.t < c.window ? 1e6 : 0) + c.born, rising: c => pct(c), dead: c => c.born }[tab];
+  let out = L.slice().sort((a, b) => k(b) - k(a)); if (tab === 'new') out = out.filter(c => c.born >= 0); if (tab === 'rising') out = out.filter(c => pct(c) > 0); return out; }
+function renderTabs() { $('#tabs').innerHTML = Object.entries(TABS).map(([k, v]) => `<button data-tab="${k}" class="${k === tab ? 'on' : ''}">${v}</button>`).join(''); }
+function renderMarket() { const L = sorted(), box = $('#pMarket');
+  if (!L.length) { box.innerHTML = '<div class="empty">' + (tab === 'dead' ? 'No dead collections yet… 💀' : tab === 'new' ? 'No new mints yet. Watch the ticker!' : 'Nothing here right now.') + '</div>'; return; }
+  box.innerHTML = L.map(c => { const p = pct(c), win = c.window && S.t < c.window; return `<div class="row${c.dead ? ' dead' : ''}" data-c="${c.id}"><img class="art" src="${artFor(c)}" alt="">
+    <div style="min-width:0"><div class="nm">${c.name}${badge(c)}${win ? '<span class="badge w">MINTING ' + Math.ceil(c.window - S.t) + 's</span>' : ''}</div>
+    <div class="meta">Vol ${fmt(c.vol)} · ${fmt(c.owners)} owners${c.checked && c.backed ? ' · pool ' + f2(TY.per(c)) + '/NFT' : ''}</div></div>
+    <div class="rt"><span class="px ${c.flash > 0 ? 'up' : c.flash < 0 ? 'dn' : ''}">${c.dead ? '0.00' : f2(win ? c.mint : c.price)}</span><div class="pct ${p >= 0 ? 'u' : 'd'}">${c.dead ? '−100%' : (p >= 0 ? '+' : '') + p.toFixed(1) + '%'}</div><canvas class="spark" data-s="${c.id}"></canvas></div></div>`; }).join('');
+  box.querySelectorAll('canvas.spark').forEach(cv => { const c = TY.col(+cv.dataset.s); spark(cv, c.hist.slice(-30), 62, 20); }); }
+function holdRows() { return Object.entries(S.h).map(([id, h]) => ({ c: TY.col(+id), h })).filter(r => r.c); }
+function renderPort() { const R = holdRows(); let cost = 0, val = 0; R.forEach(({ c, h }) => { cost += h.cost; val += TY.value(c, h.qty); });
+  $('#pPort').innerHTML = `<div class="sum"><span>🪙 Coins ${f2(S.cash)}</span><span>Holdings ${f2(val)}</span><span class="pl ${val - cost >= 0 ? 'u' : 'd'}">P/L ${(val - cost >= 0 ? '+' : '') + f2(val - cost)}</span></div>` +
+    (R.length ? R.map(({ c, h }) => { const v = TY.value(c, h.qty), pl = v - h.cost; return `<div class="prow" data-c="${c.id}"><img class="art" src="${artFor(c)}" alt=""><div style="min-width:0"><div class="nm" style="font-weight:800;font-size:13px">${c.name} ×${h.qty}${badge(c)}</div>
+      <div class="meta" style="font-size:11px;color:#9d9580">avg cost ${f2(h.cost / h.qty)} · now ${c.dead ? '0' : f2(c.price)}${!TY.hasBids(c) && !c.dead ? ' · <span class="nobid">no bids</span>' : ''}</div></div>
+      <div style="text-align:right"><div style="font-weight:900;color:#f3d77a">${f2(v)}</div><div class="pl ${pl >= 0 ? 'u' : 'd'}" style="font-size:12px">${(pl >= 0 ? '+' : '') + f2(pl)}</div></div></div>`; }).join('') : '<div class="empty">No NFTs yet. Head to the Market, check backing, and buy something.</div>') +
+    '<p class="note">Value = what you could get right now: the market price minus 20% tax if there are bids, or the pool backing if that is higher. No bids and no pool means it is worth 0 until someone buys.</p>'; }
+function bars(v) { return '<span class="dem">' + [0, 1, 2, 3, 4].map(i => `<i class="${v > i / 5 + .02 ? '' : 'off'}" style="height:${5 + i * 2.5}px"></i>`).join('') + '</span>'; }
+function renderList() { const box = $('#pList'); $('#lc').textContent = S.L.length ? '(' + S.L.length + ')' : '';
+  box.innerHTML = S.L.length ? S.L.map(l => { const c = TY.col(l.cid), age = Math.floor(S.t - l.t0); return `<div class="lrow"><div class="tp"><span><b>${c.name}</b> listed at <b>${f2(l.price)}</b> <small style="color:#9d9580">(floor ${f2(c.price)})</small></span>${bars(l.interest || 0)}</div>
+      <div style="color:#9d9580;margin-top:2px">Listed ${age}s · buyer interest ${Math.round((l.interest || 0) * 100)}% · you get ${f2(l.price * (1 - CONFIG.sellTax))} after tax</div>
+      ${(l.interest || 0) < .08 ? '<div class="nobid">No bids…</div>' : ''}${l.stale ? '<div class="stale">⏳ Listing stale, drop price?</div>' : ''}
+      <div class="ab"><button data-drop="${l.id}">⬇ Drop 10%</button><button data-drop2="${l.id}">⬇ Drop 25%</button><button data-cancel="${l.id}">Cancel</button></div></div>`; }).join('') : '<div class="empty">No listings. Open an NFT you own and tap "List…" to choose your price.</div>'; }
+function renderSheet() { const c = openId && TY.col(openId), sh = $('#sheet'); if (!c) { sh.classList.remove('show'); return; }
+  const h = S.h[c.id], win = c.window && S.t < c.window, price = win ? c.mint : c.price, bids = TY.hasBids(c);
+  sh.innerHTML = `<button class="x" data-close="1" aria-label="Close">✕</button><div class="sh-top"><img class="art" src="${artFor(c)}" alt=""><div><h3>${c.name}</h3>${badge(c)}<div class="meta">${win ? '🆕 Minting now at ' + c.mint + ' coins · ' + Math.ceil(c.window - S.t) + 's left' : c.dead ? 'Rug-pulled. No buyers, no pool.' : 'Floor ' + f2(c.price) + ' coins'}</div></div></div>
+   <div class="stats"><div>Floor<b>${c.dead ? '0' : f2(price)}</b></div><div>24h vol<b>${fmt(c.vol)}</b></div><div>Change<b style="color:${pct(c) >= 0 ? '#2bff88' : '#ff6b6b'}">${c.dead ? '−100' : pct(c).toFixed(1)}%</b></div>
+   <div>Owners<b>${fmt(c.owners)}</b></div><div>Backing/NFT<b>${!c.checked ? '?' : c.backed ? f2(TY.per(c)) : 'none'}</b></div><div>You hold<b>${h ? h.qty : 0}</b></div></div>
+   <canvas class="big-spark" id="bigSpark"></canvas>
+   <div class="acts">${c.checked ? '' : '<button class="chk" data-act="check">🔍 Check backing<small>see the pool before you buy</small></button>'}
+     <button class="buy" data-act="buy1" ${c.dead || S.cash < price ? 'disabled' : ''}>${win ? 'MINT' : 'BUY'} 1<small>${f2(price)} coins</small></button>
+     <button class="buy" data-act="buy5" ${c.dead || S.cash < price ? 'disabled' : ''}>${win ? 'MINT' : 'BUY'} 5<small>${f2(price * 5)} coins</small></button>
+     ${h ? `<button class="sell" data-act="sell" ${bids ? '' : 'disabled'}>Sell on market<small>${bids ? 'get ' + f2(c.price * (1 - CONFIG.sellTax)) + ' (−20% tax)' : 'No bids…'}</small></button>` : ''}
+     ${h && c.backed ? `<button class="pool" data-act="redeem">Redeem to pool<small>get ${f2(TY.per(c))} · instant, no tax</small></button>` : ''}
+     ${h && !c.dead ? '<button data-act="list">List…<small>choose your price</small></button>' : ''}</div>
+   ${listOpen && h ? `<div class="listbox"><b style="font-size:13px">List 1 at:</b><div class="lp">${[.8, .9, 1, 1.1, 1.25, 1.5].map(k => `<button data-listk="${k}">${k === 1 ? 'Floor' : (k > 1 ? '+' : '') + Math.round((k - 1) * 100) + '%'}<br>${f2(c.price * k)}</button>`).join('')}</div><div class="note">Buyers fill listings over time. Lower prices and higher demand fill faster. 20% tax when it sells.</div></div>` : ''}
+   <p class="note">${c.dead ? 'Rug pulls take the price to 0. In this game, unbacked collections can do that at any moment.' : c.checked ? (c.backed ? 'Checked ✔ In this game this pool only grows: part of the tax on every sale flows in. The price never shows below the backing, and you can redeem for it at any time. Real backing can fall.' : 'Checked: no pool found. Nothing to redeem to. If demand dries up you may need to keep lowering your price to find a buyer.') : 'Tip: check backing before you buy.'}</p>`;
+  sh.classList.add('show'); const bs = $('#bigSpark'); spark(bs, c.hist, bs.clientWidth || 340, 70); }
+let t2t = 0; function flashMsg(t, col) { const e = $('#t2'); e.textContent = t; e.style.color = col || '#2bff88'; e.classList.add('show'); clearTimeout(t2t); t2t = setTimeout(() => e.classList.remove('show'), 1100); }
+function renderDrop() { const d = $('#drop'), c = S.cols.find(c => c.window && S.t < c.window && !c.dead); if (!c || openId === c.id) { d.classList.remove('show'); return; }
+  d.innerHTML = `<img class="art" src="${artFor(c)}" alt=""><div class="tx"><b>🆕 ${c.name}</b><br>Mint at ${c.mint} coins · <b>${Math.ceil(c.window - S.t)}s</b> left ${c.checked ? (c.backed ? '· BACKED' : '· no pool') : ''}</div><button data-c="${c.id}">VIEW</button>`; d.classList.add('show'); }
+let lastNews = -1; function renderTicker() { if (S.news.length === lastNews) return; lastNews = S.news.length; $('#tickTxt').innerHTML = S.news.slice(0, 8).map(n => `<b class="${n.kind}">${BK.esc(n.text)}</b>`).join(''); }
+function renderHud() { const m = Math.floor(S.left / 60), s = Math.floor(S.left % 60), hy = S.left <= CONFIG.hyperAt; $('#tm').textContent = (hy ? '⚡ ' : '⏱ ') + m + ':' + String(s).padStart(2, '0'); $('#tm').classList.toggle('hyper', hy);
+  $('#cash').textContent = '🪙 ' + f2(S.cash); $('#nw').textContent = '💼 ' + f2(TY.netWorth()); $('#cb').textContent = '🔥 ' + (S.combo || 0); }
+function renderAll() { renderHud(); renderTicker(); renderDrop(); if (pane === 'pMarket') renderMarket(); if (pane === 'pPort') renderPort(); if (pane === 'pList') renderList(); else $('#lc').textContent = S.L.length ? '(' + S.L.length + ')' : ''; if (openId) renderSheet(); }
+// ---- loop ----
+let lastSec = -1, rugSeen = 0, lastSold = null, lastCombo = null;
+function step(dt) { if (!S || S.over) return; const ticked = TY.step(dt);
+  for (const e of S.events.splice(0)) { if (e.kind === 'rug') { BK.play('lose'); const p = $('#play'); p.classList.remove('shake'); void p.offsetWidth; p.classList.add('shake'); if (navigator.vibrate) navigator.vibrate([60, 40, 90]); }
+    else if (e.kind === 'mint') BK.play('perfect'); else if (e.kind === 'sold') BK.play('good'); else if (e.kind === 'hype' || e.kind === 'whale') BK.play('jump'); }
+  if (S.lastCombo && S.lastCombo !== lastCombo) { lastCombo = S.lastCombo; flashMsg('🔥 STREAK x' + lastCombo.n + '  +' + lastCombo.b + ' coins'); BK.play('perfect'); }
+  const sec = Math.ceil(S.left); if (sec !== lastSec) { lastSec = sec; if (S.left <= CONFIG.hyperAt && sec > 0) BK.play('tick'); }
+  if (!pref.tip && S.L.some(l => l.stale && !TY.col(l.cid).backed)) { pref.tip = true; ls.set('anonTycoon.pref', pref); L.stop();
+    modal({ title: 'Listing stale ⏳', text: 'No backing means no pool to redeem to. You may need to keep lowering your price to find a buyer.', buttons: [['Got it', () => L.start()]] }); }
+  if (ticked) renderAll(); else renderHud();
+  if (S.over) finish(); }
+const L = AP.loop(step, () => {});
+const P = BK.autoPause({ running: () => !!S && !S.over && L.running, pause: () => L.stop(), resume: () => L.start(), host: $('#play') });
+function newRun() { S = TY.start(); show('play'); tab = 'trending'; pane = 'pMarket'; openId = null; listOpen = false; lastNews = -1; renderTabs(); setPane('pMarket'); renderAll(); L.start(); }
+function setPane(p) { pane = p; document.querySelectorAll('.pane').forEach(x => x.classList.toggle('on', x.id === p)); document.querySelectorAll('#nav button').forEach(b => b.classList.toggle('on', b.dataset.p === p)); $('#tabs').style.display = p === 'pMarket' ? 'flex' : 'none'; renderAll(); }
+function finish() { L.stop(); openId = null; renderSheet(); const sc = TY.score(), secs = Math.max(1, Math.ceil(S.real)), pb = sc > (pref.best || 0); if (pb) { pref.best = sc; ls.set('anonTycoon.pref', pref); }
+  const rugs = S.cols.filter(c => c.dead).length, pl = sc - CONFIG.startCash; BK.play(pl >= 0 ? 'win' : 'lose');
+  BK.end({ art: '../assets/logo.webp', title: pb && sc ? 'New best! 🏆' : 'Market closed 🔔', lb: sc >= 1,
+    text: `Final net worth <b>🪙 ${fmt(sc)}</b> (${pl >= 0 ? '+' : ''}${fmt(pl)} game coins) from <b>${S.trades}</b> trades.` + (S.bonus ? ` Streak bonuses: +${fmt(S.bonus)}.` : '') + ` ${rugs} collection${rugs === 1 ? '' : 's'} got rug-pulled this round.<br><small>Made-up projects and in-game coins only.</small>`,
+    fact: 'In real life, check a collection\'s backing on-chain before you buy, and remember real NFT prices and backing can fall.',
+    buttons: [['PLAY AGAIN', () => newRun()], ['Leaderboard', () => openLB(GAME, TITLE, null, 'trades'), 1], ['Menu', () => show('setup'), 1]] });
+  if (sc >= 1) post(GAME, sc, secs, Math.min(S.trades, 5000), null); gameOver(); }
+// ---- input (event delegation) ----
+$('#tabs').addEventListener('click', e => { const b = e.target.closest('[data-tab]'); if (!b) return; tab = b.dataset.tab; renderTabs(); renderMarket(); BK.play('tick'); });
+$('#nav').addEventListener('click', e => { const b = e.target.closest('[data-p]'); if (b) setPane(b.dataset.p); });
+['#pMarket', '#pPort', '#drop'].forEach(s => $(s).addEventListener('click', e => { const r = e.target.closest('[data-c]'); if (!r) return; openId = +r.dataset.c; listOpen = false; renderSheet(); renderDrop(); }));
+$('#pList').addEventListener('click', e => { const t = e.target.closest('button'); if (!t) return; if (t.dataset.drop) TY.relist(+t.dataset.drop, .9); if (t.dataset.drop2) TY.relist(+t.dataset.drop2, .75); if (t.dataset.cancel) TY.cancel(+t.dataset.cancel); BK.play('turn'); renderList(); });
+$('#sheet').addEventListener('click', e => { const t = e.target.closest('button'); if (!t || !S) return; const c = TY.col(openId); if (t.dataset.close) { openId = null; renderSheet(); renderDrop(); return; } if (!c) return;
+  const a = t.dataset.act; let did = 0;
+  if (a === 'check') { c.checked = true; BK.play(c.backed ? 'good' : 'bad'); flashMsg(c.backed ? '✔ Pool found: ' + f2(TY.per(c)) + '/NFT' : '✖ No pool found', c.backed ? '#2bff88' : '#ff6b6b'); }
+  if (a === 'buy1' || a === 'buy5') { did = TY.buy(c.id, a === 'buy1' ? 1 : 5); BK.play(did ? 'pop' : 'bad'); if (did) flashMsg((c.window && S.t < c.window ? 'Minted ' : 'Bought ') + did, '#ff8cc4'); else flashMsg('Can\'t buy that', '#ff6b6b'); }
+  if (a === 'sell') { const v = TY.sellNow(c.id); BK.play(v ? 'good' : 'bad'); if (v) flashMsg('+' + f2(v) + ' coins', '#f3d77a'); }
+  if (a === 'redeem') { const v = TY.redeem(c.id); BK.play(v ? 'good' : 'bad'); if (v) flashMsg('Redeemed +' + f2(v), '#2bff88'); }
+  if (a === 'list') { listOpen = !listOpen; }
+  if (t.dataset.listk) { const l = TY.list(c.id, c.price * +t.dataset.listk); if (l) { BK.play('turn'); flashMsg('Listed at ' + f2(l.price), '#f3d77a'); listOpen = false; } }
+  renderAll(); renderSheet(); });
+$('#goBtn').onclick = () => newRun();
+$('#menuBtn').onclick = () => { L.stop(); if (S) S.over = true; openId = null; show('setup'); };
+$('#lbBtn').onclick = () => openLB(GAME, TITLE, null, 'trades');
+window.G = { state: () => S, newRun, step, L, P, TY, CONFIG, open: id => { openId = id; renderSheet(); }, setPane, setTab: t => { tab = t; renderTabs(); renderMarket(); }, renderAll };
+</script>
+</body>
+</html>

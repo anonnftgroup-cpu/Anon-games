@@ -1177,6 +1177,32 @@
       "movesLabel": "rounds",
       "hideMode": true,
       "added": "2026-10-19"
+    },
+    {
+      "id": "nft-tycoon",
+      "name": "ANON NFT Tycoon",
+      "tagline": "Hectic 3-minute trading game with made-up NFTs and game coins",
+      "path": "nft-tycoon/",
+      "thumb": "nft-tycoon/thumb.webp",
+      "category": "Learn",
+      "tags": [
+        "learn",
+        "trading",
+        "tycoon",
+        "market",
+        "backing"
+      ],
+      "status": "live",
+      "leaderboard": true,
+      "scoreLabel": "Score",
+      "order": "desc",
+      "periods": [
+        "day",
+        "all"
+      ],
+      "movesLabel": "trades",
+      "hideMode": true,
+      "added": "2026-10-19"
     }
   ]
 }
