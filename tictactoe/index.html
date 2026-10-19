@@ -220,7 +220,7 @@ const IN_HUB = /[?&]hub=1\b/.test(location.search) || (function () { try { retur
 if (IN_HUB) document.documentElement.classList.add('in-hub');
 const setDisc = (d, ch) => { d.style.backgroundImage = 'url(' + ch.img + ')'; d.setAttribute('role', 'img'); d.setAttribute('aria-label', ch.name); };
 
-/* ---------- setup (same character select as ANON Connect 4) ---------- */
+/* ---------- setup (same character select as ANON Four in a Row) ---------- */
 let setup = Object.assign({ mode: 'cpu', diff: 'medium', p1: 'anon', p2: 'venge' }, ls.get(K_SET, {}));
 let pickStep = 1;
 function randomOther(id) { const o = CHARS.filter(c => c.id !== id); return o[Math.floor(Math.random() * o.length)].id; }

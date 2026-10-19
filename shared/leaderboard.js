@@ -44,7 +44,7 @@ const SUPABASE_ANON_KEY = 'sb_publishable_-f0lT5SuVJ-TbFzlfMd7kA_hH6ZXp-N';
     solitaire: { minScore: 0, maxScore: t => 760 + Math.floor(700000 / Math.max(1, t)), minTime: 60, maxTime: 86400, minMoves: 52, maxMoves: 100000 },
     // Daily ANON Word: moves = guesses used (1-6). score = (7 - guesses) * 100 + max(0, 99 - floor(seconds / 6)).
     'daily-word': { minScore: 100, maxScore: (t, m) => (7 - m) * 100 + Math.max(0, 99 - Math.floor(t / 6)), minTime: 3, maxTime: 86400, minMoves: 1, maxMoves: 6 },
-    // ANON Connect 4 (wins vs computer only): moves = the player's own moves (4-21), mode = easy | medium | hard.
+    // ANON Four in a Row, game id connect4 (wins vs computer only): moves = the player's own moves (4-21), mode = easy | medium | hard.
     // score = base (easy 100, medium 300, hard 600) + (22 - moves) * 10, and at least 1 second per move.
     connect4: { minScore: 110, maxScore: (t, m) => 600 + (22 - m) * 10, minTime: 4, maxTime: 86400, minMoves: 4, maxMoves: 21,
       check: (score, t, m, mode) => { const b = { easy: 100, medium: 300, hard: 600 }[mode];

@@ -255,7 +255,7 @@ async function submitGuess() {
     const x = await rpc('wu_guess', { p_round: R.id, p_word: g }); lastGuess = Date.now();
     if (!x.ok) {
       busy = false;
-      if (x.net) return toast('Connection problem – tap Enter to try again', 2400);
+      if (x.net) return toast('Network problem – tap Enter to try again', 2400);
       if (/slow down/i.test(x.msg)) return toast('Easy, ninja – one guess at a time', 1800);
       if (/round (finished|not found|expired)/i.test(x.msg)) { R.status = 'lost'; R.answer = R.answer || '?????'; save(); toast('That word timed out. Here\'s a new one.', 2400); return newRound(); }
       if (x.missing) { SRV = 'missing'; toast('Leaderboard went offline – new practice word', 2400); R = null; return newRound(); }
@@ -387,7 +387,7 @@ async function init() {
   paintAll();
 }
 init();
-window.ANON_WORDU = { version: '1.0.1', state: () => JSON.parse(JSON.stringify(R)), srv: () => SRV, stats, shareText: () => shareText(), next: nextWord, busy: () => busy, evaluate, valid: w => VALID.has(w) };
+window.ANON_WORDU = { version: '1.0.2', state: () => JSON.parse(JSON.stringify(R)), srv: () => SRV, stats, shareText: () => shareText(), next: nextWord, busy: () => busy, evaluate, valid: w => VALID.has(w) };
 })();
 </script>
 </body>

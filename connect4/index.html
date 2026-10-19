@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#05070a">
-<title>ANON Connect 4 · ANON NFTs</title>
-<meta name="description" content="ANON Connect 4: a free four-in-a-row game from ANON NFTs. Play as your favourite ANON character against the computer or a friend. No sign-up.">
+<title>ANON Four in a Row · ANON NFTs</title>
+<meta name="description" content="ANON Four in a Row: a free four-in-a-row game from ANON NFTs. Play as your favourite ANON character against the computer or a friend. No sign-up.">
 <link rel="icon" href="../assets/logo.webp">
 <link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
 <link rel="preload" href="engine.js" as="script">
@@ -23,7 +23,7 @@ header{padding:calc(6px + env(safe-area-inset-top)) 10px 2px;max-width:560px;wid
 .top{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .brand{display:flex;align-items:center;gap:9px;min-width:0}
 .brand img{width:36px;height:36px;border-radius:50%;box-shadow:0 0 0 1px rgba(212,175,55,.6),0 0 12px rgba(255,61,154,.25);flex:none}
-h1{margin:0;font-family:Georgia,"Times New Roman",serif;font-weight:700;font-size:clamp(16px,5vw,26px);letter-spacing:.1em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+h1{margin:0;font-family:Georgia,"Times New Roman",serif;font-weight:700;font-size:clamp(14px,4.3vw,26px);letter-spacing:.06em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
   background:linear-gradient(180deg,#fff3c4 0%,#e9c858 45%,#b48a25 75%,#f5dc85 100%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 8px rgba(255,61,154,.2))}
 .icon-btn{width:36px;height:36px;border-radius:50%;border:1px solid rgba(212,175,55,.6);background:rgba(0,0,0,.45);color:var(--gold2);font-weight:800;font-size:16px;flex:none;padding:0}
 .top-r{display:flex;gap:6px;flex:none}
@@ -123,7 +123,7 @@ footer a{color:#b9a35c;text-decoration:none}
 <header>
   <div class="top">
     <a class="back-btn" id="backBtn" href="../" aria-label="Back to ANON Arcade">&larr; Arcade</a>
-    <div class="brand"><img src="../assets/logo.webp" alt="ANON NFTs logo"><h1>ANON CONNECT 4</h1></div>
+    <div class="brand"><img src="../assets/logo.webp" alt="ANON NFTs logo"><h1>ANON FOUR IN A ROW</h1></div>
     <div class="top-r">
       <button class="icon-btn" id="lbBtn" aria-label="Leaderboard">&#127942;</button>
       <button class="icon-btn" id="helpBtn" aria-label="How to play">?</button>
@@ -173,7 +173,7 @@ footer a{color:#b9a35c;text-decoration:none}
 <script>
 (() => {
 'use strict';
-const GAME = 'connect4', TITLE = 'ANON Connect 4';
+const GAME = 'connect4', TITLE = 'ANON Four in a Row';
 const E = window.ANON_C4_ENGINE, W = 7, H = 6;
 const CHARS = [
   { id: 'anon',   name: 'ANON Revenue Share NFTs', img: 'chars/anon.webp' },
@@ -409,7 +409,7 @@ function showResult() {
   openModal(p => {
     if (w !== 0) { const d = el('div', 'disc res-disc' + (w === -1 ? ' p2' : '')); setDisc(d, charById(w === 1 ? S.p1 : S.p2)); p.appendChild(d); }
     p.appendChild(el('h2', '', w === 0 ? 'Draw!' : cpu ? (w === 1 ? 'ANON wins! 👑' : 'Computer wins') : (w === 1 ? 'Player 1 wins!' : 'Player 2 wins!')));
-    p.appendChild(el('div', 'res-sub', w === 0 ? 'Nobody connected four. Rematch?' : charById(w === 1 ? S.p1 : S.p2).name + (cpu ? ' · ' + DIFF_NAME[S.diff] : '')));
+    p.appendChild(el('div', 'res-sub', w === 0 ? 'Nobody got four in a row. Rematch?' : charById(w === 1 ? S.p1 : S.p2).name + (cpu ? ' · ' + DIFF_NAME[S.diff] : '')));
     const g = el('div', 'stats'), t = secs();
     [[cpu ? myMoves() : S.moves.length, cpu ? 'Your moves' : 'Moves'], [Math.floor(t / 60) + ':' + String(t % 60).padStart(2, '0'), 'Time'], [cpu && w === 1 ? score(S.diff, myMoves()) : '–', 'Score']]
       .forEach(([v, l]) => { const s = el('div', 'stat'); s.appendChild(el('b', '', String(v))); s.appendChild(el('span', '', l)); g.appendChild(s); });
@@ -435,6 +435,10 @@ function showHelp() {
   ls.set(K_SEEN, 1);
 }
 $('#helpBtn').onclick = showHelp;
+/* keep the long title on one line on narrow phones: shrink it until it fits */
+function fitTitle() { const h = document.querySelector('h1'); h.style.fontSize = ''; let f = parseFloat(getComputedStyle(h).fontSize);
+  while (h.scrollWidth > h.clientWidth && f > 11) { f -= 0.5; h.style.fontSize = f + 'px'; } }
+fitTitle(); addEventListener('resize', fitTitle); if (document.fonts) document.fonts.ready.then(fitTitle); setTimeout(fitTitle, 600);
 
 /* ---------- boot ---------- */
 renderSetup();
@@ -443,7 +447,7 @@ if (saved && saved.moves && Array.isArray(saved.moves) && !saved.result && saved
   S = Object.assign(newState(), saved); renderPlay(); showView('play'); if (isCpuTurn()) aiTurn();
 } else showView('setup');
 if (!ls.get(K_SEEN, 0)) setTimeout(showHelp, 300);
-window.ANON_C4 = { version: '1.0.0', engine: E, chars: CHARS, score, state: () => JSON.parse(JSON.stringify(S)), busy: () => busy || isCpuTurn(), aiLog: () => lastAi.slice(),
+window.ANON_C4 = { version: '1.1.0', engine: E, chars: CHARS, score, state: () => JSON.parse(JSON.stringify(S)), busy: () => busy || isCpuTurn(), aiLog: () => lastAi.slice(),
   usingWorker: () => !!worker, setup: () => Object.assign({}, setup), tap: c => humanMove(c) };
 })();
 </script>

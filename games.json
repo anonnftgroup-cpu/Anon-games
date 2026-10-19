@@ -72,14 +72,14 @@
     },
     {
       "id": "connect4",
-      "name": "ANON Connect 4",
+      "name": "ANON Four in a Row",
       "tagline": "Pick your ANON and get four in a row",
       "path": "connect4/",
       "thumb": "connect4/thumb.webp",
       "category": "Strategy",
       "tags": [
         "four in a row",
-        "connect four",
+        "4 in a row",
         "board game",
         "2 players",
         "vs computer"

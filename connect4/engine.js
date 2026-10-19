@@ -1,4 +1,4 @@
-/* ANON Connect 4 engine: board, win detection and the computer player (negamax + alpha-beta,
+/* ANON Four in a Row engine: board, win detection and the computer player (negamax + alpha-beta,
    transposition table, iterative deepening with a time budget). No DOM. Works in browsers and Node. */
 (function (root) {
   'use strict';
