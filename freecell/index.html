@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05070a">
+<title>ANON FreeCell · ANON NFTs</title>
+<meta name="description" content="ANON FreeCell: the classic patience game with ANON NFT court cards and card backs. Free, no sign-up.">
+<link rel="icon" href="../assets/logo.webp">
+<link rel="stylesheet" href="../assets/nft/kit.css">
+<link rel="stylesheet" href="../assets/play/play.css">
+<style>
+.pad{display:flex;gap:6px;justify-content:center;align-items:center;padding:4px 4px 2px;flex:none;user-select:none;-webkit-user-select:none;flex-wrap:wrap}
+.pad button{min-width:52px;min-height:44px;border-radius:12px;border:1px solid rgba(212,175,55,.6);background:rgba(0,0,0,.55);color:var(--gold2);font-size:17px;font-weight:900;touch-action:none;padding:0 8px}
+.pad button.on{background:rgba(255,61,154,.35)}.pad .big{min-width:84px;background:linear-gradient(180deg,#ff5aab,#c41f73);color:#fff;font-size:15px}
+.pad button:disabled{opacity:.35}
+.dpad{display:grid;grid-template-columns:repeat(3,48px);grid-template-rows:repeat(2,40px);gap:4px}.dpad button{min-width:0;min-height:0}
+.dpad [data-k=U]{grid-column:2}.dpad [data-k=L]{grid-column:1;grid-row:2}.dpad [data-k=D]{grid-column:2;grid-row:2}.dpad [data-k=R]{grid-column:3;grid-row:2}
+.seg.wrap{flex-wrap:wrap}.seg.wrap button{flex:1 1 22%}
+@media (max-height:700px){.pad button{min-height:38px}}
+</style>
+</head>
+<body>
+<header><div class="top">
+  <div class="brand"><a class="back-btn" href="../" aria-label="Back to ANON Arcade">&larr; Arcade</a><img src="../assets/logo.webp" alt=""><h1>FREECELL</h1></div>
+  <div class="top-r"><button class="icon-btn" id="lbBtn" aria-label="Leaderboard">🏆</button><button class="icon-btn" id="menuBtn" aria-label="Menu">↻</button></div>
+</div></header>
+<section class="view on" id="setup">
+  <img class="hero" id="hero" alt="ANON NFTs artwork">
+  <div class="lbl">Choose your ANON</div>
+  <div class="chars five" id="artPick"></div>
+  <div class="lbl">Difficulty</div><div class="seg" id="diff"><button data-v="easy">Easy</button><button data-v="medium">Medium</button><button data-v="hard">Hard</button></div>
+  <button class="go" id="goBtn">PLAY</button>
+  <p class="howto">Move every card to the 4 foundations (A to K by suit). Tap a card to pick it up, then tap where it goes (green outline = allowed). Tap a picked card again to auto-move it. Columns build down in alternating colours. Free cells hold one card each. Easy: 4 cells, unlimited undo. Medium: 4 cells, 5 undos. Hard: 3 cells, no undo.</p>
+  <div class="nick" id="nick"></div>
+</section>
+<section class="view" id="play">
+  <div class="hud"><span id="tm"></span><span id="mv"></span><span id="fd"></span></div>
+  <div class="stage"><canvas id="cv"></canvas><div class="tap" id="msg"></div></div>
+  <div class="pad"><button data-k="U">↶ Undo</button><button data-k="H">💡 Hint</button></div>
+  <div class="bar"><button id="againBtn">New deal</button><button id="setBtn">Change ANON</button></div>
+</section>
+<script src="../shared/leaderboard.js"></script>
+<script src="../shared/newsletter.js"></script>
+<script src="../assets/nft/kit.js"></script>
+<script src="../assets/play/play.js"></script>
+<script>
+const GAME = 'freecell', TITLE = 'ANON FreeCell', PK = 'anonB.freecell', ASPECT = 0.64, MOVES = 'moves', DEFMODE = 'medium';
+'use strict';
+const { $, ls, modal, post, openLB, gameOver, art, ART } = AK;
+const NAMES = Object.fromEntries(ART.map(a => [a.id, a.name.replace(/^ANON /, '')]));
+const DIFFN = { easy: 'Easy', medium: 'Medium', hard: 'Hard' };
+const pref = ls.get(PK, { art: 'anon', diff: DEFMODE, best: 0 }); if (window.MODELIST && !MODELIST.includes(pref.diff)) pref.diff = DEFMODE;
+const show = id => document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === id));
+const setHero = () => $('#hero').src = art(pref.art).cover;
+AK.picker($('#artPick'), pref.art, id => { pref.art = id; ls.set(PK, pref); setHero(); });
+if ($('#diff') && ![...$('#diff').children].some(b => b.dataset.v === pref.diff)) pref.diff = DEFMODE;
+if ($('#diff')) AK.seg($('#diff'), pref.diff, v => { pref.diff = v; ls.set(PK, pref); });
+setHero(); AK.nickLine($('#nick'));
+// ---- sound: generated in the browser, nothing plays before the first tap/key ----
+let AC = null; window.__sfx = 0;
+const unlock = () => { if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } if (AC && AC.state === 'suspended') AC.resume(); };
+['pointerdown', 'keydown', 'touchstart'].forEach(t => window.addEventListener(t, unlock, { capture: true, passive: true }));
+function tone(f, d, type, vol, f2) { if (!AC || pref.mute) return; window.__sfx++; const t = AC.currentTime, o = AC.createOscillator(), g = AC.createGain();
+  o.type = type || 'square'; o.frequency.setValueAtTime(f, t); if (f2) o.frequency.exponentialRampToValueAtTime(Math.max(20, f2), t + d);
+  g.gain.setValueAtTime(vol || .08, t); g.gain.exponentialRampToValueAtTime(.0001, t + d); o.connect(g).connect(AC.destination); o.start(t); o.stop(t + d + .02); }
+function boom(d, vol) { if (!AC || pref.mute) return; window.__sfx++; const n = Math.floor(AC.sampleRate * d), b = AC.createBuffer(1, n, AC.sampleRate), c = b.getChannelData(0);
+  for (let i = 0; i < n; i++) c[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 2); const s = AC.createBufferSource(), g = AC.createGain(), fl = AC.createBiquadFilter();
+  fl.type = 'lowpass'; fl.frequency.value = 900; s.buffer = b; g.gain.value = vol || .25; s.connect(fl).connect(g).connect(AC.destination); s.start(); }
+// ---- shared loop, pause when hidden, game over ----
+let C = null, S = null;
+const imgs = {}; const IM = id => imgs[id];
+ART.forEach(a => { AP.img(a.img).then(i => { imgs[a.id] = i; dirty = true; }); AP.img(a.cover).then(i => { imgs['c-' + a.id] = i; dirty = true; }); });
+function ring(x, im, cx, cy, r, col) { x.save(); x.beginPath(); x.arc(cx, cy, r, 0, 7); x.closePath(); x.fillStyle = '#111'; x.fill(); x.clip(); if (im) AP.cover(x, im, cx - r, cy - r, r * 2, r * 2); x.restore();
+  x.lineWidth = Math.max(1.5, r * .16); x.strokeStyle = col || '#f3d77a'; x.beginPath(); x.arc(cx, cy, r, 0, 7); x.stroke(); }
+function bgArt(x, id, a) { const im = IM('c-' + id); if (!im) return; x.globalAlpha = a || .22; const k = Math.max(C.w / im.width, C.h / im.height); x.drawImage(im, (C.w - im.width * k) / 2, (C.h - im.height * k) / 2, im.width * k, im.height * k); x.globalAlpha = 1; }
+const L = AP.loop(dt => { if (S && !S.over && !S.paused) step(dt); }, () => draw());
+let paused = false;
+function pause() { if (!S || S.over || S.paused) return; S.paused = true; $('#msg').textContent = 'Paused\nTap to resume'; }
+function resume() { if (S && S.paused) { S.paused = false; $('#msg').textContent = ''; } }
+document.addEventListener('visibilitychange', () => { if (document.hidden) pause(); });
+$('#msg').parentElement.addEventListener('pointerdown', () => { if (S && S.paused) resume(); }, true);
+async function start() { show('play'); if (!C) C = AP.canvas($('#cv'), ASPECT, () => draw()); else C.fit(); $('#msg').textContent = ''; newRun(); L.start(); }
+function end(score, secs, moves, mode, title, text) {
+  if (!S || S.over) return; S.over = true; draw(); setTimeout(() => L.stop(), 50); if (navigator.vibrate) navigator.vibrate([40, 30, 70]);
+  const a = art(S.art || pref.art), pb = score > (pref.best || 0); if (pb) { pref.best = score; ls.set(PK, pref); }
+  S.final = { score, secs, moves, mode };
+  setTimeout(() => { modal({ art: a.img, title: pb && score > 0 ? 'New best! 🏆' : title, text, lb: score > 0,
+    buttons: [['PLAY AGAIN', () => start()], ['Leaderboard', () => lb(), 1], ['Change ANON', () => show('setup'), 1]] });
+    if (score > 0) post(GAME, score, Math.max(1, Math.round(secs)), moves, mode); }, 500);
+  gameOver();
+}
+const lb = () => openLB(GAME, TITLE, MODES, MOVES);
+$('#goBtn').onclick = () => start(); $('#againBtn').onclick = () => { if (S) S.over = true; start(); };
+$('#setBtn').onclick = $('#menuBtn').onclick = () => { if (S) S.over = true; L.stop(); show('setup'); };
+$('#lbBtn').onclick = lb;
+// hold-buttons for on-screen pads: data-k = key name
+const held = new Set(); window.__held = held;
+document.querySelectorAll('.pad [data-k]').forEach(b => { const k = b.dataset.k;
+  b.addEventListener('pointerdown', e => { e.preventDefault(); held.add(k); b.classList.add('on'); if (window.onPad) onPad(k); });
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach(t => b.addEventListener(t, () => { held.delete(k); b.classList.remove('on'); })); });
+const KM = { ArrowLeft: 'L', a: 'L', A: 'L', ArrowRight: 'R', d: 'R', D: 'R', ArrowUp: 'U', w: 'U', W: 'U', ArrowDown: 'D', s: 'D', S: 'D', ' ': 'B', Enter: 'B', x: 'B', z: 'B' };
+const playing = () => $('#play').classList.contains('on') && !document.querySelector('.modal.show,.alb-ov,.anw-ov');
+window.addEventListener('keydown', e => { const k = KM[e.key]; if (!k || !playing()) return; e.preventDefault(); if (S && S.paused) resume(); if (!held.has(k) && window.onPad) onPad(k); held.add(k); });
+window.addEventListener('keyup', e => { const k = KM[e.key]; if (k) held.delete(k); });
+
+// pointer -> canvas CSS coords (canvas has a 2px border)
+function P(e) { const r = $('#cv').getBoundingClientRect(); return { x: (e.clientX - r.left - 2) * C.w / (r.width - 4), y: (e.clientY - r.top - 2) * C.h / (r.height - 4) }; }
+const ukDay = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/London' }).format(new Date());
+function hashStr(s) { let h = 2166136261; for (const c of s) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
+function txt(x, s, X, Y, size, col, align, weight, font) { x.font = `${weight || 800} ${size}px ${font || 'system-ui,sans-serif'}`; x.fillStyle = col || '#f3d77a'; x.textAlign = align || 'center'; x.textBaseline = 'middle'; x.fillText(s, X, Y); }
+var dirty = true; window.addEventListener('resize', () => dirty = true); window.addEventListener('pointerup', () => dirty = true);
+const fmt = s => Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
+
+const MODES = {"easy": "Easy", "medium": "Medium", "hard": "Hard"};
+// ---- batch B card helper: faces with ANON art on courts, ANON art backs ----
+const SUITS = ['♠', '♥', '♦', '♣'], RANKS = ['', 'A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+const red = s => s === 1 || s === 2;
+const COURT = { 11: 'apes', 12: 'royals', 13: 'royals' };
+function deck(n) { const d = []; for (let k = 0; k < (n || 1); k++) for (let s = 0; s < 4; s++) for (let r = 1; r <= 13; r++) d.push({ r, s, up: false, id: k * 52 + s * 13 + r }); return d; }
+function cardBack(x, X, Y, W, H, id) {
+  const rad = Math.max(3, W * .1); AP.rr(x, X, Y, W, H, rad); x.fillStyle = '#16110a'; x.fill();
+  x.save(); AP.rr(x, X + 2, Y + 2, W - 4, H - 4, rad * .8); x.clip(); const im = IM('c-' + (id || pref.art)) || IM(id || pref.art);
+  if (im) { const k = Math.max((W - 4) / im.width, (H - 4) / im.height); x.drawImage(im, X + W / 2 - im.width * k / 2, Y + H / 2 - im.height * k / 2, im.width * k, im.height * k); }
+  x.fillStyle = 'rgba(0,0,0,.18)'; x.fillRect(X, Y, W, H); x.restore();
+  AP.rr(x, X, Y, W, H, rad); x.lineWidth = Math.max(1, W * .04); x.strokeStyle = '#d4af37'; x.stroke();
+}
+function cardFace(x, c, X, Y, W, H, hi, dim) {
+  const rad = Math.max(3, W * .1); AP.rr(x, X, Y, W, H, rad); x.fillStyle = dim ? '#cfc8b4' : '#fbf6e8'; x.fill();
+  x.lineWidth = hi ? Math.max(2, W * .07) : 1; x.strokeStyle = hi ? '#ff3d9a' : '#8a7a4a'; x.stroke();
+  const col = red(c.s) ? '#d0105e' : '#111', fs = Math.max(9, W * .32);
+  txt(x, RANKS[c.r], X + W * .06, Y + fs * .62, fs, col, 'left', 900); txt(x, SUITS[c.s], X + W * .94, Y + fs * .62, fs * .95, col, 'right', 700);
+  const cy = Y + H * .62;
+  if (c.r > 10 && H > W * 1.1) { const r = Math.min(W * .34, H * .22); ring(x, IM(COURT[c.r] === 'royals' && c.r === 12 ? 'royals' : COURT[c.r]), X + W / 2, cy, r, red(c.s) ? '#ff3d9a' : '#d4af37');
+    txt(x, ['J', 'Q', 'K'][c.r - 11], X + W / 2, cy + r * 1.05, Math.max(8, W * .2), '#8a6414', 'center', 900); }
+  else if (H > W * 1.1) txt(x, SUITS[c.s], X + W / 2, cy, Math.min(W * .62, H * .38), col, 'center', 700);
+  if (hi) { x.fillStyle = 'rgba(255,61,154,.12)'; AP.rr(x, X, Y, W, H, rad); x.fill(); }
+}
+function slot(x, X, Y, W, H, label) { AP.rr(x, X, Y, W, H, Math.max(3, W * .1)); x.fillStyle = 'rgba(0,0,0,.35)'; x.fill(); x.lineWidth = 1.2; x.strokeStyle = 'rgba(212,175,55,.5)'; x.stroke(); if (label) txt(x, label, X + W / 2, Y + H / 2, W * .42, 'rgba(243,215,122,.45)'); }
+
+// ANON FreeCell
+const BASE = { easy: 300, medium: 500, hard: 800 }, NCELL = { easy: 4, medium: 4, hard: 3 }, UNDO = { easy: 999, medium: 5, hard: 0 };
+function newRun() {
+  const m = pref.diff, d = AP.shuffle(deck()); d.forEach(c => c.up = true);
+  S = { art: pref.art, mode: m, cols: [[], [], [], [], [], [], [], []], cells: Array(NCELL[m]).fill(null), found: [[], [], [], []], sel: null, moves: 0, t: 0, hist: [], undos: UNDO[m], deal: AP.ri(1, 99999) };
+  d.forEach((c, i) => S.cols[i % 8].push(c)); auto(); hud(); dirty = true; updBtns();
+}
+const hud = () => { $('#tm').textContent = '⏱ ' + fmt(S.t); $('#mv').textContent = 'Moves ' + S.moves; $('#fd').textContent = '🏛 ' + S.found.reduce((a, f) => a + f.length, 0) + '/52'; };
+function updBtns() { const u = $('[data-k=U]'); if (u) { u.disabled = !S || !S.hist.length || S.undos <= 0; u.textContent = '↶ Undo' + (S && S.undos < 99 ? ' (' + S.undos + ')' : ''); } }
+const alt = (a, b) => red(a.s) !== red(b.s) && a.r === b.r + 1;
+function isRun(col, k) { for (let i = k; i < col.length - 1; i++) if (!alt(col[i], col[i + 1])) return false; return true; }
+const freeCells = () => S.cells.filter(c => !c).length, emptyCols = () => S.cols.filter(c => !c.length).length;
+const maxRun = toEmpty => (freeCells() + 1) * Math.pow(2, Math.max(0, emptyCols() - (toEmpty ? 1 : 0)));
+function cardsOf(sel) { return sel.t === 'cell' ? [S.cells[sel.i]] : S.cols[sel.i].slice(sel.k); }
+function canMove(sel, dst) {
+  const run = cardsOf(sel), c = run[0];
+  if (dst.t === 'found') return run.length === 1 && (S.found[c.s].length === c.r - 1) && (dst.i == null || dst.i === c.s);
+  if (dst.t === 'cell') return run.length === 1 && !S.cells[dst.i] && !(sel.t === 'cell');
+  if (dst.t === 'col') { if (sel.t === 'col' && sel.i === dst.i) return false; const col = S.cols[dst.i];
+    if (!col.length) return run.length <= maxRun(true); return alt(col[col.length - 1], c) && run.length <= maxRun(false); }
+  return false;
+}
+function snap() { return JSON.stringify({ cols: S.cols, cells: S.cells, found: S.found, moves: S.moves }); }
+function doMove(sel, dst, nohist) {
+  if (!nohist) S.hist.push(snap()); const run = sel.t === 'cell' ? [S.cells[sel.i]] : S.cols[sel.i].splice(sel.k);
+  if (sel.t === 'cell') S.cells[sel.i] = null;
+  if (dst.t === 'found') S.found[run[0].s].push(run[0]); else if (dst.t === 'cell') S.cells[dst.i] = run[0]; else S.cols[dst.i].push(...run);
+  S.moves++; tone(dst.t === 'found' ? 660 : 440, .06, 'triangle', .06);
+}
+function auto() { let go = true; while (go) { go = false;
+  const lo = c => c.r <= 2 || (red(c.s) ? Math.min(S.found[0].length, S.found[3].length) : Math.min(S.found[1].length, S.found[2].length)) >= c.r - 1;
+  for (let i = 0; i < S.cells.length; i++) { const c = S.cells[i]; if (c && S.found[c.s].length === c.r - 1 && lo(c)) { doMove({ t: 'cell', i }, { t: 'found' }, 1); go = true; } }
+  for (let i = 0; i < 8; i++) { const col = S.cols[i], c = col[col.length - 1]; if (c && S.found[c.s].length === c.r - 1 && lo(c)) { doMove({ t: 'col', i, k: col.length - 1 }, { t: 'found' }, 1); go = true; } } } }
+function after() { S.sel = null; auto(); hud(); updBtns(); dirty = true;
+  if (S.found.every(f => f.length === 13)) { const sc = BASE[S.mode] + Math.max(0, 900 - Math.round(S.t)); tone(880, .4, 'triangle', .1);
+    end(sc, S.t, S.moves, S.mode, 'Solved! 🎉', `<b>${art(S.art).name}</b> cleared FreeCell deal #${S.deal} in <b>${fmt(S.t)}</b> and ${S.moves} moves.<br>Score <b>${sc}</b>`); } }
+function smart(sel) {
+  const run = cardsOf(sel); if (run.length === 1 && canMove(sel, { t: 'found' })) return { t: 'found' };
+  for (let i = 0; i < 8; i++) if (S.cols[i].length && canMove(sel, { t: 'col', i })) return { t: 'col', i };
+  if (sel.t === 'col') { for (let i = 0; i < 8; i++) if (!S.cols[i].length && canMove(sel, { t: 'col', i })) return { t: 'col', i };
+    if (run.length === 1) for (let i = 0; i < S.cells.length; i++) if (!S.cells[i]) return { t: 'cell', i }; }
+  return null;
+}
+function lay() { const W = C.w, H = C.h, g = W * .012, cw = (W - g * 9) / 8, ch = cw * 1.42, ty = g * 2 + ch + g * 4;
+  const n = Math.max(1, ...S.cols.map(c => c.length)); const fy = Math.min(ch * .3, (H - ty - ch - g) / Math.max(1, n - 1)); return { W, H, g, cw, ch, ty, fy }; }
+function hit(p) { const L = lay(); const ci = Math.floor((p.x - L.g / 2) / (L.cw + L.g)); if (ci < 0 || ci > 7) return null;
+  if (p.y < L.g + L.ch + L.g * 2) { if (ci < 4) return ci < S.cells.length ? { t: 'cell', i: ci } : null; return { t: 'found', i: ci - 4 }; }
+  const col = S.cols[ci]; if (!col.length) return { t: 'col', i: ci, k: -1 };
+  let k = Math.floor((p.y - L.ty) / L.fy); k = Math.max(0, Math.min(col.length - 1, k)); if (p.y > L.ty + (col.length - 1) * L.fy + L.ch + 10) k = -1; return { t: 'col', i: ci, k }; }
+function tap(p) {
+  if (!S || S.over) return; const h = hit(p); dirty = true; if (!h) { S.sel = null; return; }
+  if (S.sel) { const s = S.sel; const same = h.t === s.t && h.i === s.i && (h.t !== 'col' || h.k === s.k);
+    if (same) { const d = smart(s); if (d) { doMove(s, d); after(); } else { S.sel = null; tone(150, .1, 'square', .04); } return; }
+    const dst = h.t === 'col' ? { t: 'col', i: h.i } : h; if (canMove(s, dst)) { doMove(s, dst); after(); return; } S.sel = null; }
+  if (h.t === 'cell' && S.cells[h.i]) S.sel = { t: 'cell', i: h.i };
+  else if (h.t === 'col' && h.k >= 0) { if (isRun(S.cols[h.i], h.k)) S.sel = { t: 'col', i: h.i, k: h.k }; else AK.toast('Only an alternating run can move'); }
+}
+$('#cv').addEventListener('pointerdown', e => { if (S && S.paused) return; tap(P(e)); });
+function onPad(k) { if (k === 'U' && S && S.hist.length && S.undos > 0 && !S.over) { const o = JSON.parse(S.hist.pop()); Object.assign(S, o); S.undos--; S.moves++; S.sel = null; hud(); updBtns(); dirty = true; }
+  if (k === 'H' && S && !S.over) { for (let i = 0; i < 8; i++) { const col = S.cols[i]; for (let k2 = 0; k2 < col.length; k2++) if (isRun(col, k2)) { const d = smart({ t: 'col', i, k: k2 }); if (d && !(d.t === 'col' && !S.cols[d.i].length && k2 === 0)) { S.sel = { t: 'col', i, k: k2 }; dirty = true; AK.toast('Try this card'); return; } break; } }
+    for (let i = 0; i < S.cells.length; i++) if (S.cells[i] && smart({ t: 'cell', i })) { S.sel = { t: 'cell', i }; dirty = true; AK.toast('Try this card'); return; } AK.toast('No simple move: use a free cell or undo'); } }
+let lastSec = -1;
+function step(dt) { S.t += dt; if (Math.floor(S.t) !== lastSec) { lastSec = Math.floor(S.t); hud(); } }
+function draw() {
+  if (!C || !dirty) return; dirty = false; const x = C.x, { W, H, g, cw, ch, ty, fy } = S ? lay() : { W: C.w, H: C.h }; x.fillStyle = '#071410'; x.fillRect(0, 0, W, H); if (!S) return; bgArt(x, S.art, .12);
+  const dests = S.sel ? [] : null;
+  for (let i = 0; i < 4; i++) { const X = g + i * (cw + g), Y = g * 2; if (i >= S.cells.length) { slot(x, X, Y, cw, ch, '✕'); continue; } const c = S.cells[i];
+    if (c) cardFace(x, c, X, Y, cw, ch, S.sel && S.sel.t === 'cell' && S.sel.i === i); else { slot(x, X, Y, cw, ch, 'FREE'.slice(0, 1)); if (S.sel && canMove(S.sel, { t: 'cell', i })) { AP.rr(x, X, Y, cw, ch, 4); x.strokeStyle = '#2bff88'; x.lineWidth = 2; x.stroke(); } } }
+  for (let i = 0; i < 4; i++) { const X = g + (i + 4) * (cw + g), Y = g * 2, f = S.found[i]; if (f.length) cardFace(x, f[f.length - 1], X, Y, cw, ch); else slot(x, X, Y, cw, ch, SUITS[i]);
+    if (S.sel && canMove(S.sel, { t: 'found', i })) { AP.rr(x, X, Y, cw, ch, 4); x.strokeStyle = '#2bff88'; x.lineWidth = 2.5; x.stroke(); } }
+  for (let i = 0; i < 8; i++) { const X = g + i * (cw + g), col = S.cols[i]; if (!col.length) slot(x, X, ty, cw, ch);
+    col.forEach((c, k) => cardFace(x, c, X, ty + k * fy, cw, ch, S.sel && S.sel.t === 'col' && S.sel.i === i && k >= S.sel.k));
+    if (S.sel && canMove(S.sel, { t: 'col', i })) { const Y = ty + Math.max(0, col.length - 1) * fy; AP.rr(x, X - 1, Y - 1, cw + 2, ch + 2, 5); x.strokeStyle = '#2bff88'; x.lineWidth = 2.5; x.stroke(); } }
+}
+window.G = { state: () => S, tap, doMove, after, auto, canMove, smart, lay, C: () => C, L };
+
+</script>
+</body>
+</html>

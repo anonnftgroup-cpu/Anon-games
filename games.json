@@ -1234,6 +1234,35 @@
         "hard": "Hard"
       },
       "added": "2026-10-19"
+    },
+    {
+      "id": "freecell",
+      "name": "ANON FreeCell",
+      "tagline": "Classic FreeCell with ANON court cards",
+      "path": "freecell/",
+      "thumb": "freecell/thumb.webp",
+      "category": "Cards",
+      "tags": [
+        "freecell",
+        "patience",
+        "cards",
+        "solitaire"
+      ],
+      "status": "live",
+      "leaderboard": true,
+      "scoreLabel": "Score",
+      "order": "desc",
+      "periods": [
+        "day",
+        "all"
+      ],
+      "movesLabel": "moves",
+      "modeLabels": {
+        "easy": "Easy",
+        "medium": "Medium",
+        "hard": "Hard"
+      },
+      "added": "2026-10-19"
     }
   ]
 }
