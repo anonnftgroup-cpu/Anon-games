@@ -5,19 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#05070a">
 <title>ANON Solitaire · ANON NFTs</title>
-<meta name="description" content="ANON Solitaire: a free Klondike card game from ANON NFTs. No sign-up and no wallet needed.">
-<meta property="og:type" content="website">
-<meta property="og:site_name" content="ANON Arcade">
-<meta property="og:title" content="ANON Solitaire">
-<meta property="og:description" content="ANON Solitaire: a free Klondike card game from ANON NFTs. No sign-up and no wallet needed.">
-<meta property="og:url" content="https://anonnftgroup-cpu.github.io/Anon-games/solitaire/">
-<meta property="og:image" content="https://anonnftgroup-cpu.github.io/Anon-games/solitaire/og.jpg">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="ANON Solitaire">
-<meta name="twitter:description" content="ANON Solitaire: a free Klondike card game from ANON NFTs. No sign-up and no wallet needed.">
-<meta name="twitter:image" content="https://anonnftgroup-cpu.github.io/Anon-games/solitaire/og.jpg">
+<meta name="description" content="ANON Solitaire: a free Klondike card game from ANON NFTs. No sign-up, no ads, no wallet needed.">
 <link rel="icon" href="assets/logo.webp">
 <link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
 <style>
@@ -148,7 +136,7 @@ footer a{color:#b9a35c;text-decoration:none}
     <div class="row"><button class="btn" id="winLbBtn">Leaderboard</button><button class="btn" id="againBtn">Play again</button></div>
   </div>
 </div>
-<script src="../shared/leaderboard.js?v=1.7.0"></script>
+<script src="../shared/leaderboard.js"></script>
 <script src="../shared/newsletter.js"></script>
 <script>
 (() => {
@@ -226,6 +214,7 @@ function newState(draw3) {
   const stock = deck.slice(k).map(id => ({ id, up: false }));
   return { stock, waste: [], found: [[], [], [], []], tab, score: 0, moves: 0, time: 0, started: false, done: false, draw3: !!draw3 };
 }
+const withDeal = st => (st.deal = JSON.stringify({ stock: st.stock, tab: st.tab }), st);
 const pileArr = p => p.t === 'stock' ? G.stock : p.t === 'waste' ? G.waste : p.t === 'found' ? G.found[p.i] : G.tab[p.i];
 function locate(id) {
   let i = G.stock.findIndex(c => c.id === id); if (i >= 0) return { p: { t: 'stock' }, idx: i };
@@ -370,7 +359,7 @@ function flipTop(loc) {
 }
 function afterMove() {
   G.moves++; startTimer(); render(); save();
-  if (foundCount() === 52) win(); else maybeAuto();
+  if (foundCount() === 52) win(); else { maybeAuto(); clearTimeout(stuckT); stuckT = setTimeout(checkStuck, 450); }
 }
 function drawStock() {
   if (G.done || autoRunning) return;
@@ -408,6 +397,49 @@ function shake(cards) {
 function tapCard(loc) {
   const dst = bestTarget(loc);
   if (!dst || !doMove(loc, dst)) shake(pileArr(loc.p).slice(loc.idx));
+}
+
+/* ---------- Stuck detection ---------- */
+let stuckT = 0, stuckKey = '';
+function reachableStock() { // every card that can reach the waste top by drawing / recycling (no other moves)
+  const st = G.stock.map(c => c.id), wa = G.waste.map(c => c.id), out = new Set(), n = G.draw3 ? 3 : 1;
+  if (wa.length) out.add(wa[wa.length - 1]);
+  let s = st.slice(), w = wa.slice();
+  for (let k = 0; k < 2 * (st.length + wa.length) + 4; k++) {
+    if (s.length) { for (let j = 0; j < n && s.length; j++) w.push(s.pop()); out.add(w[w.length - 1]); }
+    else if (w.length) { s = w.reverse(); w = []; } }
+  return [...out];
+}
+const fitsFound = id => G.found.some(f => { const t = f[f.length - 1]; return t ? suitOf(t.id) === suitOf(id) && rankOf(id) === rankOf(t.id) + 1 : rankOf(id) === 1; });
+const fitsOn = (id, top) => isRed(top) !== isRed(id) && rankOf(id) === rankOf(top) - 1;
+function hasProductiveMove() {
+  const tabDst = id => G.tab.some(t => { const top = t[t.length - 1]; return top ? top.up && fitsOn(id, top.id) : rankOf(id) === 13; });
+  const stockIds = reachableStock();
+  for (const id of stockIds) if (fitsFound(id) || tabDst(id)) return true; // a stock card can come into play
+  for (let t = 0; t < 7; t++) { const p = G.tab[t];
+    for (let i = 0; i < p.length; i++) { if (!p[i].up) continue; const id = p[i].id;
+      if (i === p.length - 1 && fitsFound(id)) return true;
+      const dsts = G.tab.filter((q, j) => j !== t && (q.length ? q[q.length - 1].up && fitsOn(id, q[q.length - 1].id) : rankOf(id) === 13));
+      if (!dsts.length) continue;
+      if (i > 0 && !p[i - 1].up) return true; // reveals a hidden card
+      if (i === 0 && dsts.some(q => q.length)) return true; // empties a column
+      if (i > 0 && fitsFound(p[i - 1].id)) return true; // frees a card for the foundation
+    } }
+  for (const f of G.found) { const c = f[f.length - 1]; if (!c || rankOf(c.id) < 2) continue; // foundation card down, only if something then fits on it
+    if (!G.tab.some(q => q.length ? q[q.length - 1].up && fitsOn(c.id, q[q.length - 1].id) : rankOf(c.id) === 13)) continue;
+    const helps = id => fitsOn(id, c.id);
+    if (stockIds.some(helps)) return true;
+    for (const p of G.tab) for (let i = 0; i < p.length; i++) if (p[i].up && helps(p[i].id) && i > 0 && (!p[i - 1].up || fitsFound(p[i - 1].id))) return true;
+  }
+  return false;
+}
+function restartDeal() { if (!G.deal) return newGame(G.draw3); const d = JSON.parse(G.deal), draw3 = G.draw3; closeWin(); closeModal();
+  G = Object.assign(newState(draw3), { stock: d.stock, tab: d.tab, deal: G.deal }); undoStack = []; autoRunning = false; stuckKey = ''; render(); save(); }
+function checkStuck() {
+  if (!G || G.done || autoRunning || modalOpen || foundCount() === 52 || hasProductiveMove()) return;
+  const key = JSON.stringify([G.stock, G.waste, G.found, G.tab]); if (key === stuckKey) return; stuckKey = key;
+  showModal('No more moves', '<p>There are no useful moves left in this game, even after going through the deck again.</p>',
+    [{ label: 'Restart this game', action: restartDeal }, { label: 'New game', action: () => newGame(G.draw3) }, { label: 'Close' }]);
 }
 
 /* ---------- Auto-complete ---------- */
@@ -504,7 +536,7 @@ function confirmNew(msg, fn) {
 /* ---------- New game / deal ---------- */
 function newGame(draw3 = G ? G.draw3 : store.get(KEY_DRAW, false)) {
   closeWin();
-  G = newState(draw3); undoStack = []; autoRunning = false;
+  G = withDeal(newState(draw3)); undoStack = []; stuckKey = ''; autoRunning = false;
   els.forEach(el => { el.style.visibility = ''; el.style.transitionDelay = ''; });
   // start every card on the stock, then deal out
   table.classList.add('noanim');
@@ -631,7 +663,7 @@ let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() 
 window.ANON_SOLITAIRE = {
   state: () => JSON.parse(JSON.stringify(G)),
   newGame: d => newGame(d),
-  undo, drawStock,
+  undo, drawStock, hasProductiveMove, checkStuck, restartDeal, setState(st) { Object.assign(G, st); undoStack = []; render(false); save(); },
   tap(id) { const loc = locate(id); if (loc) { if (loc.p.t === 'stock') drawStock(); else if (movable(loc)) tapCard(loc); } },
   debugWin() {
     if (G.done) return;
@@ -658,7 +690,7 @@ layout();
 const saved = store.get(KEY_GAME, null);
 if (saved && !saved.done && Array.isArray(saved.tab) && saved.tab.length === 7 &&
     (saved.stock.length + saved.waste.length + saved.found.flat().length + saved.tab.flat().length) === 52) {
-  G = saved; render(false);
+  G = saved; render(false); setTimeout(checkStuck, 800);
 } else newGame(store.get(KEY_DRAW, false));
 })();
 </script>

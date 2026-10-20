@@ -17,7 +17,7 @@
 </div></header>
 <section class="view on" id="setup">
   <img class="hero" src="../assets/nft/c-royals.webp" alt="ANON NFTs artwork" style="object-position:50% 45%">
-  <p class="howto">Drag (or use ← →) to move the golden paddle. Tap or press Space to launch. Every brick is a piece of ANON NFT art: break them all to reveal the full artwork and move to the next level. 100 levels, and every one gets harder.<br>Gold power-ups: <b>W</b> wider paddle · <b>M</b> multi-ball · <b>S</b> slow ball · <b>♥</b> extra life.<br>Dodge the <b style="color:#ff4d5e">red</b> drops: <b style="color:#ff4d5e">−</b> shrink paddle · <b style="color:#ff4d5e">⚡</b> fast ball · <b style="color:#ff4d5e">⇄</b> reversed controls · <b style="color:#ff4d5e">☠</b> lose a life.</p>
+  <p class="howto">Drag (or use ← →) to move the golden paddle. Tap or press Space to launch. Every brick is a piece of ANON NFT art: break them all to reveal the full artwork and move to the next level. 100 levels, and every one gets harder.<br>You start with <b>3 lives</b> and keep them from level to level. Every 10th level gives a <b>bonus life</b> (max 5).<br>Gold power-ups: <b>W</b> wider paddle · <b>M</b> multi-ball · <b>S</b> slow ball · <b>♥</b> extra life.<br>Dodge the <b style="color:#ff4d5e">red</b> drops: <b style="color:#ff4d5e">−</b> shrink paddle · <b style="color:#ff4d5e">⚡</b> fast ball · <b style="color:#ff4d5e">⇄</b> reversed controls · <b style="color:#ff4d5e">☠</b> lose a life.</p>
   <button class="go" id="goBtn">PLAY FROM LEVEL 1</button>
   <button class="go" id="contBtn" style="display:none;margin-top:10px;background:#1b1f27;color:#f3d77a;border:1px solid #d4af37"></button>
   <p class="howto" id="contNote" style="display:none;font-size:12px;opacity:.75">Continue is practice: score starts at 0 and is not posted. Leaderboard runs start at level 1.</p>
@@ -101,12 +101,12 @@ function newGame(from) { from = Math.max(1, Math.min(MAXL, +from || 1)); show('p
   S = { level: from, level0: from, practice: from > 1, score: 0, shrink: 0, fast: 0, rev: 0, best: getBest(), broken: 0, lives: 3, balls: [], pu: [], fx: [], px: C.w / 2, pw: 0, wide: 0, slow: 0, over: false, t: 0, held: true, clear: 0 };
   startLevel(); L.start(); }
 function paddleY() { S.py = C.h * .9; }
-function startLevel() { layoutBricks(); paddleY(); setBest(S.level); S.pw0 = Math.max(50, C.w * (S.level <= 2 ? .22 : Math.max(.15, .2 - .0006 * S.level))); S.wide = S.slow = S.shrink = S.fast = S.rev = 0; S.pu = []; resetBall(); hud(); $('#msg').textContent = 'Level ' + S.level + '/' + MAXL + (S.practice ? ' (practice)' : '') + ' · ' + art(lvArt(S.level)).name + '\nTap to launch'; }
+function startLevel() { layoutBricks(); paddleY(); setBest(S.level); S.pw0 = Math.max(50, C.w * (S.level <= 2 ? .22 : Math.max(.15, .2 - .0006 * S.level))); S.wide = S.slow = S.shrink = S.fast = S.rev = 0; S.pu = []; let bonus = ''; if (S.level % 10 === 0 && S.level > S.level0 && S.lives < 5) { S.lives++; bonus = '❤️ Bonus life!\n'; } resetBall(); hud(); $('#msg').textContent = bonus + 'Level ' + S.level + '/' + MAXL + (S.practice ? ' (practice)' : '') + ' · ' + art(lvArt(S.level)).name + '\nTap to launch'; }
 function resetBall() { S.balls = [{ x: S.px, y: S.py - 12, vx: 0, vy: 0, r: Math.max(6, C.w * .016) }]; S.held = true; }
 const lvSpeed = l => [0, .6, .63, .74, .79, .84][l] || Math.min(1.15, .84 + .012 * (l - 5)); // fraction of canvas height per second; capped for phones
 const speed = () => C.h * lvSpeed(S.level) * (S.slow > 0 ? .65 : 1) * (S.fast > 0 ? 1.3 : 1);
 function launch() { if (!S || S.over || !S.held) return; S.held = false; $('#msg').textContent = ''; const a = -Math.PI / 2 + (AP.rnd() - .5) * .6, v = speed(); S.balls.forEach(b => { b.vx = Math.cos(a) * v; b.vy = Math.sin(a) * v; }); }
-function hud() { $('#lv').textContent = 'Lv ' + S.level + '/' + MAXL + (S.practice ? ' 🧪' : ''); $('#sc').textContent = '⭐ ' + S.score; $('#lives').textContent = '♥ ' + S.lives; }
+function hud() { $('#lv').textContent = 'Lv ' + S.level + '/' + MAXL + (S.practice ? ' 🧪' : ''); $('#sc').textContent = '⭐ ' + S.score; $('#lives').textContent = 'Lives ' + '♥'.repeat(Math.max(0, S.lives)) + (S.lives > 5 ? ' ' + S.lives : ''); }
 const PW = () => S.pw0 * (S.wide > 0 ? 1.55 : 1) * (S.shrink > 0 ? .6 : 1);
 function step(dt) {
   if (!S || S.over) return; S.t += dt;
