@@ -399,7 +399,7 @@ const SUPABASE_ANON_KEY = 'sb_publishable_-f0lT5SuVJ-TbFzlfMd7kA_hH6ZXp-N';
     opts = Object.assign({ order: 'desc', scoreLabel: 'Score', movesLabel: 'moves', periods: ['all', 'week'] }, opts);
     const PL = { day: 'Today', week: 'This week', all: 'All-time' };
     opts.periods = opts.periods.filter(p => PL[p]); if (!opts.periods.length) opts.periods = ['all', 'week'];
-    if (!opts.periods.includes(opts.period)) opts.period = opts.periods[0];
+    if (!opts.periods.includes(opts.period)) opts.period = opts.periods.includes('all') ? 'all' : opts.periods[0];
     container.innerHTML = ''; container.classList.add('alb-board');
     const seg = el('div', 'alb-seg'), pb = {};
     opts.periods.forEach(p => { const b = el('button', '', PL[p]); b.type = 'button'; b.dataset.period = p; b.onclick = () => { opts.period = p; load(); }; pb[p] = b; seg.appendChild(b); });
