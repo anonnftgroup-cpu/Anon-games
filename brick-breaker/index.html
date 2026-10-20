@@ -6,18 +6,6 @@
 <meta name="theme-color" content="#05070a">
 <title>ANON Brick Breaker · ANON NFTs</title>
 <meta name="description" content="ANON Brick Breaker: smash bricks of ANON NFT art to reveal the artwork. Free, no sign-up.">
-<meta property="og:type" content="website">
-<meta property="og:site_name" content="ANON Arcade">
-<meta property="og:title" content="ANON Brick Breaker">
-<meta property="og:description" content="ANON Brick Breaker: smash bricks of ANON NFT art to reveal the artwork. Free, no sign-up.">
-<meta property="og:url" content="https://anonnftgroup-cpu.github.io/Anon-games/brick-breaker/">
-<meta property="og:image" content="https://anonnftgroup-cpu.github.io/Anon-games/brick-breaker/og.jpg">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="ANON Brick Breaker">
-<meta name="twitter:description" content="ANON Brick Breaker: smash bricks of ANON NFT art to reveal the artwork. Free, no sign-up.">
-<meta name="twitter:image" content="https://anonnftgroup-cpu.github.io/Anon-games/brick-breaker/og.jpg">
 <link rel="icon" href="../assets/logo.webp">
 <link rel="stylesheet" href="../assets/nft/kit.css">
 <link rel="stylesheet" href="../assets/play/play.css">
@@ -29,8 +17,10 @@
 </div></header>
 <section class="view on" id="setup">
   <img class="hero" src="../assets/nft/c-royals.webp" alt="ANON NFTs artwork" style="object-position:50% 45%">
-  <p class="howto">Drag (or use ← →) to move the golden paddle. Tap or press Space to launch. Every brick is a piece of ANON NFT art: break them all to reveal the full artwork and move to the next level.<br>Catch power-ups: <b>W</b> wider paddle · <b>M</b> multi-ball · <b>S</b> slow ball · <b>♥</b> extra life.</p>
-  <button class="go" id="goBtn">PLAY</button>
+  <p class="howto">Drag (or use ← →) to move the golden paddle. Tap or press Space to launch. Every brick is a piece of ANON NFT art: break them all to reveal the full artwork and move to the next level. 100 levels, and every one gets harder.<br>Gold power-ups: <b>W</b> wider paddle · <b>M</b> multi-ball · <b>S</b> slow ball · <b>♥</b> extra life.<br>Dodge the <b style="color:#ff4d5e">red</b> drops: <b style="color:#ff4d5e">−</b> shrink paddle · <b style="color:#ff4d5e">⚡</b> fast ball · <b style="color:#ff4d5e">⇄</b> reversed controls · <b style="color:#ff4d5e">☠</b> lose a life.</p>
+  <button class="go" id="goBtn">PLAY FROM LEVEL 1</button>
+  <button class="go" id="contBtn" style="display:none;margin-top:10px;background:#1b1f27;color:#f3d77a;border:1px solid #d4af37"></button>
+  <p class="howto" id="contNote" style="display:none;font-size:12px;opacity:.75">Continue is practice: score starts at 0 and is not posted. Leaderboard runs start at level 1.</p>
   <div class="nick" id="nick"></div>
 </section>
 <section class="view" id="play">
@@ -38,7 +28,7 @@
   <div class="stage"><canvas id="cv"></canvas><div class="tap" id="msg"></div></div>
   <div class="bar"><button id="againBtn">Restart</button><button id="setBtn">Menu</button></div>
 </section>
-<script src="../shared/leaderboard.js?v=1.7.0"></script>
+<script src="../shared/leaderboard.js"></script>
 <script src="../shared/newsletter.js"></script>
 <script src="../assets/nft/kit.js"></script>
 <script src="../assets/play/play.js"></script>
@@ -46,46 +36,90 @@
 'use strict';
 const { $, modal, post, openLB, gameOver, art, ART } = AK;
 const GAME = 'brick-breaker', TITLE = 'ANON Brick Breaker', COLS = 8, BRICK = 10, LEVEL = 500;
-const NAMES = Object.fromEntries([...Array(99)].map((_, i) => ['l' + (i + 1), 'Level ' + (i + 1)]));
+const NAMES = Object.fromEntries([...Array(100)].map((_, i) => ['l' + (i + 1), 'Level ' + (i + 1)]));
 AK.nickLine($('#nick'));
 const show = id => document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === id));
 const ORDER = ['royals', 'skulls', 'grumpy', 'venge', 'anon', 'apes', 'eyes', 'ghost', 'lake', 'aces'];
-const PAT = [ // 1 = brick, 2 = tough (2 hits); rows top to bottom
-  ['11111111', '11111111', '12111121', '11111111', '11111111', '11111111'],
-  ['00011000', '00111100', '01111110', '11211211', '11111111', '11111111', '01111110'],
-  ['10101010', '01010101', '10101010', '01010101', '12121212', '21212121', '10101010', '01010101'],
-  ['00011000', '00122100', '01111110', '11122111', '11111111', '01111110', '00111100', '00011000'],
-  ['11111111', '10000001', '12222221', '10000001', '11111111', '11111111', '11111111']];
+const MAXL = 100, BEST_KEY = 'anonBB.best';
+const prng = n => () => { n = (n + 0x6D2B79F5) >>> 0; let t = n; t = Math.imul(t ^ t >>> 15, t | 1); t ^= t + Math.imul(t ^ t >>> 7, t | 61); return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+const SHAPES = [ // (r, c, rows, cols, R) -> brick? ; mirrored left/right
+  () => true,
+  (r, c, R, C2) => Math.abs(c - (C2 - 1) / 2) <= r * .8 + .6,
+  (r, c, R, C2) => Math.abs(c - (C2 - 1) / 2) / (C2 / 2) + Math.abs(r - (R - 1) / 2) / (R / 2) <= 1.05,
+  (r, c) => (r + c) % 2 === 0,
+  (r) => r % 2 === 0,
+  (r, c, R, C2) => r === 0 || r === R - 1 || c === 0 || c === C2 - 1 || (r % 2 === 0 && c % 3 === 1),
+  (r, c, R, C2, L) => (r + Math.round(1.6 * Math.sin(c * .9 + L))) % 3 !== 0,
+  (r, c, R, C2, L, g) => g() < .62,
+  (r, c) => (c + r) % 4 < 2,
+  (r, c, R, C2) => Math.floor(Math.max(Math.abs(c - (C2 - 1) / 2), Math.abs(r - (R - 1) / 2))) % 2 === 0,
+  (r, c) => c % 3 !== 1,
+  (r, c, R, C2) => Math.abs(c - (C2 - 1) / 2) >= Math.abs(r - (R - 1) / 2) * .9 - .6,
+  (r, c, R, C2) => (r < R / 2) !== (c < C2 / 2) || r % 3 === 0];
+function gen(L) { // deterministic layout for level L: { cols, rows, grid (0 empty, 1-3 hits, 9 unbreakable), mov: rows that slide }
+  const g = prng(L * 7919 + 13), cols = L <= 2 ? 8 : L < 20 ? 9 : 10, rows = Math.min(11, (L <= 2 ? 6 : 7) + Math.floor(L / 14));
+  const sh = L === 1 ? 0 : L === 2 ? 1 : 1 + (L * 5 + Math.floor(g() * 4)) % (SHAPES.length - 1), flip = L > 2 && g() < .5;
+  const G = [...Array(rows)].map(() => Array(cols).fill(0)), half = Math.ceil(cols / 2), set = (r, c, v) => { G[r][c] = v; G[r][cols - 1 - c] = v; };
+  for (let r = 0; r < rows; r++) for (let c = 0; c < half; c++) { const rr = flip ? rows - 1 - r : r; if (SHAPES[sh](rr, c, rows, cols, L, g)) set(r, c, 1); }
+  const holes = L < 6 ? 0 : Math.min(.22, L * .004); for (let r = 0; r < rows; r++) for (let c = 0; c < half; c++) if (G[r][c] && g() < holes) set(r, c, 0);
+  const lo = Math.max(24, Math.min(46, 30 + 2 * L)), cnt = () => G.flat().filter(v => v).length; let guard = 0;
+  while (cnt() > 48 && guard++ < 999) { const r = Math.floor(g() * rows), c = Math.floor(g() * half); set(r, c, 0); }
+  while (cnt() < lo && guard++ < 1999) { const r = Math.floor(g() * rows), c = Math.floor(g() * half); if (cnt() + (G[r][c] ? 0 : c === cols - 1 - c ? 1 : 2) <= 48) set(r, c, 1); }
+  const p3 = L < 6 ? 0 : Math.min(.3, .04 + .01 * (L - 6)), p2 = L === 1 ? 0 : L === 2 ? .06 : Math.min(.45, .2 + .025 * (L - 3));
+  for (let r = 0; r < rows; r++) for (let c = 0; c < half; c++) if (G[r][c]) { const x = g(); set(r, c, x < p3 ? 3 : x < p3 + p2 ? 2 : 1); }
+  if (L >= 10) { const want = Math.min(5, 1 + Math.floor((L - 10) / 15)), empt = []; // pairs of steel bricks in empty cells
+    for (let r = 1; r < rows; r++) for (let c = 0; c < half; c++) if (!G[r][c]) empt.push([r, c]);
+    for (let k = 0; k < want && empt.length; k++) { const [r, c] = empt.splice(Math.floor(g() * empt.length), 1)[0]; set(r, c, 9); }
+    if (!reach(G)) for (const row of G) for (let c = 0; c < cols; c++) if (row[c] === 9) row[c] = 0; }
+  const mov = []; if (L >= 25) { const n = Math.min(3, 1 + Math.floor((L - 25) / 25)), cand = [];
+    for (let r = 0; r < rows; r++) { const row = G[r], f = row.findIndex(v => v), l = cols - 1 - [...row].reverse().findIndex(v => v); if (f > 0 && f !== -1) cand.push({ r, amp: Math.min(f, cols - 1 - l, 1.2) }); }
+    for (let k = 0; k < n && cand.length; k++) { const m = cand.splice(Math.floor(g() * cand.length), 1)[0]; mov.push({ r: m.r, amp: m.amp, w: .9 + L / 90 + g() * .5, ph: g() * 6.28 }); } }
+  return { cols, rows, grid: G, mov };
+}
+function reach(G) { // every breakable brick reachable from the open space above/below without passing steel
+  const R = G.length, Cc = G[0].length, seen = G.map(r => r.map(() => false)), q = [];
+  for (let c = 0; c < Cc; c++) { if (G[R - 1][c] !== 9) q.push([R - 1, c]); if (G[0][c] !== 9) q.push([0, c]); }
+  while (q.length) { const [r, c] = q.pop(); if (r < 0 || c < 0 || r >= R || c >= Cc || seen[r][c] || G[r][c] === 9) continue; seen[r][c] = true; q.push([r + 1, c], [r - 1, c], [r, c + 1], [r, c - 1]); }
+  return G.every((row, r) => row.every((v, c) => !v || v === 9 || seen[r][c]));
+}
+const PAT = [...Array(MAXL)].map((_, i) => gen(i + 1).grid.map(r => r.map(v => v === 9 ? 0 : v).join('')));
+const getBest = () => { try { return Math.max(1, Math.min(MAXL, +localStorage.getItem(BEST_KEY) || 1)); } catch (e) { return 1; } };
+const setBest = l => { try { if (l > getBest()) localStorage.setItem(BEST_KEY, String(l)); } catch (e) {} };
+function contUI() { const b = getBest(), btn = $('#contBtn'); btn.style.display = $('#contNote').style.display = b > 1 ? '' : 'none'; btn.textContent = 'CONTINUE FROM LEVEL ' + b; }
+contUI();
 let C = null, S = null; const IMG = {};
 ORDER.forEach(id => AP.img(art(id).cover).then(i => IMG[id] = i));
 const lvArt = l => ORDER[(l - 1) % ORDER.length];
 function layoutBricks() {
-  const p = PAT[(S.level - 1) % PAT.length], m = 6, bw = (C.w - m * 2) / COLS, bh = Math.min(bw * .62, C.h * .055), top = C.h * .08;
-  S.bw = bw; S.bh = bh; S.top = top; S.m = m; S.rows = p.length; S.bricks = [];
-  p.forEach((row, r) => [...row].forEach((ch, c) => { if (ch !== '0') S.bricks.push({ c, r, hp: +ch, max: +ch, x: m + c * bw, y: top + r * bh, w: bw, h: bh }); }));
+  const lv = gen(S.level), m = 6, bw = (C.w - m * 2) / lv.cols, bh = Math.min(bw * .62, C.h * .6 / lv.rows), top = C.h * .08;
+  S.bw = bw; S.bh = bh; S.top = top; S.m = m; S.rows = lv.rows; S.cols = lv.cols; S.mov = lv.mov; S.bricks = [];
+  lv.grid.forEach((row, r) => row.forEach((v, c) => { if (v) S.bricks.push({ c, r, hp: v === 9 ? Infinity : v, max: v === 9 ? 9 : v, un: v === 9, bx: m + c * bw, x: m + c * bw, y: top + r * bh, w: bw, h: bh }); }));
+  slide();
 }
-function newGame() { show('play'); if (!C) C = AP.canvas($('#cv'), 0, () => { if (S) { const keep = S.bricks.map(b => [b.c, b.r, b.hp]); layoutBricks(); S.bricks = S.bricks.filter(b => keep.some(k => k[0] === b.c && k[1] === b.r)).map(b => (b.hp = keep.find(k => k[0] === b.c && k[1] === b.r)[2], b)); paddleY(); } draw(); }); else C.fit();
-  S = { level: 1, score: 0, broken: 0, lives: 3, balls: [], pu: [], fx: [], px: C.w / 2, pw: 0, wide: 0, slow: 0, over: false, t: 0, held: true, clear: 0 };
+function slide() { if (!S.mov || !S.mov.length) return; for (const k of S.bricks) { const mv = S.mov.find(o => o.r === k.r); k.x = k.bx + (mv ? Math.sin(S.t * mv.w + mv.ph) * mv.amp * S.bw : 0); } }
+function newGame(from) { from = Math.max(1, Math.min(MAXL, +from || 1)); show('play'); if (!C) C = AP.canvas($('#cv'), 0, () => { if (S) { const keep = S.bricks.map(b => [b.c, b.r, b.hp]); layoutBricks(); S.bricks = S.bricks.filter(b => keep.some(k => k[0] === b.c && k[1] === b.r)).map(b => (b.hp = keep.find(k => k[0] === b.c && k[1] === b.r)[2], b)); paddleY(); } draw(); }); else C.fit();
+  S = { level: from, level0: from, practice: from > 1, score: 0, shrink: 0, fast: 0, rev: 0, best: getBest(), broken: 0, lives: 3, balls: [], pu: [], fx: [], px: C.w / 2, pw: 0, wide: 0, slow: 0, over: false, t: 0, held: true, clear: 0 };
   startLevel(); L.start(); }
 function paddleY() { S.py = C.h * .9; }
-function startLevel() { layoutBricks(); paddleY(); S.pw0 = Math.max(60, C.w * .22); S.wide = 0; S.slow = 0; S.pu = []; resetBall(); hud(); $('#msg').textContent = 'Level ' + S.level + ' · ' + art(lvArt(S.level)).name + '\nTap to launch'; }
+function startLevel() { layoutBricks(); paddleY(); setBest(S.level); S.pw0 = Math.max(50, C.w * (S.level <= 2 ? .22 : Math.max(.15, .2 - .0006 * S.level))); S.wide = S.slow = S.shrink = S.fast = S.rev = 0; S.pu = []; resetBall(); hud(); $('#msg').textContent = 'Level ' + S.level + '/' + MAXL + (S.practice ? ' (practice)' : '') + ' · ' + art(lvArt(S.level)).name + '\nTap to launch'; }
 function resetBall() { S.balls = [{ x: S.px, y: S.py - 12, vx: 0, vy: 0, r: Math.max(6, C.w * .016) }]; S.held = true; }
-const speed = () => Math.min(C.h * .95, C.h * (.62 + .04 * (S.level - 1))) * (S.slow > 0 ? .65 : 1);
+const lvSpeed = l => [0, .6, .63, .74, .79, .84][l] || Math.min(1.15, .84 + .012 * (l - 5)); // fraction of canvas height per second; capped for phones
+const speed = () => C.h * lvSpeed(S.level) * (S.slow > 0 ? .65 : 1) * (S.fast > 0 ? 1.3 : 1);
 function launch() { if (!S || S.over || !S.held) return; S.held = false; $('#msg').textContent = ''; const a = -Math.PI / 2 + (AP.rnd() - .5) * .6, v = speed(); S.balls.forEach(b => { b.vx = Math.cos(a) * v; b.vy = Math.sin(a) * v; }); }
-function hud() { $('#lv').textContent = 'Lv ' + S.level; $('#sc').textContent = '⭐ ' + S.score; $('#lives').textContent = '♥ ' + S.lives; }
-const PW = () => S.pw0 * (S.wide > 0 ? 1.55 : 1);
+function hud() { $('#lv').textContent = 'Lv ' + S.level + '/' + MAXL + (S.practice ? ' 🧪' : ''); $('#sc').textContent = '⭐ ' + S.score; $('#lives').textContent = '♥ ' + S.lives; }
+const PW = () => S.pw0 * (S.wide > 0 ? 1.55 : 1) * (S.shrink > 0 ? .6 : 1);
 function step(dt) {
   if (!S || S.over) return; S.t += dt;
   if (S.clear > 0) { S.clear -= dt; if (S.clear <= 0) { S.level++; startLevel(); } return; }
-  S.wide = Math.max(0, S.wide - dt); const was = S.slow > 0; S.slow = Math.max(0, S.slow - dt);
-  if (keyDir) S.px += keyDir * C.w * 1.3 * dt; S.px = Math.max(PW() / 2, Math.min(C.w - PW() / 2, S.px));
+  for (const e of ['wide', 'slow', 'shrink', 'fast', 'rev']) S[e] = Math.max(0, S[e] - dt); slide();
+  if (keyDir) S.px += (S.rev > 0 ? -keyDir : keyDir) * C.w * 1.3 * dt; S.px = Math.max(PW() / 2, Math.min(C.w - PW() / 2, S.px));
   if (S.held) { S.balls[0].x = S.px; S.balls[0].y = S.py - S.balls[0].r - 2; return; }
-  if (was && S.slow <= 0 || !was && S.slow > 0) S.balls.forEach(b => { const k = speed() / (Math.hypot(b.vx, b.vy) || 1); b.vx *= k; b.vy *= k; });
+  { const v = speed(); S.balls.forEach(b => { const k = v / (Math.hypot(b.vx, b.vy) || 1); if (Math.abs(k - 1) > .001) { b.vx *= k; b.vy *= k; } }); }
   const n = 4, h = dt / n;
   for (let k = 0; k < n; k++) for (const b of S.balls) move(b, h);
   S.balls = S.balls.filter(b => b.y - b.r < C.h);
-  if (!S.balls.length) { S.lives--; hud(); if (navigator.vibrate) navigator.vibrate(60); if (S.lives <= 0) return end(); S.wide = 0; S.slow = 0; resetBall(); $('#msg').textContent = 'Tap to launch'; }
-  for (const p of S.pu) { p.y += C.h * .28 * dt; if (p.y > S.py - 8 && p.y < S.py + 14 && Math.abs(p.x - S.px) < PW() / 2 + 12) { p.got = true; power(p.k); } }
+  if (!S.balls.length) { S.lives--; hud(); if (navigator.vibrate) navigator.vibrate(60); if (S.lives <= 0) return end(); S.wide = S.slow = S.shrink = S.fast = S.rev = 0; S.pu = []; resetBall(); $('#msg').textContent = 'Tap to launch'; }
+  for (const p of S.pu) { if (S.over) return; p.y += C.h * (.26 + .0015 * S.level) * dt; if (p.y > S.py - 8 && p.y < S.py + 14 && Math.abs(p.x - S.px) < PW() / 2 + 12) { p.got = true; power(p.k); } }
   S.pu = S.pu.filter(p => !p.got && p.y < C.h + 20); S.fx = S.fx.filter(f => (f.a += dt) < .5);
 }
 function move(b, h) {
@@ -96,21 +130,28 @@ function move(b, h) {
   for (let i = 0; i < S.bricks.length; i++) { const k = S.bricks[i]; const cx = Math.max(k.x, Math.min(b.x, k.x + k.w)), cy = Math.max(k.y, Math.min(b.y, k.y + k.h));
     if ((b.x - cx) ** 2 + (b.y - cy) ** 2 > b.r * b.r) continue;
     const ox = Math.min(b.x + b.r - k.x, k.x + k.w - (b.x - b.r)), oy = Math.min(b.y + b.r - k.y, k.y + k.h - (b.y - b.r));
+    if (k.un && ox < oy) b.x = b.x < k.x + k.w / 2 ? k.x - b.r : k.x + k.w + b.r; else if (k.un) b.y = b.y < k.y + k.h / 2 ? k.y - b.r : k.y + k.h + b.r;
     if (ox < oy) { b.vx = b.x < k.x + k.w / 2 ? -Math.abs(b.vx) : Math.abs(b.vx); } else { b.vy = b.y < k.y + k.h / 2 ? -Math.abs(b.vy) : Math.abs(b.vy); }
     hit(i); break; }
 }
 function hit(i) {
-  const k = S.bricks[i]; k.hp--; if (k.hp > 0) { S.fx.push({ x: k.x + k.w / 2, y: k.y + k.h / 2, a: 0, c: '#f3d77a' }); return; }
+  const k = S.bricks[i]; if (k.un) { S.fx.push({ x: k.x + k.w / 2, y: k.y + k.h / 2, a: 0, c: '#9aa3b2' }); return; } k.hp--; if (k.hp > 0) { S.fx.push({ x: k.x + k.w / 2, y: k.y + k.h / 2, a: 0, c: '#f3d77a' }); return; }
   S.bricks.splice(i, 1); S.broken++; S.score += BRICK; hud(); S.fx.push({ x: k.x + k.w / 2, y: k.y + k.h / 2, a: 0, c: '#ff8cc4' });
-  if (AP.rnd() < .13) { const r = AP.rnd(); S.pu.push({ x: k.x + k.w / 2, y: k.y + k.h / 2, k: r < .35 ? 'W' : r < .65 ? 'M' : r < .9 ? 'S' : '♥' }); }
-  if (!S.bricks.length) levelUp();
+  const d = AP.rnd(), bad = badChance(S.level);
+  if (d < .12) { const r = AP.rnd(); S.pu.push({ x: k.x + k.w / 2, y: k.y + k.h / 2, k: r < .35 ? 'W' : r < .65 ? 'M' : r < .9 ? 'S' : '♥' }); }
+  else if (d < .12 + bad) { const r = AP.rnd(); S.pu.push({ x: k.x + k.w / 2, y: k.y + k.h / 2, bad: true, k: r < .3 ? '−' : r < .58 ? '⚡' : r < .84 ? '⇄' : '☠' }); }
+  if (!S.bricks.some(b => !b.un)) levelUp();
 }
+const badChance = l => l < 3 ? 0 : Math.min(.16, .04 + .0025 * (l - 3));
 function power(k) {
-  if (k === 'W') S.wide = 12; else if (k === 'S') S.slow = 9; else if (k === '♥') { S.lives = Math.min(5, S.lives + 1); hud(); }
+  if (k === '−') { S.shrink = 10; S.wide = 0; } else if (k === '⚡') S.fast = 8; else if (k === '⇄') S.rev = 5;
+  else if (k === '☠') { S.lives--; hud(); if (navigator.vibrate) navigator.vibrate([40, 40, 80]); if (S.lives <= 0) { end(); return; } }
+
+  if (k === 'W') { S.wide = 12; S.shrink = 0; } else if (k === 'S') S.slow = 9; else if (k === '♥') { S.lives = Math.min(5, S.lives + 1); hud(); }
   else if (k === 'M' && !S.held) { const add = []; for (const b of S.balls.slice(0, 3)) for (const d of [-.45, .45]) { const a = Math.atan2(b.vy, b.vx) + d, v = Math.hypot(b.vx, b.vy); add.push({ x: b.x, y: b.y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, r: b.r }); } S.balls.push(...add.slice(0, 8 - S.balls.length)); }
   if (navigator.vibrate) navigator.vibrate(12);
 }
-function levelUp() { S.score += LEVEL; S.clear = 2.2; S.balls = []; S.pu = []; S.held = true; hud(); $('#msg').textContent = '✨ ' + art(lvArt(S.level)).name + ' revealed! +' + LEVEL; if (navigator.vibrate) navigator.vibrate([20, 30, 20]); }
+function levelUp() { if (S.level >= MAXL) { S.won = true; S.balls = []; S.pu = []; hud(); return end(); } S.score += LEVEL; setBest(S.level + 1); S.clear = 2.2; S.balls = []; S.pu = []; S.held = true; hud(); $('#msg').textContent = '✨ ' + art(lvArt(S.level)).name + ' revealed! +' + LEVEL; if (navigator.vibrate) navigator.vibrate([20, 30, 20]); }
 function draw() {
   if (!C || !S) return; const x = C.x, W = C.w, H = C.h, im = IMG[lvArt(S.level)];
   x.fillStyle = '#05070a'; x.fillRect(0, 0, W, H);
@@ -118,39 +159,42 @@ function draw() {
   if (im) { const k = Math.max(aw / im.width, ah / im.height); // full art behind the wall, revealed as bricks break
     const sw = aw / k, sh = ah / k; x.globalAlpha = S.clear > 0 ? 1 : .9; x.drawImage(im, (im.width - sw) / 2, (im.height - sh) / 2, sw, sh, S.m, S.top, aw, ah); x.globalAlpha = 1;
     x.globalAlpha = .18; AP.cover(x, im, 0, 0, W, H); x.globalAlpha = 1;
-    for (const b of S.bricks) { const sx = (im.width - sw) / 2 + (b.x - S.m) / k, sy = (im.height - sh) / 2 + (b.y - S.top) / k;
+    for (const b of S.bricks) { if (b.un) { x.fillStyle = '#4a515e'; x.fillRect(b.x, b.y, b.w, b.h); x.strokeStyle = '#9aa3b2'; x.lineWidth = 1.5; x.strokeRect(b.x + .75, b.y + .75, b.w - 1.5, b.h - 1.5); x.beginPath(); x.moveTo(b.x + 3, b.y + b.h - 3); x.lineTo(b.x + b.w - 3, b.y + 3); x.stroke(); continue; } const sx = (im.width - sw) / 2 + (b.x - S.m) / k, sy = (im.height - sh) / 2 + (b.y - S.top) / k;
       x.drawImage(im, sx, sy, b.w / k, b.h / k, b.x, b.y, b.w, b.h); x.fillStyle = b.max > 1 ? (b.hp > 1 ? 'rgba(80,60,10,.55)' : 'rgba(30,20,5,.5)') : 'rgba(5,7,10,.58)'; x.fillRect(b.x, b.y, b.w, b.h);
       x.fillStyle = 'rgba(255,255,255,.16)'; x.fillRect(b.x + 1, b.y + 1, b.w - 2, b.h * .28); x.fillStyle = 'rgba(0,0,0,.3)'; x.fillRect(b.x + 1, b.y + b.h * .78, b.w - 2, b.h * .22 - 1);
       x.strokeStyle = b.max > 1 ? '#f3d77a' : 'rgba(212,175,55,.8)'; x.lineWidth = b.max > 1 ? 2 : 1; x.strokeRect(b.x + .5, b.y + .5, b.w - 1, b.h - 1);
-      x.fillStyle = b.max > 1 ? '#f3d77a' : '#ff3d9a'; x.beginPath(); x.arc(b.x + b.w / 2, b.y + b.h / 2, Math.min(3, b.h * .14), 0, 7); x.fill();
+      x.fillStyle = b.max > 1 ? '#f3d77a' : '#ff3d9a'; for (let d = 0; d < b.hp; d++) { x.beginPath(); x.arc(b.x + b.w / 2 + (d - (b.hp - 1) / 2) * 7, b.y + b.h / 2, Math.min(3, b.h * .14), 0, 7); x.fill(); }
+      if (b.max === 3) { x.strokeStyle = '#ff3d9a'; x.lineWidth = 1; x.strokeRect(b.x + 3, b.y + 3, b.w - 6, b.h - 6); }
       if (b.max > 1 && b.hp === 1) { x.strokeStyle = '#ff8cc4'; x.beginPath(); x.moveTo(b.x + b.w * .3, b.y); x.lineTo(b.x + b.w * .5, b.y + b.h * .6); x.lineTo(b.x + b.w * .7, b.y + b.h); x.stroke(); } } }
   x.strokeStyle = '#d4af37'; x.lineWidth = 1; x.strokeRect(S.m - .5, S.top - .5, aw + 1, ah + 1);
-  for (const p of S.pu) { x.fillStyle = p.k === '♥' ? '#ff3d9a' : '#d4af37'; x.beginPath(); x.arc(p.x, p.y, 12, 0, 7); x.fill(); x.fillStyle = '#120e02'; x.font = '900 13px system-ui'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(p.k, p.x, p.y + 1); }
+  for (const p of S.pu) { x.fillStyle = p.bad ? '#e0243a' : p.k === '♥' ? '#ff3d9a' : '#d4af37'; x.beginPath(); x.arc(p.x, p.y, 12, 0, 7); x.fill(); if (p.bad) { x.strokeStyle = '#2a0006'; x.lineWidth = 2; x.stroke(); } x.fillStyle = p.bad ? '#fff' : '#120e02'; x.font = '900 13px system-ui'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(p.k, p.x, p.y + 1); }
   const pw = PW(), g = x.createLinearGradient(0, S.py, 0, S.py + 12); g.addColorStop(0, '#fff3c4'); g.addColorStop(.5, '#e9c858'); g.addColorStop(1, '#8a6414');
   x.fillStyle = g; AP.rr(x, S.px - pw / 2, S.py, pw, 12, 6); x.fill(); x.fillStyle = '#ff3d9a'; x.beginPath(); x.arc(S.px, S.py + 6, 3, 0, 7); x.fill();
   for (const b of S.balls) { const bg = x.createRadialGradient(b.x - b.r * .3, b.y - b.r * .3, 1, b.x, b.y, b.r); bg.addColorStop(0, '#fff'); bg.addColorStop(1, S.slow > 0 ? '#7fd4ff' : '#ff3d9a'); x.fillStyle = bg; x.beginPath(); x.arc(b.x, b.y, b.r, 0, 7); x.fill(); }
   for (const f of S.fx) { x.globalAlpha = 1 - f.a / .5; x.strokeStyle = f.c; x.lineWidth = 2; x.beginPath(); x.arc(f.x, f.y, 4 + f.a * 50, 0, 7); x.stroke(); } x.globalAlpha = 1;
-  if (S.wide > 0 || S.slow > 0) { x.fillStyle = '#f3d77a'; x.font = '800 12px system-ui'; x.textAlign = 'left'; x.fillText((S.wide > 0 ? 'W ' + Math.ceil(S.wide) + 's  ' : '') + (S.slow > 0 ? 'S ' + Math.ceil(S.slow) + 's' : ''), 8, H - 8); }
+  { const fx = [['wide', 'W', '#f3d77a'], ['slow', 'S', '#7fd4ff'], ['shrink', '− shrink', '#ff4d5e'], ['fast', '⚡ fast', '#ff4d5e'], ['rev', '⇄ reversed', '#ff4d5e']].filter(e => S[e[0]] > 0); let ix = 8; x.font = '800 12px system-ui'; x.textAlign = 'left'; x.textBaseline = 'alphabetic';
+    for (const [k, t, c] of fx) { const s = t + ' ' + Math.ceil(S[k]) + 's', w = x.measureText(s).width + 10; x.fillStyle = 'rgba(0,0,0,.6)'; AP.rr(x, ix, H - 24, w, 18, 6); x.fill(); x.fillStyle = c; x.fillText(s, ix + 5, H - 11); ix += w + 6; }
+    if (S.rev > 0) { x.strokeStyle = 'rgba(255,77,94,.55)'; x.lineWidth = 3; x.strokeRect(1.5, 1.5, W - 3, H - 3); } }
 }
 const L = AP.loop(step, draw); L.onHide = () => { if (S && !S.over && !S.held) { L.stop(); S.paused = true; $('#msg').textContent = 'Paused. Tap to carry on'; } };
 function end() {
   S.over = true; L.stop(); draw(); const t = Math.max(1, Math.ceil(S.t)), a = art(lvArt(S.level));
-  ((S) => setTimeout(() => { modal({ art: a.cover, title: 'Game over 🧱', text: `You reached <b>level ${S.level}</b> and broke <b>${S.broken}</b> bricks.`, lb: S.score > 0,
-    buttons: [['PLAY AGAIN', () => newGame()], ['Leaderboard', () => openLB(GAME, TITLE, NAMES, 'bricks'), 1], ['Menu', () => show('setup'), 1]] });
-    if (S.score > 0) post(GAME, S.score, t, S.broken, 'l' + Math.min(99, S.level)); }, 500))(S); // snapshot: a quick new game must not change this post
+  ((S) => setTimeout(() => { modal({ art: a.cover, title: S.won ? 'All 100 levels beaten! 🏆' : 'Game over 🧱', text: (S.won ? 'You cleared every level and' : `You reached <b>level ${S.level}</b> and`) + ` broke <b>${S.broken}</b> bricks.` + (S.practice ? '<br>Practice run from a saved level: not posted to the leaderboard.' : '') + `<br>Highest level reached: <b>${getBest()}</b>.`, lb: S.score > 0 && !S.practice,
+    buttons: [['PLAY AGAIN', () => newGame()], ['Leaderboard', () => openLB(GAME, TITLE, NAMES, 'bricks'), 1], ['Menu', () => { contUI(); show('setup'); }, 1]] });
+    if (S.score > 0 && !S.practice) post(GAME, S.score, t, S.broken, 'l' + Math.min(MAXL, S.level)); }, 500))(S); // snapshot: a quick new game must not change this post
   gameOver();
 }
 const cv = $('#cv'); let drag = null, keyDir = 0;
 cv.addEventListener('pointerdown', e => { if (S && S.paused) { S.paused = false; $('#msg').textContent = ''; L.start(); return; } drag = { x: e.clientX, px: S ? S.px : 0, moved: false }; cv.setPointerCapture(e.pointerId); });
-cv.addEventListener('pointermove', e => { if (!drag || !S) return; const d = e.clientX - drag.x; if (Math.abs(d) > 4) drag.moved = true; S.px = drag.px + d * 1.2; });
+cv.addEventListener('pointermove', e => { if (!drag || !S) return; const d = e.clientX - drag.x; if (Math.abs(d) > 4) drag.moved = true; S.px = drag.px + d * 1.2 * (S.rev > 0 ? -1 : 1); if (S.rev > 0) { drag.x = e.clientX; drag.px = S.px; } });
 cv.addEventListener('pointerup', () => { if (drag && !drag.moved) launch(); else if (S && S.held && drag) launch(); drag = null; });
 const held = new Set(); const kd = () => { keyDir = (held.has('r') ? 1 : 0) - (held.has('l') ? 1 : 0); };
 window.addEventListener('keydown', e => { if (!$('#play').classList.contains('on') || document.querySelector('.modal.show,.alb-ov,.anw-ov')) return; if (e.key === 'ArrowLeft' || e.key === 'a') { held.add('l'); kd(); e.preventDefault(); } else if (e.key === 'ArrowRight' || e.key === 'd') { held.add('r'); kd(); e.preventDefault(); } else if (e.key === ' ') { launch(); e.preventDefault(); } });
 window.addEventListener('keyup', e => { if (e.key === 'ArrowLeft' || e.key === 'a') held.delete('l'); if (e.key === 'ArrowRight' || e.key === 'd') held.delete('r'); kd(); });
-$('#goBtn').onclick = () => newGame(); $('#againBtn').onclick = () => { L.stop(); newGame(); };
-$('#setBtn').onclick = $('#menuBtn').onclick = () => { L.stop(); if (S) S.over = true; show('setup'); };
+$('#goBtn').onclick = () => newGame(1); $('#contBtn').onclick = () => newGame(getBest()); $('#againBtn').onclick = () => { L.stop(); newGame(S && S.practice ? S.level0 : 1); };
+$('#setBtn').onclick = $('#menuBtn').onclick = () => { L.stop(); if (S) S.over = true; contUI(); show('setup'); };
 $('#lbBtn').onclick = () => openLB(GAME, TITLE, NAMES, 'bricks');
-window.G = { state: () => S, newGame, step, launch, power, hit, L, C: () => C, PAT, draw, PW };
+window.G = { state: () => S, newGame, step, launch, power, hit, L, C: () => C, PAT, draw, PW, gen, reach, lvSpeed, badChance, getBest, MAXL };
 </script>
 </body>
 </html>
