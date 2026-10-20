@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05070a">
+<title>ANON Territory · ANON NFTs</title>
+<meta name="description" content="ANON Territory: steer your ANON, draw trails and close loops to claim the map with your NFT art. Harder rivals every level. Free, no sign-up.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ANON Arcade">
+<meta property="og:title" content="ANON Territory">
+<meta property="og:description" content="ANON Territory: steer your ANON, draw trails and close loops to claim the map with your NFT art. Harder rivals every level. Free, no sign-up.">
+<meta property="og:url" content="https://anonnftgroup-cpu.github.io/Anon-games/territory/">
+<meta property="og:image" content="https://anonnftgroup-cpu.github.io/Anon-games/territory/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ANON Territory">
+<meta name="twitter:description" content="ANON Territory: steer your ANON, draw trails and close loops to claim the map with your NFT art. Harder rivals every level. Free, no sign-up.">
+<meta name="twitter:image" content="https://anonnftgroup-cpu.github.io/Anon-games/territory/og.jpg">
+<link rel="icon" href="../assets/logo.webp">
+<link rel="stylesheet" href="../assets/nft/kit.css">
+<link rel="stylesheet" href="../assets/play/play.css">
+</head>
+<body>
+<header><div class="top">
+  <div class="brand"><a class="back-btn" href="../" aria-label="Back to ANON Arcade">&larr; Arcade</a><img src="../assets/logo.webp" alt=""><h1>ANON TERRITORY</h1></div>
+  <div class="top-r"><button class="icon-btn" id="lbBtn" aria-label="Leaderboard">🏆</button><button class="icon-btn" id="menuBtn" aria-label="Menu">↻</button></div>
+</div></header>
+<section class="view on" id="setup">
+  <img class="hero" id="hero" alt="ANON NFTs artwork">
+  <div class="lbl">Choose your ANON</div>
+  <div class="chars five" id="artPick"></div>
+  <button class="go" id="goBtn">PLAY</button>
+  <p class="howto">Swipe (or use the arrow keys / WASD) to steer. Leave your land to draw a trail, then come back to close the loop: everything inside fills with your ANON art. Cross a rival's trail to knock them out, but if anyone touches YOUR trail, or you leave the map, it's over. Claim the target % to clear the level. Every level adds more, faster, smarter rivals and a bigger score multiplier.</p>
+  <div class="nick" id="nick"></div>
+</section>
+<section class="view" id="play">
+  <div class="hud"><span id="lv">Lv 1 ×1</span><span id="pc">0% / 30%</span><span id="ki">⚔ 0</span><span id="sc">0</span></div>
+  <div class="stage"><canvas id="cv"></canvas><div class="tap" id="msg"></div></div>
+  <div class="bar"><button id="againBtn">Restart</button><button id="setBtn">Change ANON</button></div>
+</section>
+<script src="../shared/leaderboard.js?v=1.7.0"></script>
+<script src="../shared/newsletter.js"></script>
+<script src="../assets/nft/kit.js"></script>
+<script src="../assets/play/play.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
