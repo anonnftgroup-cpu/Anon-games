@@ -129,6 +129,7 @@ function step(dt) {
   { const v = speed(); S.balls.forEach(b => { const k = v / (Math.hypot(b.vx, b.vy) || 1); if (Math.abs(k - 1) > .001) { b.vx *= k; b.vy *= k; } }); }
   const n = 4, h = dt / n;
   for (let k = 0; k < n; k++) for (const b of S.balls) move(b, h);
+  if (S.clear > 0 || S.over) return; // level just cleared (levelUp emptied balls): not a miss
   S.balls = S.balls.filter(b => b.y - b.r < C.h);
   if (!S.balls.length) { S.lives--; hud(); if (navigator.vibrate) navigator.vibrate(60); if (S.lives <= 0) return end(); S.wide = S.slow = S.shrink = S.fast = S.rev = 0; S.pu = []; resetBall(); $('#msg').textContent = 'Tap to launch'; }
   for (const p of S.pu) { if (S.over) return; p.y += C.h * (.26 + .0015 * S.level) * dt; if (p.y > S.py - 8 && p.y < S.py + 14 && Math.abs(p.x - S.px) < PW() / 2 + 12) { p.got = true; power(p.k); } }
