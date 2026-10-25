@@ -117,7 +117,7 @@ async function probe() {
   const r = await rpc('wu_start', { p_nickname: '' });      // an empty name is always refused: tells us the SQL is there without starting a round
   SRV = r.missing ? 'missing' : r.net ? 'offline' : 'on';   // "nickname not allowed" (or ok) = the SQL is there
 }
-// No name yet? Play under the device's guest name (e.g. Ninja-4821) so no streak is missed; it can be changed any time.
+// No name yet? Play under the device's guest name (e.g. Pixel-4821) so no streak is missed; it can be changed any time.
 const nick = () => { const LB = window.ANONLB; if (!LB) return ''; let n = LB.getNickname(); if (!n && LB.guestName) { const r = LB.setNickname(LB.guestName()); n = r.ok ? r.value : ''; } return n || ''; };
 const online = () => SRV === 'on' && !!nick();
 
@@ -231,7 +231,7 @@ function showRetry() { const n = $('#lockNote'); n.classList.add('on'); n.innerH
 function nextWord() { closeModal(); newRound(); }
 async function joinLB() {
   if (!window.ANONLB) return;
-  const v = await window.ANONLB.promptNickname({ title: '🥷 Your leaderboard name', text: 'Your win streak goes on the ANON Word Unlimited leaderboard under this name. No sign-up, no email.', skipLabel: 'Cancel', markOptOut: false });
+  const v = await window.ANONLB.promptNickname({ title: '🏆 Your leaderboard name', text: 'Your win streak goes on the ANON Word Unlimited leaderboard under this name. No sign-up, no email.', skipLabel: 'Cancel', markOptOut: false });
   paintHeader();
   if (v && R && R.mode === 'local' && R.guesses.length === 0) { R = null; newRound(); }
   else if (v) toast('Your next word counts for the leaderboard 🏆', 2400);
@@ -323,7 +323,7 @@ function showHelp() {
     p.appendChild(exRow('crown', ['correct'])); p.appendChild(el('p', 'small', 'C is in the word and in the right spot (gold).'));
     p.appendChild(exRow('ninja', ['', '', '', 'present'])); p.appendChild(el('p', 'small', 'J is in the word but in another spot (pink).'));
     p.appendChild(exRow('ghost', ['', '', 'absent'])); p.appendChild(el('p', 'small', 'O is not in the word at all (grey).'));
-    p.appendChild(el('p', '', 'Leaderboard: set a ninja name and win words in a row. Your best win streak goes on the board. A lost word, or leaving a word unfinished, resets the streak.'));
+    p.appendChild(el('p', '', 'Leaderboard: set a name and win words in a row. Your best win streak goes on the board. A lost word, or leaving a word unfinished, resets the streak.'));
     const r = el('div', 'btnrow'), b = el('button', 'btn pri', "Let's play"); b.onclick = closeModal; r.appendChild(b); p.appendChild(r);
   });
   ls.set(K_SEEN, 1);
