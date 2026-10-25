@@ -69,14 +69,14 @@ const SUPABASE_ANON_KEY = 'sb_publishable_-f0lT5SuVJ-TbFzlfMd7kA_hH6ZXp-N';
   }
 
   /* ---------- nicknames ---------- */
-  const ADJ = ['Shadow', 'Silent', 'Golden', 'Hidden', 'Masked', 'Swift', 'Stealth', 'Night', 'Mystic', 'Ghost', 'Crimson', 'Jade', 'Hooded', 'Rogue', 'Royal', 'Iron'];
-  const NOUN = ['Ninja', 'Ronin', 'Shogun', 'Blade', 'Shade', 'Fox', 'Crow', 'Wolf', 'Viper', 'Monk', 'Raven', 'Tiger', 'King', 'Queen', 'Anon'];
+  const ADJ = ['Golden', 'Neon', 'Lucky', 'Cosmic', 'Pixel', 'Turbo', 'Sunny', 'Brave', 'Jolly', 'Royal', 'Swift', 'Bright', 'Mega', 'Happy', 'Epic', 'Retro'];
+  const NOUN = ['Comet', 'Rocket', 'Lantern', 'Arcade', 'Star', 'Nova', 'Fox', 'Tiger', 'Panda', 'Falcon', 'Gem', 'Champ', 'Hero', 'Ape', 'Anon'];
   function randomNickname() {
     for (let i = 0; i < 50; i++) {
       const n = ADJ[Math.random() * ADJ.length | 0] + '-' + NOUN[Math.random() * NOUN.length | 0] + '-' + (10 + (Math.random() * 90 | 0));
       if (n.length <= 16) return n;
     }
-    return 'Shadow-Ninja-42';
+    return 'Lucky-Comet-42';
   }
   /* NF-START: name filter (generated from name-filter/words.json by name-filter/gen.js; mirror of public.nickname_is_clean) */
   const NF = {'substring':'fuck,fck,fcuk,fvck,phuck,phuk,motherf,shit,cunt,kunt,bitch,biatch,biotch,bastard,asshole,arsehole,asswipe,assclown,dumbass,jackass,bigass,fatass,kissmyass,bollock,bellend,wank,twat,douche,tosser,jerkoff,jizz,cumshot,cumslut,cocksuck,dickhead,dicksuck,blowjob,handjob,rimjob,footjob,dildo,porn,penis,vagina,pussy,clitoris,orgasm,masturbat,ejaculat,erection,horny,hentai,milf,boob,titties,tittie,nipple,scrotum,testicle,ballsack,nutsack,buttplug,creampie,gangbang,deepthroat,bukkake,queef,smegma,felch,fellat,cunnilin,prostitut,sex,rape,rapist,incest,pedophil,paedophil,paedo,zoophil,bestiality,necrophil,slut,whore,skank,nigg,niqq,jigaboo,porchmonkey,junglebunny,darkie,golliwog,gollywog,wetback,beaner,kike,raghead,towelhead,cameljockey,zipperhead,slanteye,chinky,faggot,tranny,shemale,poofter,retard,spastic,pikey,nazi,hitler,siegheil,kkk,kluxklan,klansm,whitepower,whitepride,aryannation,aryanbrother,jihad,taliban,alqaeda,alqaida,goebbels,himmler,swastika,holohoax,rahowa,binladen,1488,14words,hh88,88hh,admin,moderator,official,anonnft,anonteam,anonstaff,anonsupport', 'token':'ass,arse,anal,anus,cum,tit,titty,cock,dick,dik,prick,knob,clit,boner,spunk,cuck,fag,homo,dyke,lesbo,poof,spic,spick,chink,gook,jap,coon,wog,negro,sambo,kaffir,kafir,paki,gypo,gyppo,yid,heeb,hymie,mong,spaz,tard,nonce,pedo,thot,slag,minge,turd,piss,nude,orgy,loli,heil,klan,adolf,zog,isis,stfu,gtfo,wtf,fuk,kys,puta,puto', 'exact':'anon,mod,mods,staff,owner,dev,team,root,system,support,null,undefined', 'allow':'scunthorpe,shiitake,shitake,sussex,essex,wessex,middlesex,sextant,sexton,unisex,grape,drape,scrape,trapez,parapet,rapeseed,therapist,ashkenazi,nazir,badminton,penistone,thorny,swank,booboo'};
@@ -105,7 +105,7 @@ const SUPABASE_ANON_KEY = 'sb_publishable_-f0lT5SuVJ-TbFzlfMd7kA_hH6ZXp-N';
     return !s.replace(/([a-z])([A-Z])/g, '$1 $2').split(/[\s_-]+/).some(t => t && nfHit(t, tok, false));
   }
   /* NF-END */
-  const NAME_ERR = 'That name isn\'t allowed. Try another 🥷';
+  const NAME_ERR = 'That name isn\'t allowed. Try another 🎮';
   function validateNickname(raw) {
     const v = String(raw == null ? '' : raw).replace(/\s+/g, ' ').trim();
     if (v.length < 3 || v.length > 16) return { ok: false, value: v, error: 'Use 3 to 16 characters.' };
@@ -167,8 +167,8 @@ const SUPABASE_ANON_KEY = 'sb_publishable_-f0lT5SuVJ-TbFzlfMd7kA_hH6ZXp-N';
     return new Promise(resolve => {
       const ov = el('div', 'alb-ov'); ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true');
       const p = el('div', 'alb-panel');
-      p.appendChild(el('h2', '', opts.title || '🥷 Join the leaderboard'));
-      p.appendChild(el('p', '', opts.text || 'Pick a ninja name for the global ANON leaderboard. No sign-up, no email. Only your name and score are shown.'));
+      p.appendChild(el('h2', '', opts.title || '🏆 Join the leaderboard'));
+      p.appendChild(el('p', '', opts.text || 'Pick a name for the global ANON leaderboard. No sign-up, no email. Only your name and score are shown.'));
       const inp = el('input', 'alb-in'); inp.maxLength = 16; inp.autocomplete = 'off'; inp.spellcheck = false; inp.setAttribute('aria-label', 'Nickname');
       inp.value = getNickname() || randomNickname();
       const err = el('div', 'alb-err');
@@ -233,15 +233,19 @@ const SUPABASE_ANON_KEY = 'sb_publishable_-f0lT5SuVJ-TbFzlfMd7kA_hH6ZXp-N';
 
   /* ---------- submit ----------
      Every game over gets a small post box (not a modal) with the name already filled in: the saved nickname, or a
-     guest name like Ninja-4821 ("ANON-…" is reserved by the name filter) that is kept for next time. The player can edit it and tap Post. If they don't, it posts
+     guest name like Pixel-4821 or Comet-4821 ("ANON-…" is reserved by the name filter) that is kept for next time. The player can edit it and tap Post. If they don't, it posts
      by itself, exactly once, when they tap anything else (Play again, ← Arcade, Back…), press a key, leave the page,
      or after 20 seconds. Scores go through an on-device outbox, so the server's 30-second-per-game rate limit queues a
      score instead of losing it. A server rejection (anti-cheat, bad name) is never shown to the player as an error. */
   const K_GUEST = 'anonLB.guest', K_OUT = 'anonLB.outbox', COOLDOWN = 31000, IDLE_MS = 20000;
+  const GUEST_WORDS = ['Pixel', 'Comet', 'Arcade', 'Lantern', 'Neon', 'Rocket', 'Nova', 'Star', 'Lucky', 'Turbo'];
   function guestName() {
     let g = ls.get(K_GUEST, '');
-    if (validateNickname(g).ok) return g;
-    for (let i = 0; i < 20; i++) { g = 'Ninja-' + (1000 + (Math.random() * 9000 | 0)); if (validateNickname(g).ok) break; }
+    if (validateNickname(g).ok && !/^Ninja-\d{4}$/.test(g)) return g;
+    // Old guest names were Ninja-1234. Keep the same digits as Arcade-1234 (matches supabase-rename-defaults.sql) so a returning player stays one row.
+    const old = /^Ninja-(\d{4})$/.exec(String(g || ''));
+    if (old && validateNickname('Arcade-' + old[1]).ok) { g = 'Arcade-' + old[1]; ls.set(K_GUEST, g); return g; }
+    for (let i = 0; i < 20; i++) { g = GUEST_WORDS[Math.random() * GUEST_WORDS.length | 0] + '-' + (1000 + (Math.random() * 9000 | 0)); if (validateNickname(g).ok) break; }
     ls.set(K_GUEST, g); return g;
   }
   const postName = () => getNickname() || guestName();
@@ -410,7 +414,7 @@ const SUPABASE_ANON_KEY = 'sb_publishable_-f0lT5SuVJ-TbFzlfMd7kA_hH6ZXp-N';
       you.innerHTML = ''; const n = getNickname();
       const lab = el('span'); if (n) { lab.appendChild(document.createTextNode('Playing as ')); lab.appendChild(el('b', '', n)); } else lab.textContent = 'No nickname yet';
       const ch = el('button', 'alb-link', n ? 'Change name' : 'Set nickname');
-      ch.onclick = async () => { const r = await promptNickname({ title: '🥷 Your ninja name', text: 'Shown next to your scores. 3 to 16 characters.', skipLabel: 'Cancel', markOptOut: false }); if (r) { paintYou(); load(); } };
+      ch.onclick = async () => { const r = await promptNickname({ title: '🏆 Your leaderboard name', text: 'Shown next to your scores. 3 to 16 characters.', skipLabel: 'Cancel', markOptOut: false }); if (r) { paintYou(); load(); } };
       you.appendChild(lab); you.appendChild(ch);
     };
     async function load() {
@@ -421,7 +425,7 @@ const SUPABASE_ANON_KEY = 'sb_publishable_-f0lT5SuVJ-TbFzlfMd7kA_hH6ZXp-N';
       if (my !== token) return;
       list.innerHTML = '';
       const me = (getNickname() || 'You').toLowerCase(); let meDone = false;
-      if (!res.rows.length) list.appendChild(el('div', 'alb-empty', opts.period === 'week' ? 'No scores yet this week. Be the first ninja on the board!' : opts.period === 'day' ? 'No scores yet today. Be the first ninja on the board!' : 'No scores yet. Win a game to claim #1!'));
+      if (!res.rows.length) list.appendChild(el('div', 'alb-empty', opts.period === 'week' ? 'No scores yet this week. Be the first on the board!' : opts.period === 'day' ? 'No scores yet today. Be the first on the board!' : 'No scores yet. Win a game to claim #1!'));
       const rows = res.rows.filter(r => r && isCleanName(r.nickname)); // safety net: never show a blocked name
       if (!rows.length && res.rows.length) list.appendChild(el('div', 'alb-empty', 'No scores yet. Win a game to claim #1!'));
       rows.forEach((r, i) => {
@@ -464,7 +468,7 @@ const SUPABASE_ANON_KEY = 'sb_publishable_-f0lT5SuVJ-TbFzlfMd7kA_hH6ZXp-N';
   }
 
   window.ANONLB = {
-    version: '1.7.0', isConfigured: configured, submit, guestName, postName, flushPost: flush, _drain: drain, _outbox: outGet, fetchTop, renderBoard, openBoard, promptNickname,
+    version: '1.8.0', isConfigured: configured, submit, guestName, postName, flushPost: flush, _drain: drain, _outbox: outGet, fetchTop, renderBoard, openBoard, promptNickname,
     getNickname, setNickname, validateNickname, isCleanName, randomNickname, seedLocal, sane, weekStart, ukDayStart, _cfg: CFG
   };
 })();
