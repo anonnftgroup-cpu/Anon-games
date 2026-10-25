@@ -87,14 +87,14 @@
     ctl.addEventListener('contextmenu', e => e.preventDefault());
     // stage: swipe -> press(dir), tap -> press('tap'), drag -> I.pointer (world coords)
     let sw = null; const toWorld = e => { const r = cv.getBoundingClientRect(); return { x: (e.clientX - r.left - 2) / (r.width - 4) * o.W, y: (e.clientY - r.top - 2) / (r.height - 4) * o.H }; };
-    stage.addEventListener('pointerdown', e => { if (e.target.closest('.pz')) return; e.preventDefault(); sw = { id: e.pointerId, x: e.clientX, y: e.clientY, done: false }; I.pointer = toWorld(e); I.pointer.down = true; });
+    stage.addEventListener('pointerdown', e => { if (e.target.closest('.pz, .gs-ov')) return; e.preventDefault(); sw = { id: e.pointerId, x: e.clientX, y: e.clientY, done: false }; I.pointer = toWorld(e); I.pointer.down = true; });
     stage.addEventListener('pointermove', e => { if (I.pointer && I.pointer.down) Object.assign(I.pointer, toWorld(e));
       if (!sw || sw.id !== e.pointerId || sw.done || !o.swipe) return; const dx = e.clientX - sw.x, dy = e.clientY - sw.y; if (Math.hypot(dx, dy) > 24) { sw.done = true; press(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up')); } });
     const upS = e => { if (sw && sw.id === e.pointerId && !sw.done) press('tap'); sw = null; if (I.pointer) I.pointer.down = false; };
     stage.addEventListener('pointerup', upS); stage.addEventListener('pointercancel', () => { sw = null; });
     const KM = Object.assign({ ArrowLeft: 'left', KeyA: 'left', ArrowRight: 'right', KeyD: 'right', ArrowUp: 'up', KeyW: 'up', ArrowDown: 'down', KeyS: 'down', Space: 'fire', Enter: 'fire' }, o.keys || {});
     addEventListener('keydown', e => { if (!$('#play').classList.contains('on') || document.querySelector('.modal.show, .alb-ov, .anw-ov')) return;
-      if (e.code === 'KeyP' || e.code === 'Escape') { e.preventDefault(); if (!e.repeat) setPause(!paused); return; }
+      if (e.code === 'KeyP' || e.code === 'Escape') { if (KS) return; e.preventDefault(); if (!e.repeat) setPause(!paused); return; } // with save: gamesave.js handles P / Esc
       const k = KM[e.code]; if (!k) return; e.preventDefault(); if (e.repeat) return; I.held[k] = (I.held[k] || 0) + 1; press(k); });
     addEventListener('keyup', e => { const k = KM[e.code]; if (k) I.held[k] = 0; });
     addEventListener('blur', () => { I.held = {}; });
@@ -106,17 +106,36 @@
     /* loop */
     let S = null, paused = false, last = 0, acc = 0, msgT = 0, overShown = false; const perf = { work: [], gaps: [] }; let frames = 0;
     const H = 1 / 120;
-    function setPause(p) { if (!S || S.over) p = false; paused = p; $('#pz').classList.toggle('show', p); pb.textContent = p ? '▶' : '⏸'; last = 0; I.held = {}; ctl.querySelectorAll('.on').forEach(b => b.classList.remove('on')); }
-    document.addEventListener('visibilitychange', () => { if (document.hidden && S && !S.over) setPause(true); });
+    function setPause(p) { if (!S || S.over) p = false; paused = p; I.presses.length = 0; $('#pz').classList.toggle('show', p && !KS); if (!KS) pb.textContent = p ? '▶' : '⏸'; last = 0; I.held = {}; ctl.querySelectorAll('.on').forEach(b => b.classList.remove('on')); }
+    document.addEventListener('visibilitychange', () => { if (document.hidden && S && !S.over && !KS) setPause(true); });
     pb.onclick = () => setPause(!paused); $('#resBtn').onclick = () => setPause(false); $('#newBtn').onclick = () => { setPause(false); start(); };
     const say = (s, sec) => { $('#msg').textContent = s || ''; msgT = s ? performance.now() + (sec || 1.6) * 1000 : 0; };
-    function start(seed) {
-      AK.closeModal(); show('play'); fit(); overShown = false; I.presses.length = 0; I.held = {};
-      S = o.create({ seed: seed != null ? seed : (new URLSearchParams(location.search).get('seed') ? +new URLSearchParams(location.search).get('seed') : (Date.now() & 0x7fffffff)), mode: pref.mode, art: pref.art,
-        sfx: n => SND.play(n), say });
-      setPause(false); SND.play('start'); if (o.startMsg) say(o.startMsg, 2.2); hud();
+    function start(seed, saved) {
+      AK.closeModal(); show('play'); fit(); overShown = false; I.presses.length = 0; I.held = {}; acc = 0; last = 0;
+      if (saved) seed = (saved.seed + 7919) & 0x7fffffff;
+      const sd = seed != null ? seed : (new URLSearchParams(location.search).get('seed') ? +new URLSearchParams(location.search).get('seed') : (Date.now() & 0x7fffffff));
+      S = o.create({ seed: sd, mode: saved ? saved.mode : pref.mode, art: saved ? saved.art : pref.art, sfx: n => SND.play(n), say });
+      if (saved) { const d = unpack(saved.d); for (const k in d) if (typeof S[k] !== 'function') S[k] = d[k]; }
+      S.__seed = sd; S.__mode = saved ? saved.mode : pref.mode;
+      setPause(false); if (!saved) { SND.play('start'); if (o.startMsg) say(o.startMsg, 2.2); if (KS) KS.begin(); } hud();
     }
     $('#goBtn').onclick = () => start();
+    /* pause + save (shared/gamesave.js, when the page loads it): Pause button, P / Esc, auto-pause when hidden, autosave, resume later */
+    const pack = st => JSON.parse(JSON.stringify(st, (k, v) => typeof v === 'function' ? undefined : ArrayBuffer.isView(v) ? { __ta: v.constructor.name, a: Array.from(v) } : v instanceof Set ? { __set: [...v] } : v instanceof Map ? { __map: [...v] } : v));
+    const unpack = d => JSON.parse(JSON.stringify(d), (k, v) => !v || typeof v !== 'object' ? v : v.__ta && window[v.__ta] ? new window[v.__ta](v.a) : Array.isArray(v.__set) ? new Set(v.__set) : Array.isArray(v.__map) ? new Map(v.__map) : v);
+    const inPlay = () => !!S && !S.over && $('#play').classList.contains('on');
+    const KS = window.ANONSAVE && window.ANONSAVE.kit && o.save !== false ? window.ANONSAVE.kit({ game: o.game, kind: 'action', newLabel: 'New game', stage, pauseBtn: pb, setupAnchor: $('#goBtn'), art: art(pref.art).cover,
+      inProgress: inPlay, paused: () => paused, pause: () => setPause(true), resume: () => setPause(false),
+      snapshot: () => ({ seed: S.__seed, mode: S.__mode, art: S.art, d: pack(S) }),
+      restore: st => start(null, st),
+      final: () => { if (!S) return null; const r = o.result(S); return { score: r.score, time: Math.max(1, Math.round(r.time)), moves: r.moves, mode: r.mode || null }; },
+      endNow: () => { setPause(false); if (S) S.over = true; },
+      newGame: () => start(), toMenu: () => { setPause(false); show('setup'); },
+      describe: (st, f) => { const d = st ? st.d : S; const bits = []; if (f) bits.push('⭐ ' + f.score); else if (d && d.score != null) bits.push('⭐ ' + d.score);
+        if (d && d.level) bits.push('Level ' + d.level); else if (d && d.wave) bits.push('Wave ' + d.wave); else if (d && d.round) bits.push('Round ' + d.round);
+        if (d && d.lives != null) bits.push('❤ ' + d.lives); return bits.join(' · '); },
+      valid: st => !!st && typeof st.seed === 'number' && !!st.d && typeof st.d.t === 'number' && isFinite(st.d.t) && !st.d.over }) : null;
+    if (KS) { $('#goBtn').onclick = KS.guard(() => start()); $('#lbBtn').onclick = () => { if (inPlay()) KS.pause('button'); lb(); }; }
     function hud() { if (S) $('#hud').innerHTML = o.hud(S); }
     function frame(now) {
       requestAnimationFrame(frame);
@@ -131,16 +150,16 @@
       if (S.over && !overShown) { overShown = true; hud(); setTimeout(over, 650); }
     }
     function over() {
-      const r = o.result(S); r.time = Math.max(1, Math.round(r.time)); window.RK_LAST = r; SND.play('over');
+      const r = o.result(S); r.time = Math.max(1, Math.round(r.time)); window.RK_LAST = r; SND.play('over'); if (KS) KS.ended();
       const bk = 'anonRK.best.' + o.game + (r.mode ? '.' + r.mode : ''), best = ls.get(bk, 0), isBest = r.score > best; if (isBest) ls.set(bk, r.score);
       modal({ art: art(pref.art).cover, title: r.title || 'GAME OVER', lb: true,
         text: '<b style="font-size:22px;color:#fff3c4">' + r.score.toLocaleString() + '</b>' + (isBest && r.score > 0 ? ' 👑 new best!' : '') + '<br>' + (r.text || ''),
-        buttons: [['PLAY AGAIN', () => start()], ['Leaderboard', lb, 1]] });
+        buttons: [['PLAY AGAIN', () => start()], ['Leaderboard', lb, 1]].concat(KS ? [['Menu', () => { show('setup'); KS.paint(); }, 1]] : []) });
       if (r.score > 0) post(o.game, r.score, r.time, r.moves, r.mode || null).then(p => { window.RK_POST = p; }); else { const m = $('#lbMsg'); if (m) m.textContent = 'Score some points to make the leaderboard.'; }
       gameOver();
     }
     requestAnimationFrame(frame);
-    window.RK_APP = { get state() { return S; }, start, setPause, get paused() { return paused; }, input: I, perf, sound: SND, fit, pref };
+    window.RK_APP = { kit: KS, get state() { return S; }, start, setPause, get paused() { return paused; }, input: I, perf, sound: SND, fit, pref };
     if (new URLSearchParams(location.search).get('autostart') === '1') start();
     return window.RK_APP;
   }
