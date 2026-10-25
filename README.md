@@ -102,3 +102,12 @@ Supabase requests against a mock server.
 - Leaderboard game id `daily-word`, `mode` = `n<word number>`. Board tabs: Today (since UK midnight) / All-time.
 - Server checks: `supabase-word.sql` (score formula, 1-6 guesses, only today's word, one score per name per day).
 - Optional games.json fields used by the hub board: `periods` (`day`, `week`, `all`), `movesLabel`, `hideMode`.
+
+## Hall of Fame, email sign-up, latest videos (Oct 2026)
+
+- **Hall of Fame** (Leaderboards tab, first chip; deep link `?tab=leaderboards&game=halloffame`): every game's top 10 earn
+  points (1st = 10 … 10th = 1), added up across all games. All-time (default), This week (Monday 00:00 UK time) and Last week.
+  Bragging rights only, no prizes. Uses the optional SQL function `combined_top()` if installed, else reads the public scores table.
+- **Email sign-up**: the box at the bottom of the hub and the end-of-game pop-up (`shared/newsletter.js`) post straight to Kit form 10062464.
+- **Latest videos**: `videos.json` is rebuilt from the YouTube RSS feed by `scripts/update_videos.py`
+  (GitHub Action `.github/workflows/videos.yml`, every 6 hours). The hub and the anonnfts.com homepage strip read it.

@@ -84,6 +84,7 @@ h1{margin:0;font-family:Georgia,"Times New Roman",serif;font-weight:700;font-siz
 .lbbox{margin-top:8px;border:1px solid rgba(212,175,55,.35);border-radius:14px;background:rgba(0,0,0,.35);padding:10px 8px;min-height:300px}
 .lbbox .alb-list{max-height:none}
 .lbplay{display:flex;align-items:center;gap:10px;margin-top:10px;padding:8px;border:1px solid rgba(212,175,55,.55);border-radius:14px;background:linear-gradient(180deg,#0f1114,#07080a);box-shadow:0 0 14px rgba(43,255,136,.12)}
+.lbplay[hidden]{display:none}
 .lbplay img{width:64px;height:48px;flex:none;border-radius:9px;object-fit:cover;background:#0a0d10;border:1px solid rgba(212,175,55,.35)}
 .lbplay-btn{flex:1;min-width:0;display:flex;align-items:center;justify-content:center;gap:6px;min-height:48px;padding:6px 12px;border-radius:12px;border:1px solid #f3d77a;
   background:linear-gradient(180deg,#e9c858,#a47c1f);color:#120e02;font-weight:900;font-size:15px;letter-spacing:.03em;text-decoration:none;text-align:center;line-height:1.15;box-shadow:0 0 16px rgba(43,255,136,.22);transition:transform .12s}
@@ -97,6 +98,57 @@ footer a{color:#b9a35c;text-decoration:none}
 .err{text-align:center;color:var(--mut);padding:30px 10px}
 .err button{margin-top:10px;min-height:40px;padding:0 18px;border-radius:11px;border:1px solid var(--gold);background:#111;color:var(--gold2);font-weight:700}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+/* Hall of Fame (combined board) */
+.lbhead .chip.hofchip{border-color:var(--gold);color:var(--gold2)}
+.hof-intro{font-size:12.5px;line-height:1.45;color:var(--mut);text-align:center;margin:2px 6px 10px}
+.hof-intro b{color:var(--gold2)}
+.hof-seg{display:flex;gap:4px;padding:3px;border:1px solid rgba(212,175,55,.35);border-radius:11px;background:rgba(0,0,0,.35);margin:0 0 10px}
+.hof-seg button{flex:1;min-height:36px;border:0;border-radius:8px;background:transparent;color:#b9a35c;font-weight:800;font-size:13px;cursor:pointer}
+.hof-seg button.on{background:rgba(212,175,55,.2);color:var(--gold2);box-shadow:inset 0 0 0 1px var(--gold)}
+.hof-list{list-style:none;margin:0;padding:0}
+.hof-li{border-bottom:1px solid rgba(212,175,55,.14)}
+.hof-row{width:100%;display:grid;grid-template-columns:34px 1fr auto;align-items:center;gap:8px;padding:9px 4px;border:0;background:none;color:inherit;text-align:left;cursor:pointer}
+.hof-rk{font-weight:800;color:var(--gold2);text-align:center;font-size:15px}
+.hof-nm{display:block;font-weight:700;color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hof-sub{display:block;font-size:11.5px;color:var(--mut);margin-top:2px}
+.hof-pt{font-weight:900;color:var(--gold2);font-size:16px;text-align:right}
+.hof-pt small{display:block;font-size:10px;font-weight:700;color:var(--mut);letter-spacing:.06em}
+.hof-li.top1 .hof-row{background:linear-gradient(90deg,rgba(212,175,55,.16),transparent);border-radius:10px}
+.hof-li.me .hof-nm{color:var(--green)}
+.hof-det{display:none;padding:0 6px 10px 46px;font-size:12px;line-height:1.6;color:#cfc6aa}
+.hof-li.open .hof-det{display:block}
+.hof-det span{display:inline-block;margin:2px 4px 2px 0;padding:1px 8px;border-radius:9px;border:1px solid rgba(212,175,55,.3);background:rgba(0,0,0,.3)}
+.hof-note{font-size:11.5px;color:var(--mut);text-align:center;margin-top:10px;line-height:1.45}
+.hof-empty{text-align:center;color:var(--mut);padding:28px 10px}
+/* email sign-up */
+.ak{margin:22px 0 4px;padding:20px 16px;text-align:center;border:1px solid rgba(212,175,55,.55);border-radius:16px;background:linear-gradient(160deg,#13203a 0%,#0B1426 70%);box-shadow:0 8px 26px rgba(0,0,0,.4)}
+.ak-eye{font-size:11px;letter-spacing:3px;color:#D4AF37;font-weight:700}
+.ak h2{margin:8px 0 6px;font-family:Georgia,"Times New Roman",serif;font-size:20px;line-height:1.25;color:#f5f0e1}
+.ak p{margin:0 auto 14px;max-width:420px;font-size:13.5px;line-height:1.5;color:#c3cad6}
+.ak form{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.ak input{flex:1 1 200px;min-width:0;min-height:46px;padding:10px 16px;border-radius:999px;border:1px solid rgba(212,175,55,.5);background:rgba(255,255,255,.06);color:#f5f0e1;font-size:16px;outline:none}
+.ak input::placeholder{color:#8590a5}
+.ak input:focus{border-color:#D4AF37;box-shadow:0 0 0 3px rgba(212,175,55,.2)}
+.ak button{flex:0 0 auto;min-height:46px;padding:0 24px;border:0;border-radius:999px;background:#D4AF37;color:#0B1426;font-family:Georgia,serif;font-weight:700;font-size:14px;letter-spacing:1.5px;cursor:pointer}
+.ak button:disabled{opacity:.7}
+.ak-msg{font-size:13.5px;margin-top:10px}.ak-msg:empty{display:none}
+.ak-msg.ok{color:#D4AF37;font-weight:700}.ak-msg.err{color:#ff9b8a}
+.ak-note{margin:10px 0 0!important;font-size:11px!important;color:#8590a5!important}
+@media (max-width:480px){.ak button{width:100%}}
+/* latest videos */
+.yv{margin-top:22px}
+.yv-h{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 2px 8px}
+.yv-h h2{margin:0;font-family:Georgia,serif;font-size:18px;color:var(--gold2);letter-spacing:.04em}
+.yv-sub{flex:none;display:inline-flex;align-items:center;min-height:34px;padding:0 13px;border-radius:999px;background:#D4AF37;color:#0B1426;font-weight:800;font-size:12.5px;text-decoration:none;white-space:nowrap}
+.yv-row{display:flex;gap:10px;overflow-x:auto;padding:2px 2px 8px;scroll-snap-type:x mandatory;scrollbar-width:thin;-webkit-overflow-scrolling:touch}
+.yv-card{flex:0 0 200px;scroll-snap-align:start;text-decoration:none;color:inherit;border:1px solid rgba(212,175,55,.45);border-radius:12px;overflow:hidden;background:linear-gradient(180deg,#0f1114,#07080a)}
+.yv-th{position:relative;display:block;aspect-ratio:16/9;background:#0a0d10}
+.yv-th img{width:100%;height:100%;object-fit:cover;display:block}
+.yv-th b{position:absolute;left:6px;top:6px;font-size:10px;letter-spacing:.08em;padding:2px 7px;border-radius:8px;background:rgba(0,0,0,.75);border:1px solid rgba(212,175,55,.6);color:var(--gold2)}
+.yv-th i{position:absolute;left:50%;top:50%;width:40px;height:28px;margin:-14px 0 0 -20px;border-radius:8px;background:rgba(0,0,0,.65);font-style:normal;color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px}
+.yv-t{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;padding:7px 9px 0;font-size:12.5px;font-weight:700;line-height:1.3;color:var(--txt)}
+.yv-d{display:block;padding:3px 9px 8px;font-size:11px;color:var(--mut)}
+.hdr-mail{margin-left:auto;flex:none;min-height:32px;padding:0 11px;border-radius:999px;border:1px solid rgba(212,175,55,.55);background:rgba(0,0,0,.35);color:var(--gold2);font-size:12px;font-weight:700;cursor:pointer}
 @media (prefers-reduced-motion:reduce){.logo{animation:none}.tile{transition:none}}
 </style>
 </head>
@@ -105,6 +157,7 @@ footer a{color:#b9a35c;text-decoration:none}
   <header>
     <img class="logo" src="assets/logo.webp" alt="ANON NFTs logo" width="58" height="58">
     <div><h1>ANON ARCADE</h1><div class="sub">Free ANON games · no wallet, no sign-up</div></div>
+    <button class="hdr-mail" id="hdrMail" type="button" aria-label="Get new games by email">✉ Updates</button>
   </header>
 
   <nav class="tabs" role="tablist">
@@ -129,6 +182,23 @@ footer a{color:#b9a35c;text-decoration:none}
     <div class="chips lbhead" id="lbGames" role="toolbar" aria-label="Choose a leaderboard"></div>
     <div class="lbplay" id="lbPlay" hidden></div>
     <div class="lbbox" id="lbBox"></div>
+  </section>
+
+  <section class="yv" id="videos" aria-label="Latest videos" hidden>
+    <div class="yv-h"><h2>Latest videos</h2><a class="yv-sub" id="yvSub" href="https://www.youtube.com/@AnonNft?sub_confirmation=1" target="_blank" rel="noopener">▶ Subscribe on YouTube</a></div>
+    <div class="yv-row" id="yvRow"></div>
+  </section>
+
+  <section class="ak" id="signup" aria-labelledby="akT">
+    <div class="ak-eye">THE ANON LETTER</div>
+    <h2 id="akT">Get new games and the weekly top scores by email</h2>
+    <p>New Arcade games, the weekly Hall of Fame and ANON news. Free, and you can unsubscribe any time.</p>
+    <form id="akForm" action="https://app.kit.com/forms/10062464/subscriptions" method="post" target="_blank" novalidate>
+      <input type="email" name="email_address" placeholder="Your email address" aria-label="Your email address" autocomplete="email" required>
+      <button type="submit">SUBSCRIBE</button>
+    </form>
+    <div class="ak-msg" id="akMsg" aria-live="polite"></div>
+    <p class="ak-note">We'll send a quick email to confirm your sign-up. No spam, ever.</p>
   </section>
 
   <footer>ANON NFTs · <a href="https://anonnfts.com" target="_blank" rel="noopener">anonnfts.com</a> · <a href="https://anonnfts.com/privacy-notice" target="_blank" rel="noopener">Privacy</a> · Art CC0</footer>
@@ -220,15 +290,19 @@ function renderTools() {
   });
 }
 
+const HOF = '__hof';
 function renderLb() {
-  // One scrollable row of game chips, in the hub's popularity order (GAMES is already sorted by popularity.json)
+  // One scrollable row of chips: Hall of Fame first, then every game in the hub's popularity order
   const lbs = GAMES.filter(g => isLive(g) && g.leaderboard);
   const chips = $('#lbGames'), keepX = chips.scrollLeft;
   if (!lbs.length) { chips.innerHTML = ''; $('#lbBox').textContent = 'No leaderboards yet.'; return; }
-  if (!lbGame || !lbs.find(g => g.id === lbGame)) lbGame = lbs[0].id;
+  if (!lbGame || (lbGame !== HOF && !lbs.find(g => g.id === lbGame))) lbGame = HOF;
   const key = lbs.map(g => g.id).join(',');
   if (chips.dataset.key !== key) {
     chips.innerHTML = ''; chips.dataset.key = key;
+    const h = el('button', 'chip hofchip', '🏅 Hall of Fame'); h.type = 'button'; h.dataset.game = HOF;
+    h.onclick = () => { if (lbGame === HOF) return; lbGame = HOF; renderLb(); };
+    chips.appendChild(h);
     lbs.forEach(g => {
       const b = el('button', 'chip', g.name); b.type = 'button'; b.dataset.game = g.id;
       b.onclick = () => { if (lbGame === g.id) return; lbGame = g.id; renderLb(); };
@@ -241,13 +315,125 @@ function renderLb() {
   const on = chips.querySelector('.chip.on');
   if (on && chips.clientWidth && (on.offsetLeft < chips.scrollLeft || on.offsetLeft + on.offsetWidth > chips.scrollLeft + chips.clientWidth - 24))
     chips.scrollLeft = Math.max(0, on.offsetLeft - 40);
+  const box = $('#lbBox');
+  if (lbGame === HOF) {
+    renderLbPlay(null);
+    if (box.dataset.game === HOF && box.dataset.drawn) return;
+    box.dataset.game = HOF; box.dataset.drawn = '1';
+    renderHof(box, lbs);
+    return;
+  }
   const g = lbs.find(x => x.id === lbGame);
   renderLbPlay(g);
-  const box = $('#lbBox');
   if (box.dataset.game === g.id && box.dataset.drawn) return;
   box.dataset.game = g.id; box.dataset.drawn = '1';
   if (window.ANONLB) window.ANONLB.renderBoard(box, { game: g.id, order: g.order || 'desc', scoreLabel: g.scoreLabel || 'Score', periods: g.periods, movesLabel: g.movesLabel, hideMode: g.hideMode, modeLabels: g.modeLabels });
   else box.textContent = 'Leaderboard unavailable.';
+}
+
+/* ---------- Hall of Fame: one board across every game ----------
+   Each game's board gives points to its top 10 players: 1st = 10, 2nd = 9 … 10th = 1. Points are added up across all games.
+   Same rules as each game's own board (best score per player, ties go to the quicker time, then the earlier score).
+   Bragging rights only: no prizes. Uses the optional combined_top() SQL function if it exists, otherwise reads the
+   public scores table and works it out here. */
+const HOF_PTS = 10;
+const ukMidnight = t => window.ANONLB && ANONLB.ukDayStart ? ANONLB.ukDayStart(t) : (d => (d.setHours(0, 0, 0, 0), d))(new Date(t));
+function ukWeekStart(weeksBack) {  // Monday 00:00 UK time (handles BST), weeksBack weeks ago
+  const today = +ukMidnight(Date.now());
+  let dow = 1; try { dow = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].indexOf(new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/London', weekday: 'short' }).format(new Date())) ; } catch (e) { dow = (new Date().getDay() + 6) % 7; }
+  if (dow < 0) dow = (new Date().getDay() + 6) % 7;
+  return ukMidnight(today + 12 * 36e5 - (dow + 7 * (weeksBack || 0)) * 864e5);  // noon of the target day, so a clock change can't shift the date
+}
+function hofWindow(period) {
+  if (period === 'week') return { since: ukWeekStart(0), until: null };
+  if (period === 'last') return { since: ukWeekStart(1), until: ukWeekStart(0) };
+  return { since: null, until: null };
+}
+const HOF_CACHE = {};
+async function hofRows(lbs, period) {
+  // returns [{game, nickname, score, time_seconds}] = each game's board in order (already one row per player)
+  const cfg = window.ANONLB && ANONLB._cfg; if (!cfg || !ANONLB.isConfigured()) throw new Error('offline');
+  const w = hofWindow(period), asc = lbs.filter(g => g.order === 'asc').map(g => g.id);
+  const base = cfg.url.replace(/\/+$/, '') + '/rest/v1', H = { apikey: cfg.key, Accept: 'application/json', 'Content-Type': 'application/json' };
+  const go = (u, o) => { const ac = window.AbortController ? new AbortController() : null; const t = ac && setTimeout(() => ac.abort(), 12000);
+    return fetch(u, Object.assign({ mode: 'cors', credentials: 'omit', signal: ac && ac.signal }, o)).finally(() => clearTimeout(t)); };
+  try {   // 1) optional SQL function
+    const r = await go(base + '/rpc/combined_top', { method: 'POST', headers: H, body: JSON.stringify({ p_since: w.since && w.since.toISOString(), p_until: w.until && w.until.toISOString(), p_asc_games: asc, p_per_game: 15 }) });
+    if (r.ok) { const b = await r.json(); if (Array.isArray(b)) return b.sort((a, c) => a.game < c.game ? -1 : a.game > c.game ? 1 : a.rnk - c.rnk); }
+  } catch (e) {}
+  // 2) read the public scores table (paged) and rank here, exactly like top_scores()
+  let all = [];
+  for (let page = 0; page < 20; page++) {
+    let q = base + '/' + (cfg.table || 'scores') + '?select=game,nickname,score,time_seconds,created_at&order=id.asc';
+    if (w.since) q += '&created_at=gte.' + encodeURIComponent(w.since.toISOString());
+    if (w.until) q += '&created_at=lt.' + encodeURIComponent(w.until.toISOString());
+    const r = await go(q, { headers: Object.assign({ Range: (page * 1000) + '-' + (page * 1000 + 999), 'Range-Unit': 'items' }, H) });
+    if (!r.ok && r.status !== 416) throw new Error('scores ' + r.status);
+    const b = r.ok ? await r.json() : [];
+    all = all.concat(b);
+    if (b.length < 1000) break;
+  }
+  const isAsc = new Set(asc), best = new Map();
+  const better = (g, a, b) => { const d = isAsc.has(g) ? a.score - b.score : b.score - a.score; if (d) return d < 0;
+    const ta = a.time_seconds == null ? 1e12 : a.time_seconds, tb = b.time_seconds == null ? 1e12 : b.time_seconds; if (ta !== tb) return ta < tb;
+    return String(a.created_at) < String(b.created_at); };
+  all.forEach(r => { if (!r || !r.game || r.nickname == null) return; const k = r.game + '\n' + String(r.nickname).toLowerCase(), b = best.get(k); if (!b || better(r.game, r, b)) best.set(k, r); });
+  const byGame = new Map(); best.forEach(r => { if (!byGame.has(r.game)) byGame.set(r.game, []); byGame.get(r.game).push(r); });
+  const out = [];
+  byGame.forEach((rows, g) => rows.sort((a, b) => better(g, a, b) ? -1 : better(g, b, a) ? 1 : 0).slice(0, 15).forEach((r, i) => out.push(Object.assign({ rnk: i + 1 }, r))));
+  return out;
+}
+function hofTally(rows, lbs) {
+  const live = new Map(lbs.map(g => [g.id, g])), clean = n => !window.ANONLB || ANONLB.isCleanName(n);
+  const byGame = new Map();
+  rows.forEach(r => { if (live.has(r.game) && clean(r.nickname)) { if (!byGame.has(r.game)) byGame.set(r.game, []); byGame.get(r.game).push(r); } });
+  const P = new Map();
+  byGame.forEach((list, g) => list.sort((a, b) => a.rnk - b.rnk).slice(0, HOF_PTS).forEach((r, i) => {   // re-rank after the name filter, like each board shows
+    const k = String(r.nickname).toLowerCase(); let p = P.get(k);
+    if (!p) P.set(k, p = { nickname: r.nickname, points: 0, golds: 0, podiums: 0, boards: [] });
+    p.points += HOF_PTS - i; if (i === 0) p.golds++; if (i < 3) p.podiums++;
+    p.boards.push({ game: g, name: live.get(g).name, rank: i + 1 });
+  }));
+  return [...P.values()].map(p => (p.boards.sort((a, b) => a.rank - b.rank), p))
+    .sort((a, b) => b.points - a.points || b.golds - a.golds || b.podiums - a.podiums || a.nickname.localeCompare(b.nickname));
+}
+function renderHof(box, lbs) {
+  box.innerHTML = ''; box.classList.remove('alb-board');
+  let period = 'all', token = 0;
+  box.appendChild(el('div', 'hof-intro')).innerHTML = 'Every game counts. <b>1st on a game\'s board = 10 points</b>, 2nd = 9, down to 10th = 1. Bragging rights only, no prizes.';
+  const seg = el('div', 'hof-seg'); seg.setAttribute('role', 'group'); seg.setAttribute('aria-label', 'Time period');
+  const PER = [['all', 'All-time'], ['week', 'This week'], ['last', 'Last week']], pb = {};
+  PER.forEach(([k, t]) => { const b = el('button', '', t); b.type = 'button'; b.dataset.period = k; b.onclick = () => { if (period !== k) { period = k; load(); } }; pb[k] = b; seg.appendChild(b); });
+  const list = el('ol', 'hof-list'), note = el('div', 'hof-note');
+  box.appendChild(seg); box.appendChild(list); box.appendChild(note);
+  const fmtD = d => d.toLocaleDateString('en-GB', { timeZone: 'Europe/London', day: 'numeric', month: 'short' });
+  async function load() {
+    const my = ++token;
+    Object.keys(pb).forEach(k => { pb[k].classList.toggle('on', k === period); pb[k].setAttribute('aria-pressed', String(k === period)); });
+    list.innerHTML = ''; list.appendChild(el('div', 'hof-empty', 'Adding up every board…')); note.textContent = '';
+    let players;
+    try { const ck = period; const rows = HOF_CACHE[ck] && Date.now() - HOF_CACHE[ck].t < 60000 ? HOF_CACHE[ck].rows : (HOF_CACHE[ck] = { t: Date.now(), rows: await hofRows(lbs, period) }).rows; players = hofTally(rows, lbs); }
+    catch (e) { if (my !== token) return; delete HOF_CACHE[period]; list.innerHTML = ''; const d = el('div', 'hof-empty', 'Could not reach the leaderboards. '); const b = el('button', 'alb-link', 'Try again'); b.style.cssText = 'background:none;border:0;color:#f3d77a;text-decoration:underline;font:inherit;cursor:pointer'; b.onclick = load; d.appendChild(b); list.appendChild(d); return; }
+    if (my !== token) return;
+    list.innerHTML = '';
+    if (!players.length) list.appendChild(el('div', 'hof-empty', period === 'all' ? 'No scores yet. Play any game to get on the board!' : period === 'week' ? 'No scores yet this week. Play any game to top the Hall of Fame!' : 'No scores last week.'));
+    const me = (window.ANONLB && ANONLB.getNickname() || '').toLowerCase();
+    players.slice(0, 50).forEach((p, i) => {
+      const li = el('li', 'hof-li' + (i === 0 ? ' top1' : '') + (me && p.nickname.toLowerCase() === me ? ' me' : ''));
+      const row = el('button', 'hof-row'); row.type = 'button'; row.setAttribute('aria-expanded', 'false');
+      row.appendChild(el('span', 'hof-rk', i < 3 ? ['🥇', '🥈', '🥉'][i] : String(i + 1)));
+      const mid = el('span'); mid.style.minWidth = '0'; mid.appendChild(el('span', 'hof-nm', p.nickname));
+      const bits = [p.boards.length + (p.boards.length === 1 ? ' board' : ' boards')]; if (p.golds) bits.unshift(p.golds + ' × 1st'); else if (p.podiums) bits.unshift(p.podiums + ' × top 3');
+      mid.appendChild(el('span', 'hof-sub', bits.join(' · '))); row.appendChild(mid);
+      const pt = el('span', 'hof-pt', String(p.points)); pt.appendChild(el('small', '', 'PTS')); row.appendChild(pt);
+      const det = el('div', 'hof-det'); p.boards.forEach(b => det.appendChild(el('span', '', '#' + b.rank + ' ' + b.name)));
+      row.onclick = () => { const o = li.classList.toggle('open'); row.setAttribute('aria-expanded', String(o)); };
+      li.appendChild(row); li.appendChild(det); list.appendChild(li);
+    });
+    const w = hofWindow(period);
+    note.textContent = period === 'all' ? 'All-time · tap a player to see their boards.' : period === 'week' ? 'This week: since Monday ' + fmtD(w.since) + ', midnight UK time. Resets every Monday.' : 'Last week: Monday ' + fmtD(w.since) + ' to Sunday ' + fmtD(new Date(+w.until - 36e5)) + ' (UK time).';
+  }
+  load();
 }
 
 // Big "▶ Play <game>" button above the board being viewed. Same-frame link (like the tiles), so it stays inside the anonnfts.com iframe.
@@ -309,11 +495,52 @@ async function load() {
     if (g && isLive(g)) { location.replace(gameUrl(g)); return; }
     if (g) toast('🎮 ' + g.name + ' is coming soon'); else toast('Game not found');
   }
-  if (want) lbGame = want;
+  if (want) lbGame = /^(hof|hall-?of-?fame|all)$/i.test(want) ? HOF : want;
+  if (tab === 'halloffame' || tab === 'hof') lbGame = HOF;
   renderTools(); renderGrid();
-  setTab(tab === 'leaderboards' ? 'leaderboards' : 'games', false);
+  setTab(tab === 'leaderboards' || tab === 'halloffame' || tab === 'hof' ? 'leaderboards' : 'games', false);
   document.body.dataset.ready = '1';
 }
+/* ---------- email sign-up (Kit form 10062464, posted with fetch so the player stays here) ---------- */
+(function signup() {
+  const f = $('#akForm'), m = $('#akMsg'), b = f.querySelector('button'), inp = f.querySelector('input');
+  const mark = () => { try { const k = 'anonNews.v1', o = JSON.parse(localStorage.getItem(k) || '{}'); o.subscribed = true; o.snooze = Date.now() + 365 * 864e5; localStorage.setItem(k, JSON.stringify(o)); } catch (e) {} };
+  f.addEventListener('submit', e => {
+    e.preventDefault();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(inp.value.trim())) { m.className = 'ak-msg err'; m.textContent = 'Please enter a valid email address.'; inp.focus(); return; }
+    b.disabled = true; b.textContent = 'SENDING…'; m.className = 'ak-msg'; m.textContent = '';
+    fetch(f.action, { method: 'POST', body: new FormData(f), headers: { Accept: 'application/json' } })
+      .then(r => r.json().catch(() => ({})).then(d => ({ ok: r.ok, d })))
+      .then(x => { if (!(x.ok && (!x.d.status || x.d.status === 'success'))) throw 0;
+        f.style.display = 'none'; m.className = 'ak-msg ok'; m.textContent = 'Nearly there! Check your inbox to confirm your subscription.'; mark(); })
+      .catch(() => { m.className = 'ak-msg err'; m.textContent = 'Something went wrong. Please check your email address and try again.'; b.disabled = false; b.textContent = 'SUBSCRIBE'; });
+  });
+  $('#hdrMail').onclick = () => { const s = $('#signup'); s.scrollIntoView({ behavior: 'smooth', block: 'center' }); setTimeout(() => { try { inp.focus({ preventScroll: true }); } catch (e) {} }, 500); };
+})();
+
+/* ---------- latest YouTube videos (videos.json, refreshed every 6 hours by a GitHub Action) ---------- */
+(async function videos() {
+  try {
+    const r = await fetch('videos.json', { cache: 'no-cache' }); if (!r.ok) return;
+    const d = await r.json(), vids = (d.videos || []).filter(v => v && /^[\w-]{11}$/.test(v.id)).slice(0, 8);
+    if (!vids.length) return;
+    const row = $('#yvRow');
+    vids.forEach(v => {
+      const a = el('a', 'yv-card'); a.href = v.url || ('https://www.youtube.com/watch?v=' + v.id); a.target = '_blank'; a.rel = 'noopener';
+      a.setAttribute('aria-label', (v.short ? 'Short: ' : 'Video: ') + v.title);
+      const th = el('span', 'yv-th'), img = el('img'); img.loading = 'lazy'; img.decoding = 'async'; img.alt = ''; img.width = 320; img.height = 180;
+      img.src = 'https://i.ytimg.com/vi/' + v.id + '/mqdefault.jpg'; th.appendChild(img);
+      if (v.short) th.appendChild(el('b', '', 'SHORT')); th.appendChild(el('i', '', '▶'));
+      a.appendChild(th); a.appendChild(el('span', 'yv-t', v.title));
+      let ds = ''; try { ds = new Date(v.published || v.date).toLocaleDateString('en-GB', { timeZone: 'Europe/London', day: 'numeric', month: 'short', year: 'numeric' }); } catch (e) { ds = v.date || ''; }
+      a.appendChild(el('span', 'yv-d', ds));
+      row.appendChild(a);
+    });
+    if (d.subscribe) $('#yvSub').href = d.subscribe;
+    $('#videos').hidden = false;
+  } catch (e) {}
+})();
+
 window.ANON_ARCADE = { reload: load, games: () => GAMES.slice() };
 load();
 })();
