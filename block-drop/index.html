@@ -21,7 +21,13 @@
 <link rel="icon" href="../assets/logo.webp">
 <link rel="stylesheet" href="../assets/nft/kit.css">
 <link rel="stylesheet" href="../assets/play/play.css">
-<style>.bar button{min-width:44px}#nextCv{width:78px;height:52px;border:1px solid rgba(212,175,55,.4);border-radius:8px;background:rgba(0,0,0,.5)}</style>
+<style>.bar button{min-width:44px}#nextCv{width:78px;height:52px;border:1px solid rgba(212,175,55,.4);border-radius:8px;background:rgba(0,0,0,.5)}
+.bar #pauseBtn{min-width:64px;min-height:44px;font-size:15px;border-color:#ff8cc4}
+#pauseOv{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:20px;background:rgba(5,7,10,.78);z-index:5;text-align:center}
+#pauseOv.on{display:flex}#pauseOv h2{margin:0 0 4px;color:var(--gold2);font-size:26px;letter-spacing:.08em}#pauseOv p{margin:0 0 6px;color:#ddd;font-size:14px;max-width:300px}
+#pauseOv .go{max-width:300px;min-height:52px}#pauseOv .go.alt{min-height:46px}
+#saveBox{display:none;margin:14px 0 0;padding:12px;border:1px solid rgba(212,175,55,.5);border-radius:14px;background:rgba(0,0,0,.45);text-align:center}
+#saveBox.on{display:block}#saveBox p{margin:0;color:var(--gold2);font-weight:700}#saveBox .go{margin-top:10px}</style>
 </head>
 <body>
 <header><div class="top">
@@ -30,19 +36,22 @@
 </div></header>
 <section class="view on" id="setup">
   <img class="hero" src="../assets/nft/c-aces.webp" alt="ANON NFTs artwork" style="object-position:50% 50%">
-  <p class="howto">ANON art blocks fall into the 9-wide vault. Fill a whole row to clear it. <b>Drag</b> left/right to move, <b>tap</b> to turn, <b>swipe down</b> to drop. Keys: ← → move, ↑ or X turn, ↓ soft drop, Space drop.<br>Rows: 1 = 100, 2 = 300, 3 = 500, 4 = 800 × level. Every 10 rows the level goes up and blocks fall faster.</p>
+  <p class="howto">ANON art blocks fall into the 9-wide vault. Fill a whole row to clear it. <b>Drag</b> left/right to move, <b>tap</b> to turn, <b>swipe down</b> to drop. Keys: ← → move, ↑ or X turn, ↓ soft drop, Space drop, P or Esc pause.<br>Pause any time with the ⏸ button. Your game is saved on this device, so you can carry on later.<br>Rows: 1 = 100, 2 = 300, 3 = 500, 4 = 800 × level. Every 10 rows the level goes up and blocks fall faster.</p>
+  <div id="saveBox"><p id="saveInfo"></p><button class="go" id="resumeBtn">RESUME SAVED GAME</button><button class="go alt" id="lastBtn"></button></div>
   <button class="go" id="goBtn">PLAY</button>
   <div class="nick" id="nick"></div>
 </section>
 <section class="view" id="play">
   <div class="hud"><span id="sc">⭐ 0</span><span id="ln">▤ 0</span><span id="lv">Lv 1</span><canvas id="nextCv" width="156" height="104"></canvas></div>
-  <div class="stage"><canvas id="cv"></canvas><div class="tap" id="msg"></div></div>
-  <div class="bar"><button data-k="L" aria-label="Left">◀</button><button data-k="R" aria-label="Turn">⟳</button><button data-k="Rt" aria-label="Right">▶</button><button data-k="D" aria-label="Soft drop">▼</button><button data-k="H" aria-label="Drop">⤓</button><button id="setBtn">Menu</button></div>
+  <div class="stage"><canvas id="cv"></canvas><div class="tap" id="msg"></div>
+    <div id="pauseOv" role="dialog" aria-label="Paused"><h2>PAUSED</h2><p id="pauseInfo">Your game is saved on this device.</p><button class="go" id="resBtn">RESUME</button><button class="go alt" id="endBtn">End game and post score</button><button class="go alt" id="quitBtn">Menu (keeps your save)</button></div></div>
+  <div class="bar"><button data-k="L" aria-label="Left">◀</button><button data-k="R" aria-label="Turn">⟳</button><button data-k="Rt" aria-label="Right">▶</button><button data-k="D" aria-label="Soft drop">▼</button><button data-k="H" aria-label="Drop">⤓</button><button id="pauseBtn" aria-label="Pause">⏸ Pause</button></div>
 </section>
 <script src="../shared/leaderboard.js?v=1.7.0"></script>
 <script src="../shared/newsletter.js"></script>
 <script src="../assets/nft/kit.js"></script>
 <script src="../assets/play/play.js"></script>
+<script src="../shared/gamesave.js?v=1.0.0"></script>
 <script>
 'use strict';
 const { $, ls, modal, post, openLB, gameOver, art, ART } = AK;
@@ -58,29 +67,34 @@ Promise.all(SKIN.map(id => AP.img(art(id).img))).then(ims => ims.forEach((im, k)
   if (im) AP.cover(x, im, 0, 0, s, s); x.fillStyle = 'rgba(255,255,255,.18)'; x.fillRect(0, 0, s, 7); x.fillStyle = 'rgba(0,0,0,.35)'; x.fillRect(0, s - 7, s, 7); x.strokeStyle = '#d4af37'; x.lineWidth = 4; x.strokeRect(2, 2, s - 4, s - 4); TILE[k] = c; }));
 function fit() { cs = Math.floor(Math.min(C.w / W, C.h / H)); ox = Math.floor((C.w - cs * W) / 2); oy = Math.floor((C.h - cs * H) / 2); }
 function bag() { return AP.shuffle([...Array(SH.length).keys()]); }
-function newGame(seed) {
+function newGame(seed, saved) {
   if (seed) AP.seed(seed); show('play'); if (!C) C = AP.canvas($('#cv'), W / H, () => { fit(); draw(); }); else C.fit(); fit();
-  S = { b: Array.from({ length: H }, () => Array(W).fill(-1)), q: bag().concat(bag()), cur: null, score: 0, lines: 0, level: 1, t: 0, acc: 0, over: false, lock: 0, flash: [], drops: 0 };
+  $('#pauseOv').classList.remove('on'); $('#msg').textContent = ''; tp = null;
+  if (saved) { // carry on a saved run: same run id, same total time, so it posts as one normal game
+    S = { id: saved.id, b: saved.b, q: saved.q, cur: saved.cur, score: saved.score, lines: saved.lines, level: saved.level, t: saved.t, acc: 0, over: false, lock: 0, flash: [], drops: saved.drops, paused: false };
+    if (!S.cur) next(); else drawNext(); hud(); if (!S.over) pause('resume'); return;
+  }
+  S = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 7), b: Array.from({ length: H }, () => Array(W).fill(-1)), q: bag().concat(bag()), cur: null, score: 0, lines: 0, level: 1, t: 0, acc: 0, over: false, lock: 0, flash: [], drops: 0, paused: false };
   next(); hud(); L.start();
 }
 function next() { const k = S.q.shift(); if (S.q.length < SH.length) S.q.push(...bag()); const cells = SH[k].map(c => c.slice()); const w = Math.max(...cells.map(c => c[0])) + 1;
   S.cur = { k, cells, x: Math.floor((W - w) / 2), y: 0 }; if (hits(S.cur.cells, S.cur.x, S.cur.y)) return end(); drawNext(); }
 const hits = (cells, x, y) => cells.some(([cx, cy]) => { const X = x + cx, Y = y + cy; return X < 0 || X >= W || Y >= H || (Y >= 0 && S.b[Y][X] >= 0); });
-function shift(d) { if (!S || S.over || !S.cur) return false; if (!hits(S.cur.cells, S.cur.x + d, S.cur.y)) { S.cur.x += d; return true; } return false; }
-function rotate() { if (!S || S.over || !S.cur || S.cur.k === 3) return false; const c = S.cur.cells, mh = Math.max(...c.map(p => p[1]));
+function shift(d) { if (!S || S.over || S.paused || !S.cur) return false; if (!hits(S.cur.cells, S.cur.x + d, S.cur.y)) { S.cur.x += d; return true; } return false; }
+function rotate() { if (!S || S.over || S.paused || !S.cur || S.cur.k === 3) return false; const c = S.cur.cells, mh = Math.max(...c.map(p => p[1]));
   let r = c.map(([x, y]) => [mh - y, x]); const mx = Math.min(...r.map(p => p[0])), my = Math.min(...r.map(p => p[1])); r = r.map(([x, y]) => [x - mx, y - my]);
   for (const k of [0, -1, 1, -2, 2, -3]) if (!hits(r, S.cur.x + k, S.cur.y)) { S.cur.cells = r; S.cur.x += k; return true; } return false; }
-function soft() { if (!S || S.over || !S.cur) return false; if (!hits(S.cur.cells, S.cur.x, S.cur.y + 1)) { S.cur.y++; S.acc = 0; return true; } land(); return false; }
-function hard() { if (!S || S.over || !S.cur) return; while (!hits(S.cur.cells, S.cur.x, S.cur.y + 1)) S.cur.y++; land(); }
+function soft() { if (!S || S.over || S.paused || !S.cur) return false; if (!hits(S.cur.cells, S.cur.x, S.cur.y + 1)) { S.cur.y++; S.acc = 0; return true; } land(); return false; }
+function hard() { if (!S || S.over || S.paused || !S.cur) return; while (!hits(S.cur.cells, S.cur.x, S.cur.y + 1)) S.cur.y++; land(); }
 function land() {
   for (const [cx, cy] of S.cur.cells) { const Y = S.cur.y + cy; if (Y < 0) return end(); S.b[Y][S.cur.x + cx] = S.cur.k; }
   S.drops++; const full = []; for (let y = 0; y < H; y++) if (S.b[y].every(v => v >= 0)) full.push(y);
   if (full.length) { const n = Math.min(4, full.length); S.score += PTS[n] * S.level + (full.length > 4 ? 200 * S.level * (full.length - 4) : 0); S.lines += full.length; S.flash = full.map(y => ({ y, a: 0 }));
     S.b = S.b.filter((_, y) => !full.includes(y)); while (S.b.length < H) S.b.unshift(Array(W).fill(-1)); S.level = 1 + Math.floor(S.lines / 10); if (navigator.vibrate) navigator.vibrate(20); }
-  S.cur = null; hud(); next();
+  S.cur = null; hud(); next(); if (!S.over && saver) saver.saveNow();
 }
 const gravity = () => Math.max(.08, .8 * Math.pow(.84, S.level - 1));
-function step(dt) { if (!S || S.over) return; S.t += dt; S.acc += dt; if (S.acc >= gravity()) { S.acc = 0; soft(); } S.flash = S.flash.filter(f => (f.a += dt) < .25); }
+function step(dt) { if (!S || S.over || S.paused) return; if (!S.cur) { next(); if (S.over) return; } S.t += dt; S.acc += dt; if (S.acc >= gravity()) { S.acc = 0; soft(); } S.flash = S.flash.filter(f => (f.a += dt) < .25); }
 function hud() { $('#sc').textContent = '⭐ ' + S.score; $('#ln').textContent = '▤ ' + S.lines; $('#lv').textContent = 'Lv ' + S.level; }
 function cell(x, k, X, Y, s, a) { if (TILE[k]) { x.globalAlpha = a || 1; x.drawImage(TILE[k], X, Y, s, s); x.globalAlpha = 1; } else { x.fillStyle = '#d4af37'; x.fillRect(X, Y, s, s); } }
 function draw() {
@@ -95,18 +109,56 @@ function draw() {
 }
 function drawNext() { const c = $('#nextCv'), x = c.getContext('2d'); x.clearRect(0, 0, c.width, c.height); const k = S.q[0], sh = SH[k], s = 24, w = Math.max(...sh.map(p => p[0])) + 1, h = Math.max(...sh.map(p => p[1])) + 1;
   sh.forEach(([cx, cy]) => cell(x, k, (c.width - w * s) / 2 + cx * s, (c.height - h * s) / 2 + cy * s, s)); }
-const L = AP.loop(step, draw); L.onHide = () => { if (S && !S.over) { L.stop(); S.paused = true; $('#msg').textContent = 'Paused. Tap to carry on'; } };
+// one error in a tick is logged and the game carries on, instead of the loop stopping for good
+const L = AP.loop(ANONSAVE.safe(step, 'block-drop step'), ANONSAVE.safe(draw, 'block-drop draw'));
+/* ---------- pause + save ---------- */
+const snap = () => ({ v: 1, id: S.id, b: S.b, q: S.q, cur: S.cur, score: S.score, lines: S.lines, level: S.level, t: S.t, drops: S.drops, over: !!S.over });
+const isInt = (v, lo, hi) => Number.isInteger(v) && v >= lo && v <= hi;
+function loadSave() { // a save that doesn't add up is ignored (the server checks every posted score as well)
+  const d = ANONSAVE.load(GAME, 30 * 864e5); if (!d) return null;
+  const ok = d.v === 1 && typeof d.id === 'string' && Array.isArray(d.b) && d.b.length === H && d.b.every(r => Array.isArray(r) && r.length === W && r.every(v => isInt(v, -1, SH.length - 1)))
+    && Array.isArray(d.q) && d.q.length >= 1 && d.q.length <= 40 && d.q.every(k => isInt(k, 0, SH.length - 1))
+    && (d.cur === null || (d.cur && isInt(d.cur.k, 0, SH.length - 1) && Array.isArray(d.cur.cells) && d.cur.cells.length === SH[d.cur.k].length && d.cur.cells.every(c => Array.isArray(c) && c.length === 2 && isInt(c[0], 0, 3) && isInt(c[1], 0, 3)) && isInt(d.cur.x, -3, W) && isInt(d.cur.y, -4, H)))
+    && isInt(d.lines, 0, 1e5) && isInt(d.drops, 0, 1e6) && d.lines <= d.drops * 4 && isInt(d.score, 0, 1e8) && d.score % 100 === 0 && d.level === 1 + Math.floor(d.lines / 10)
+    && (d.score > 0) === (d.lines > 0) && d.score <= d.lines * 20 * (10 + d.lines) && typeof d.t === 'number' && isFinite(d.t) && d.t >= 0 && d.t * 2 >= d.lines;
+  if (!ok) { ANONSAVE.clear(GAME); return null; } return d;
+}
+function pause(why) {
+  if (!S || S.over || S.paused) return; S.paused = true; L.stop(); tp = null; draw();
+  $('#pauseInfo').textContent = (why === 'resume' ? 'Saved game loaded. ' : '') + 'Score ' + S.score + ' · Level ' + S.level + ' · ' + S.lines + ' rows. Your game is saved on this device.';
+  $('#resBtn').textContent = why === 'resume' ? 'CARRY ON' : 'RESUME'; $('#endBtn').style.display = S.score > 0 ? '' : 'none';
+  $('#pauseOv').classList.add('on'); $('#pauseBtn').textContent = '▶ Play'; if (saver) saver.saveNow();
+}
+function resume() { if (!S || S.over || !S.paused) return; S.paused = false; $('#pauseOv').classList.remove('on'); $('#pauseBtn').textContent = '⏸ Pause'; $('#msg').textContent = ''; L.start(); }
+const inPlay = () => !!S && !S.over && $('#play').classList.contains('on');
+const saver = ANONSAVE.wire({ game: GAME, every: 3000, inProgress: inPlay, running: () => !S.paused, pause, resume, snapshot: snap });
+function clearRun(id) { const d = ANONSAVE.load(GAME); if (!d || d.id === id) ANONSAVE.clear(GAME); }
+function paintSave() {
+  const d = loadSave(), box = $('#saveBox');
+  if (!d || (d.over && !d.score)) { box.classList.remove('on'); $('#goBtn').textContent = 'PLAY'; return; }
+  box.classList.add('on'); $('#goBtn').textContent = 'NEW GAME';
+  $('#saveInfo').textContent = d.over ? 'Your last game ended before its score was posted: ⭐ ' + d.score + ', level ' + d.level + '.' : 'Saved game: ⭐ ' + d.score + ' · Level ' + d.level + ' · ' + d.lines + ' rows';
+  $('#resumeBtn').style.display = d.over ? 'none' : ''; $('#lastBtn').style.display = d.score > 0 ? '' : 'none'; $('#lastBtn').textContent = 'Submit your last score (' + d.score + ')';
+}
+function submitLast(d) { // the unfinished run goes through the normal post, once; the save is removed first so it can't be posted twice
+  ANONSAVE.clear(GAME); paintSave(); const t = Math.max(1, Math.ceil(d.t)), best = ls.get('anonDrop.best', 0); if (d.score > best) ls.set('anonDrop.best', d.score);
+  modal({ art: '../assets/nft/p-royals.webp', title: 'Last score: ' + d.score, text: `<b>${d.lines}</b> rows cleared, level ${d.level}.`, lb: true,
+    buttons: [['PLAY', () => newGame()], ['Leaderboard', () => openLB(GAME, TITLE, null, 'rows'), 1], ['Menu', () => { show('setup'); paintSave(); }, 1]] });
+  post(GAME, d.score, t, d.lines, null);
+}
+function toMenu() { if (inPlay()) { if (!S.paused) pause('menu'); saver.saveNow(); } L.stop(); S = null; $('#pauseOv').classList.remove('on'); show('setup'); paintSave(); }
 function end() {
-  if (S.over) return; S.over = true; L.stop(); draw(); if (navigator.vibrate) navigator.vibrate([40, 30, 70]);
+  if (S.over) return; S.over = true; S.paused = false; $('#pauseOv').classList.remove('on'); $('#pauseBtn').textContent = '⏸ Pause'; L.stop(); draw(); if (navigator.vibrate) navigator.vibrate([40, 30, 70]);
+  if (S.score > 0) ANONSAVE.save(GAME, snap()); else clearRun(S.id); // if the page closes before the post, the score can still be sent next time
   const t = Math.max(1, Math.ceil(S.t)), best = ls.get('anonDrop.best', 0), pb = S.score > best; if (pb) ls.set('anonDrop.best', S.score);
   ((S) => setTimeout(() => { modal({ art: '../assets/nft/p-royals.webp', title: pb && S.score ? 'New best! 🏆' : 'The vault is full!', text: `<b>${S.lines}</b> rows cleared, level ${S.level}.`, lb: S.score > 0,
-    buttons: [['PLAY AGAIN', () => newGame()], ['Leaderboard', () => openLB(GAME, TITLE, null, 'rows'), 1], ['Menu', () => show('setup'), 1]] });
-    if (S.score > 0) post(GAME, S.score, t, S.lines, null); }, 500))(S); // snapshot: a quick new game must not change this post
+    buttons: [['PLAY AGAIN', () => newGame()], ['Leaderboard', () => openLB(GAME, TITLE, null, 'rows'), 1], ['Menu', () => { show('setup'); paintSave(); }, 1]] });
+    clearRun(S.id); if (S.score > 0) post(GAME, S.score, t, S.lines, null); }, 500))(S); // snapshot: a quick new game must not change this post
   gameOver();
 }
 // touch: drag = move by cells, tap = turn, quick swipe down = drop
 const cv = $('#cv'); let tp = null;
-cv.addEventListener('pointerdown', e => { if (S && S.paused) { S.paused = false; $('#msg').textContent = ''; L.start(); return; } tp = { x: e.clientX, y: e.clientY, t: performance.now(), cx: e.clientX, cy: e.clientY, moved: false }; cv.setPointerCapture(e.pointerId); });
+cv.addEventListener('pointerdown', e => { if (!S || S.paused || S.over) return; tp = { x: e.clientX, y: e.clientY, t: performance.now(), cx: e.clientX, cy: e.clientY, moved: false }; cv.setPointerCapture(e.pointerId); });
 cv.addEventListener('pointermove', e => { if (!tp) return; const dx = e.clientX - tp.cx; if (Math.abs(dx) >= cs * .9) { const n = Math.trunc(dx / (cs * .9)); for (let i = 0; i < Math.abs(n); i++) shift(Math.sign(n)); tp.cx += n * cs * .9; tp.moved = true; }
   const dy = e.clientY - tp.cy; if (dy >= cs * 1.2 && performance.now() - tp.t > 160) { soft(); tp.cy += cs * 1.2; tp.moved = true; } });
 cv.addEventListener('pointerup', e => { if (!tp) return; const dy = e.clientY - tp.y, dt = performance.now() - tp.t;
@@ -116,10 +168,20 @@ document.querySelectorAll('.bar [data-k]').forEach(b => { let rep = 0; const go 
   b.addEventListener('pointerdown', e => { e.preventDefault(); go(); if (b.dataset.k !== 'H' && b.dataset.k !== 'R') rep = setTimeout(function r() { go(); rep = setTimeout(r, 70); }, 220); });
   ['pointerup', 'pointerleave', 'pointercancel'].forEach(t => b.addEventListener(t, () => clearTimeout(rep))); });
 AP.keys({ ArrowLeft: () => shift(-1), ArrowRight: () => shift(1), ArrowUp: rotate, x: rotate, ArrowDown: soft, ' ': hard });
-$('#goBtn').onclick = () => newGame();
-$('#setBtn').onclick = $('#menuBtn').onclick = () => { L.stop(); if (S) S.over = true; show('setup'); };
-$('#lbBtn').onclick = () => openLB(GAME, TITLE, null, 'rows');
-window.G = { state: () => S, newGame, shift, rotate, soft, hard, step, L, SH, W, H, draw };
+$('#goBtn').onclick = () => { const d = loadSave();
+  if (d && d.score > 0) return modal({ art: '../assets/nft/p-royals.webp', title: 'Start a new game?', text: `Your ${d.over ? 'last game' : 'saved game'} has a score of <b>${d.score}</b> that isn't posted yet. A new game replaces it.`,
+    buttons: [['Submit ' + d.score + ' first', () => submitLast(d)], ['New game anyway', () => { ANONSAVE.clear(GAME); newGame(); }, 1], ['Cancel', () => {}, 1]] });
+  ANONSAVE.clear(GAME); newGame(); };
+$('#resumeBtn').onclick = () => { const d = loadSave(); if (d && !d.over) newGame(0, d); else paintSave(); };
+$('#lastBtn').onclick = () => { const d = loadSave(); if (d && d.score > 0) submitLast(d); else paintSave(); };
+$('#pauseBtn').onclick = () => { if (!S || S.over) return; S.paused ? resume() : pause('button'); };
+$('#resBtn').onclick = resume;
+$('#endBtn').onclick = () => { if (S && !S.over) end(); };
+$('#quitBtn').onclick = toMenu;
+$('#menuBtn').onclick = () => { if (inPlay()) pause('button'); else { L.stop(); show('setup'); paintSave(); } }; // during a game this pauses (Menu is in the pause card), so one tap can't throw a run away
+$('#lbBtn').onclick = () => { if (inPlay()) pause('button'); openLB(GAME, TITLE, null, 'rows'); };
+paintSave();
+window.G = { state: () => S, newGame, shift, rotate, soft, hard, step, L, SH, W, H, draw, pause, resume, loadSave, saver, end };
 </script>
 </body>
 </html>
