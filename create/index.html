@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0B1426">
 <title>ANON Avatar and Wallpaper Maker · ANON Arcade · ANON NFTs</title>
-<meta name="description" content="Make your own ANON profile picture or phone and desktop wallpaper from ANON NFTs artwork. Free, no sign-up, no wallet. Everything is made on your device.">
+<meta name="description" content="Make your own ANON profile picture or phone and desktop wallpaper from any ANON NFT, with seasonal themes and accessories. Free, no sign-up, no wallet. Everything is made on your device.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="ANON Arcade">
 <meta property="og:title" content="ANON Avatar and Wallpaper Maker">
@@ -85,6 +85,26 @@ html.anon-home-on .acts{bottom:calc(36px + env(safe-area-inset-bottom))}
 .sheet .btn{min-height:46px;flex:none}
 #toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:rgba(0,0,0,.9);border:1px solid var(--gold);color:var(--gold2);padding:8px 15px;border-radius:20px;font-size:13px;opacity:0;transition:opacity .25s;pointer-events:none;z-index:6000;white-space:nowrap}
 #toast.show{opacity:1}
+/* NFT picker */
+.nq{margin-top:2px}
+.ncols{display:flex;gap:6px;overflow-x:auto;padding:8px 2px 6px;scrollbar-width:thin;scrollbar-color:#D4AF37 transparent}
+.ncols .chip{flex:none;min-height:32px;font-size:12.5px;padding:0 11px}
+.nmeta{font-size:11.5px;color:var(--mut);margin:2px 2px 6px}
+.ngrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:6px;max-height:292px;overflow-y:auto;padding:2px;border:1px solid rgba(212,175,55,.18);border-radius:12px;background:rgba(0,0,0,.2);scrollbar-width:thin;scrollbar-color:#D4AF37 transparent;-webkit-overflow-scrolling:touch}
+.nft{position:relative;border:2px solid rgba(212,175,55,.2);border-radius:10px;padding:0;background:#0a1224;overflow:hidden;cursor:pointer}
+.nft img{display:block;width:100%;aspect-ratio:1;object-fit:cover;background:#0d1730}
+.nft span{position:absolute;left:3px;bottom:3px;font-size:10px;font-weight:800;line-height:1;padding:3px 5px;border-radius:8px;background:rgba(5,10,21,.82);color:var(--gold2)}
+.nft.on{border-color:var(--gold2);box-shadow:0 0 0 2px rgba(212,175,55,.3)}
+.picked{font-size:12.5px;color:#d8c886;margin:7px 2px 0;min-height:18px}
+/* accessories */
+.accs{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:6px}
+.acc{display:flex;flex-direction:column;align-items:center;gap:2px;min-height:68px;padding:5px 2px 4px;border-radius:12px;border:1px solid rgba(212,175,55,.3);background:rgba(0,0,0,.28);color:#cfd5e0;font-size:10px;line-height:1.15;cursor:pointer}
+.acc canvas{width:40px;height:40px}
+.acc:active{background:rgba(212,175,55,.18)}
+.accgrp{font-size:11px;color:var(--mut);margin:10px 2px 6px;letter-spacing:.04em}
+.accedit{margin-top:10px;padding:8px 10px 10px;border:1px solid rgba(212,175,55,.45);border-radius:14px;background:rgba(212,175,55,.06)}
+.accedit .t{font-size:12.5px;color:var(--gold2);font-weight:700;margin:2px 2px 4px}
+.accbtns{display:flex;flex-wrap:wrap;gap:7px;margin-top:6px}
 </style>
 </head>
 <body>
@@ -101,15 +121,42 @@ html.anon-home-on .acts{bottom:calc(36px + env(safe-area-inset-bottom))}
   </div>
 
   <div class="stage"><canvas id="cv" width="600" height="600" aria-label="Preview of your image" role="img"></canvas></div>
-  <p class="hint">Drag the picture to move the artwork. Use Zoom to get closer.</p>
+  <p class="hint">Drag the picture to move the artwork. Use Zoom to get closer. Tap an accessory to move it.</p>
 
   <div class="lbl">ARTWORK</div>
   <div class="arts" id="arts" role="listbox" aria-label="Choose an ANON artwork"></div>
+  <div class="lbl">PICK ANY ANON NFT</div>
+  <input class="txt nq" id="nq" type="search" placeholder="Search, e.g. skulls 12" autocomplete="off" spellcheck="false" enterkeyhint="search" aria-label="Search ANON NFTs by collection and number">
+  <div class="ncols" id="ncols" role="group" aria-label="Collection"></div>
+  <div class="nmeta" id="nmeta">Loading the ANON NFTs…</div>
+  <div class="ngrid" id="ngrid" role="listbox" aria-label="Choose an ANON NFT"></div>
+  <div class="picked" id="picked"></div>
 
   <div class="row"><label for="zoom">Zoom</label><input id="zoom" type="range" min="1" max="3" step="0.01" value="1"></div>
   <div class="row"><label for="px">Left / right</label><input id="px" type="range" min="-1" max="1" step="0.01" value="0"></div>
   <div class="row"><label for="py">Up / down</label><input id="py" type="range" min="-1" max="1" step="0.01" value="0"></div>
   <div class="row"><label></label><button class="small-btn" type="button" id="reset">Reset position</button></div>
+
+  <div class="lbl">SEASON THEME</div>
+  <div class="chips" id="themes" role="group" aria-label="Season theme"></div>
+  <label class="tog"><input type="checkbox" id="greet" checked> Seasonal greeting on the picture</label>
+
+  <div class="lbl">ACCESSORIES</div>
+  <p class="hint" style="text-align:left;margin:0 2px 4px">Tap one to add it. Drag it on the picture to move it, pinch or use the sliders to resize and turn it. Add as many as you like.</p>
+  <div id="accPal"></div>
+  <div class="accedit hide" id="accEdit">
+    <div class="t" id="accName">Accessory</div>
+    <div class="row"><label for="accSize">Size</label><input id="accSize" type="range" min="0.05" max="1" step="0.005" value="0.3"></div>
+    <div class="row"><label for="accRot">Turn</label><input id="accRot" type="range" min="-180" max="180" step="1" value="0"></div>
+    <div class="row"><label for="accFlip">Mirror</label><input id="accFlip" type="checkbox" style="width:20px;height:20px;accent-color:#D4AF37"></div>
+    <div class="accbtns">
+      <button class="small-btn" type="button" id="accFront">Bring to front</button>
+      <button class="small-btn" type="button" id="accDup">Copy</button>
+      <button class="small-btn" type="button" id="accDel">Delete</button>
+      <button class="small-btn" type="button" id="accDone">Done</button>
+    </div>
+  </div>
+  <div class="accbtns"><button class="small-btn" type="button" id="accClear">Remove all accessories</button></div>
 
   <div id="avOpts">
     <div class="lbl">BACKGROUND</div>
@@ -175,11 +222,219 @@ const LAYOUTS = [['blur', 'Blurred art fill'], ['card', 'Framed card'], ['full',
 const MOTTOS = ['Explore. Learn. Decide.', 'ANON NFTs', 'ANON Arcade', 'None'];
 const SIZES = { avatar: [1080, 1080], phone: [1170, 2532], desktop: [2560, 1440] };
 
+/* ---------- seasonal themes (all drawn in code) ---------- */
+function rng(seed) { let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+function heartPath(c, w) { c.beginPath(); c.moveTo(0, w * .36); c.bezierCurveTo(-w * .62, -w * .04, -w * .36, -w * .62, 0, -w * .24); c.bezierCurveTo(w * .36, -w * .62, w * .62, -w * .04, 0, w * .36); c.closePath(); }
+function starPath(c, ro, ri, n) { c.beginPath(); for (let i = 0; i < n * 2; i++) { const a = -Math.PI / 2 + i * Math.PI / n, q = i % 2 ? ri : ro; c.lineTo(Math.cos(a) * q, Math.sin(a) * q); } c.closePath(); }
+function eggPath(c, w, h) { const x = w / 2, y = h / 2; c.beginPath(); c.moveTo(0, -y); c.bezierCurveTo(x * .64, -y, x, -y * .16, x, y * .24); c.bezierCurveTo(x, y * .72, x * .56, y, 0, y); c.bezierCurveTo(-x * .56, y, -x, y * .72, -x, y * .24); c.bezierCurveTo(-x, -y * .16, -x * .64, -y, 0, -y); c.closePath(); }
+const EGG_COLS = [['#cdb8f5', '#8e72d9'], ['#a9e3d3', '#4fae95'], ['#ffd59a', '#e09a3a'], ['#f8b8cc', '#d9627f'], ['#b8d6ff', '#5b8fd9']];
+const PARTY = ['#D4AF37', '#f3d77a', '#ffffff', '#8fc7ff', '#ff8fa8'];
+const THEMES = {
+  none: { name: 'None' },
+  halloween: { name: 'Halloween', greet: 'Happy Halloween', tint: ['#3a1f55', '#170d2b', '#07040f'], glow: 'rgba(255,138,30,.34)', accent: '#ff8a1e', motif: 'pumpkin' },
+  christmas: { name: 'Christmas', greet: 'Merry Christmas', tint: ['#14513f', '#0B1426', '#050a15'], glow: 'rgba(212,175,55,.38)', accent: '#c8203a', motif: 'holly' },
+  newyear: { name: 'New Year', greet: 'Happy New Year', tint: ['#1b2c4f', '#0B1426', '#03060d'], glow: 'rgba(243,215,122,.42)', accent: '#f3d77a', motif: 'star' },
+  valentine: { name: "Valentine's", greet: "Happy Valentine's", tint: ['#6b1236', '#2c0b22', '#0B1426'], glow: 'rgba(255,120,160,.34)', accent: '#ff5d82', motif: 'heart' },
+  easter: { name: 'Easter', greet: 'Happy Easter', tint: ['#35588a', '#1a2f55', '#0B1426'], glow: 'rgba(255,236,170,.4)', accent: '#c8b4f2', motif: 'egg' },
+  summer: { name: 'Summer', greet: 'Hello Summer', tint: ['#2378b8', '#103f70', '#0B1426'], glow: 'rgba(255,214,102,.5)', accent: '#ffd166', motif: 'flower' }
+};
+const THEME_IDS = ['none', 'halloween', 'christmas', 'newyear', 'valentine', 'easter', 'summer'];
+function seasonNow(d) {
+  d = d || new Date(); const m = d.getMonth() + 1, day = d.getDate();
+  if (m === 10) return 'halloween';
+  if (m === 12 && day <= 29) return 'christmas';
+  if ((m === 12 && day >= 30) || (m === 1 && day <= 7)) return 'newyear';
+  if (m === 2 && day <= 14) return 'valentine';
+  if ((m === 3 && day >= 15) || m === 4) return 'easter';
+  if (m >= 6 && m <= 8) return 'summer';
+  return 'none';
+}
+function themeBg(c, W, H, th) {   // tint the chosen background with the theme colours
+  if (!th.tint) return;
+  c.save(); c.globalAlpha = .72; const g = c.createLinearGradient(0, 0, W * .35, H); g.addColorStop(0, th.tint[0]); g.addColorStop(.55, th.tint[1]); g.addColorStop(1, th.tint[2]); c.fillStyle = g; c.fillRect(0, 0, W, H); c.restore();
+  const r = c.createRadialGradient(W / 2, H * .3, 0, W / 2, H * .3, Math.max(W, H) * .7); r.addColorStop(0, th.glow); r.addColorStop(1, 'rgba(0,0,0,0)'); c.fillStyle = r; c.fillRect(0, 0, W, H);
+}
+function at(c, x, y, rot, fn) { c.save(); c.translate(x, y); if (rot) c.rotate(rot); fn(); c.restore(); }
+function themeDecor(c, W, H, id, light) {   // light = sprinkle only (drawn over full-screen art)
+  const u = Math.min(W, H), R = rng(id.length * 7919 + 13), big = !light;
+  if (id === 'halloween') {
+    if (big) { const mx = W * .8, my = H * .13, mr = u * .085;
+      const gl = c.createRadialGradient(mx, my, mr * .6, mx, my, mr * 3); gl.addColorStop(0, 'rgba(255,230,160,.35)'); gl.addColorStop(1, 'rgba(255,230,160,0)'); c.fillStyle = gl; c.fillRect(0, 0, W, H);
+      c.beginPath(); c.arc(mx, my, mr, 0, 7); const mg = c.createRadialGradient(mx - mr * .3, my - mr * .3, 0, mx, my, mr); mg.addColorStop(0, '#fff6d6'); mg.addColorStop(1, '#e9cf82'); c.fillStyle = mg; c.fill();
+      [[.3, -.2, .18], [-.3, .25, .13], [.15, .4, .1]].forEach(([a, b, r]) => { c.beginPath(); c.arc(mx + a * mr, my + b * mr, r * mr, 0, 7); c.fillStyle = 'rgba(190,160,90,.35)'; c.fill(); });
+      for (let i = 0; i < 60; i++) { c.beginPath(); c.arc(R() * W, R() * H * .6, u * (.002 + R() * .003), 0, 7); c.fillStyle = 'rgba(255,240,200,' + (.25 + R() * .5) + ')'; c.fill(); }
+      const og = c.createLinearGradient(0, H * .7, 0, H); og.addColorStop(0, 'rgba(255,120,20,0)'); og.addColorStop(1, 'rgba(255,120,20,.22)'); c.fillStyle = og; c.fillRect(0, H * .7, W, H * .3); }
+    for (let i = 0; i < (big ? 7 : 5); i++) { const s = u * (.05 + R() * .05), x = R() * W, y = (big ? .04 + R() * .42 : .03 + R() * .25) * H; c.save(); c.globalAlpha = .9; at(c, x, y, (R() - .5) * .5, () => ACC.bat.draw(c, s)); c.restore(); }
+  } else if (id === 'christmas') {
+    for (let i = 0; i < (big ? 140 : 70); i++) { c.beginPath(); c.arc(R() * W, R() * H, u * (.002 + R() * .005), 0, 7); c.fillStyle = 'rgba(255,255,255,' + (.25 + R() * .6) + ')'; c.fill(); }
+    for (let i = 0; i < (big ? 9 : 6); i++) { const s = u * (.035 + R() * .05); c.save(); c.globalAlpha = .35 + R() * .35; at(c, R() * W, R() * H, R() * 3, () => ACC.snowflake.draw(c, s)); c.restore(); }
+    if (big) { c.save(); c.fillStyle = 'rgba(240,248,255,.16)'; c.beginPath(); c.moveTo(0, H); c.lineTo(0, H * .9); c.quadraticCurveTo(W * .25, H * .84, W * .5, H * .9); c.quadraticCurveTo(W * .75, H * .96, W, H * .88); c.lineTo(W, H); c.fill(); c.restore(); }
+  } else if (id === 'newyear') {
+    const n = big ? 5 : 3;
+    for (let i = 0; i < n; i++) { const x = (.1 + R() * .8) * W, y = (.06 + R() * (big ? .5 : .25)) * H, r = u * (.08 + R() * .1), col = PARTY[i % PARTY.length];
+      c.save(); c.strokeStyle = col; c.lineCap = 'round'; c.lineWidth = u * .004; c.globalAlpha = .75;
+      for (let k = 0; k < 18; k++) { const a = k * Math.PI / 9; c.beginPath(); c.moveTo(x + Math.cos(a) * r * .3, y + Math.sin(a) * r * .3); c.lineTo(x + Math.cos(a) * r, y + Math.sin(a) * r); c.stroke();
+        c.beginPath(); c.arc(x + Math.cos(a) * r * 1.12, y + Math.sin(a) * r * 1.12, u * .004, 0, 7); c.fillStyle = col; c.fill(); }
+      c.restore(); }
+    for (let i = 0; i < (big ? 70 : 40); i++) { const s = u * (.008 + R() * .012); c.save(); c.globalAlpha = .55 + R() * .4; c.translate(R() * W, R() * H); c.rotate(R() * 3); c.fillStyle = PARTY[Math.floor(R() * PARTY.length)]; c.fillRect(-s / 2, -s / 4, s, s / 2); c.restore(); }
+  } else if (id === 'valentine') {
+    for (let i = 0; i < (big ? 22 : 12); i++) { const s = u * (.025 + R() * .06); c.save(); c.globalAlpha = .18 + R() * .35; at(c, R() * W, R() * H, (R() - .5) * .7, () => { heartPath(c, s); c.fillStyle = ['#ff5d82', '#ff8fa8', '#D4AF37', '#c2183f'][i % 4]; c.fill(); }); c.restore(); }
+  } else if (id === 'easter') {
+    for (let i = 0; i < (big ? 40 : 20); i++) { c.beginPath(); c.arc(R() * W, R() * H, u * (.003 + R() * .006), 0, 7); c.fillStyle = 'rgba(255,240,200,' + (.2 + R() * .4) + ')'; c.fill(); }
+    for (let i = 0; i < (big ? 8 : 5); i++) { const s = u * (.04 + R() * .04); c.save(); c.globalAlpha = .45 + R() * .3; at(c, R() * W, R() * H, (R() - .5) * .8, () => (i % 2 ? ACC.flower : ACC.egg).draw(c, s, i)); c.restore(); }
+    if (big) { c.save(); c.fillStyle = 'rgba(120,200,140,.18)'; c.beginPath(); c.moveTo(0, H); for (let x = 0; x <= W; x += u * .02) c.lineTo(x, H * .93 - (Math.floor(x / (u * .02)) % 2) * u * .03); c.lineTo(W, H); c.fill(); c.restore(); }
+  } else if (id === 'summer') {
+    if (big) { const sx = W * .82, sy = H * .12, sr = u * .08;
+      c.save(); c.globalAlpha = .1; c.fillStyle = '#ffe08a'; for (let k = 0; k < 16; k++) { const a = k * Math.PI / 8; c.beginPath(); c.moveTo(sx, sy); c.arc(sx, sy, Math.max(W, H) * 1.2, a, a + Math.PI / 16); c.closePath(); c.fill(); } c.restore();
+      c.beginPath(); c.arc(sx, sy, sr, 0, 7); const sg = c.createRadialGradient(sx, sy, 0, sx, sy, sr); sg.addColorStop(0, '#fff3b0'); sg.addColorStop(1, '#ffc23d'); c.fillStyle = sg; c.fill();
+      [.9, .94, .975].forEach((f, i) => { c.save(); c.globalAlpha = .18 + i * .06; c.fillStyle = '#4fc3d9'; c.beginPath(); c.moveTo(0, H); for (let x = 0; x <= W + 5; x += u * .01) c.lineTo(x, H * f + Math.sin(x / (u * .07) + i) * u * .012); c.lineTo(W, H); c.fill(); c.restore(); }); }
+    for (let i = 0; i < (big ? 6 : 4); i++) { const s = u * (.035 + R() * .03); c.save(); c.globalAlpha = .35 + R() * .3; at(c, R() * W, R() * H * .8, R() * 3, () => ACC.flower.draw(c, s)); c.restore(); }
+  }
+}
+function motif(c, id, s, i) {
+  if (id === 'pumpkin') ACC.pumpkin.draw(c, s);
+  else if (id === 'holly') { c.save(); [[-1, -.5], [1, .5]].forEach(([d, r]) => { c.save(); c.rotate(r); c.beginPath(); c.moveTo(0, 0); c.quadraticCurveTo(d * s * .25, -s * .28, d * s * .55, -s * .05); c.quadraticCurveTo(d * s * .3, s * .12, 0, 0); c.fillStyle = '#1f7a45'; c.fill(); c.strokeStyle = '#0d3d22'; c.lineWidth = s * .03; c.stroke(); c.restore(); });
+    [[0, -s * .08], [-s * .1, s * .06], [s * .1, s * .06]].forEach(([x, y]) => { c.beginPath(); c.arc(x, y, s * .09, 0, 7); c.fillStyle = '#d8203a'; c.fill(); }); c.restore(); }
+  else if (id === 'star') ACC.goldstar.draw(c, s);
+  else if (id === 'heart') ACC.heart.draw(c, s);
+  else if (id === 'egg') ACC.egg.draw(c, s * .8, i);
+  else if (id === 'flower') ACC.flower.draw(c, s, i);
+}
+function frameMotifs(c, th, shape, u) {   // little seasonal ornaments around the frame
+  if (!th.motif) return; const s = u * .075;
+  if (shape.r) { const n = 8; for (let i = 0; i < n; i++) { const a = -Math.PI / 2 + Math.PI / n + i * 2 * Math.PI / n; if (Math.abs(a - Math.PI / 2) < .3) continue; at(c, shape.cx + Math.cos(a) * shape.r, shape.cy + Math.sin(a) * shape.r, 0, () => motif(c, th.motif, s, i)); } }
+  else { const { x, y, w, h } = shape; [[x, y], [x + w, y], [x, y + h], [x + w, y + h], [x + w / 2, y]].forEach(([px, py], i) => at(c, px, py, 0, () => motif(c, th.motif, s, i))); }
+}
+function frameAccent(c, th, shape, u) {
+  if (!th.accent) return; c.save(); c.strokeStyle = th.accent; c.globalAlpha = .85; c.lineWidth = u * .006;
+  if (shape.r) { c.setLineDash([u * .02, u * .014]); c.beginPath(); c.arc(shape.cx, shape.cy, shape.r, 0, 7); c.stroke(); }
+  else { c.setLineDash([u * .02, u * .014]); rr(c, shape.x, shape.y, shape.w, shape.h, u * .05); c.stroke(); }
+  c.restore();
+}
+function greeting(c, text, cx, cy, maxW, size, th) {   // ribbon with the seasonal greeting
+  c.save(); const s = fitFont(c, text, maxW, size); const tw = c.measureText(text).width, ph = s * 1.7, pw = tw + s * 2;
+  c.shadowColor = 'rgba(0,0,0,.55)'; c.shadowBlur = s * .5; c.shadowOffsetY = s * .1;
+  rr(c, cx - pw / 2, cy - ph / 2, pw, ph, ph / 2); c.fillStyle = 'rgba(11,20,38,.88)'; c.fill(); c.shadowColor = 'transparent';
+  c.lineWidth = Math.max(1, s * .08); c.strokeStyle = goldGrad(c, cx - pw / 2, cy, cx + pw / 2, cy); c.stroke();
+  c.beginPath(); c.arc(cx - pw / 2 + ph * .45, cy, s * .14, 0, 7); c.arc(cx + pw / 2 - ph * .45, cy, s * .14, 0, 7); c.fillStyle = th.accent || '#D4AF37'; c.fill();
+  c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillStyle = goldGrad(c, 0, cy - s / 2, 0, cy + s / 2); c.fillText(text, cx, cy + s * .05); c.restore();
+}
+
+/* ---------- accessories: vector art drawn in code, centred on 0,0, w = width ---------- */
+function gfill(c, x0, y0, x1, y1, a, b) { const g = c.createLinearGradient(x0, y0, x1, y1); g.addColorStop(0, a); g.addColorStop(1, b); return g; }
+const ACC = {
+  witchhat: { name: 'Witch hat', ar: .95, g: 'halloween', draw(c, w) {
+    c.beginPath(); c.ellipse(0, w * .32, w * .5, w * .12, 0, 0, 7); c.fillStyle = gfill(c, 0, w * .2, 0, w * .44, '#3d2563', '#120a24'); c.fill(); c.lineWidth = w * .012; c.strokeStyle = 'rgba(212,175,55,.8)'; c.stroke();
+    const cone = () => { c.beginPath(); c.moveTo(-w * .27, w * .32); c.quadraticCurveTo(-w * .14, -w * .02, -w * .02, -w * .22); c.quadraticCurveTo(w * .1, -w * .4, w * .3, -w * .46); c.quadraticCurveTo(w * .1, -w * .28, w * .12, -w * .08); c.quadraticCurveTo(w * .2, w * .14, w * .27, w * .32); c.closePath(); };
+    cone(); c.fillStyle = gfill(c, -w * .3, 0, w * .3, 0, '#45296f', '#1a0f33'); c.fill(); c.stroke();
+    c.save(); cone(); c.clip(); c.fillStyle = '#D4AF37'; c.fillRect(-w * .4, w * .16, w * .8, w * .1); c.restore();
+    c.lineWidth = w * .02; c.strokeStyle = '#ff8a1e'; c.strokeRect(-w * .06, w * .155, w * .12, w * .11); } },
+  pumpkin: { name: 'Pumpkin', ar: .9, g: 'halloween', draw(c, w) {
+    const body = (x, rx) => { c.beginPath(); c.ellipse(x, w * .06, rx, w * .36, 0, 0, 7); c.fill(); c.stroke(); };
+    c.lineWidth = w * .015; c.strokeStyle = '#8a3a06';
+    c.fillStyle = gfill(c, 0, -w * .3, 0, w * .42, '#ff9a3c', '#c9520c'); body(-w * .22, w * .26); body(w * .22, w * .26);
+    c.fillStyle = gfill(c, 0, -w * .3, 0, w * .42, '#ffad55', '#de6512'); body(0, w * .28);
+    c.beginPath(); c.moveTo(-w * .03, -w * .28); c.quadraticCurveTo(-w * .02, -w * .42, w * .08, -w * .45); c.lineTo(w * .1, -w * .4); c.quadraticCurveTo(w * .04, -w * .38, w * .04, -w * .28); c.closePath(); c.fillStyle = '#2f6b2a'; c.fill();
+    c.fillStyle = '#ffd25a'; c.beginPath(); c.moveTo(-w * .2, -w * .02); c.lineTo(-w * .08, -w * .02); c.lineTo(-w * .14, -w * .13); c.closePath(); c.moveTo(w * .2, -w * .02); c.lineTo(w * .08, -w * .02); c.lineTo(w * .14, -w * .13); c.closePath(); c.fill();
+    c.beginPath(); c.moveTo(-w * .24, w * .12); for (let i = 0; i <= 8; i++) c.lineTo(-w * .24 + i * w * .06, w * .12 + (i % 2 ? w * .06 : 0)); c.quadraticCurveTo(0, w * .34, -w * .24, w * .12); c.fill(); } },
+  bat: { name: 'Bat', ar: .5, g: 'halloween', draw(c, w) {
+    c.fillStyle = '#1c1430'; c.strokeStyle = 'rgba(212,175,55,.75)'; c.lineWidth = w * .012;
+    [1, -1].forEach(d => { c.save(); c.scale(d, 1); c.beginPath(); c.moveTo(0, -w * .06); c.quadraticCurveTo(w * .2, -w * .24, w * .5, -w * .14); c.quadraticCurveTo(w * .42, -w * .03, w * .39, w * .07); c.quadraticCurveTo(w * .31, -w * .01, w * .25, w * .06); c.quadraticCurveTo(w * .17, 0, w * .1, w * .12); c.lineTo(0, w * .1); c.closePath(); c.fill(); c.stroke(); c.restore(); });
+    c.beginPath(); c.ellipse(0, 0, w * .085, w * .13, 0, 0, 7); c.fill(); c.beginPath(); c.moveTo(-w * .07, -w * .08); c.lineTo(-w * .05, -w * .2); c.lineTo(-w * .015, -w * .1); c.moveTo(w * .07, -w * .08); c.lineTo(w * .05, -w * .2); c.lineTo(w * .015, -w * .1); c.fill();
+    c.fillStyle = '#f3d77a'; c.beginPath(); c.arc(-w * .03, -w * .04, w * .015, 0, 7); c.arc(w * .03, -w * .04, w * .015, 0, 7); c.fill(); } },
+  santahat: { name: 'Santa hat', ar: .85, g: 'christmas', draw(c, w) {
+    c.beginPath(); c.moveTo(-w * .4, w * .24); c.bezierCurveTo(-w * .36, -w * .22, w * .02, -w * .44, w * .36, -w * .2); c.bezierCurveTo(w * .22, -w * .2, w * .3, w * .02, w * .4, w * .24); c.closePath();
+    c.fillStyle = gfill(c, -w * .3, -w * .3, w * .3, w * .3, '#e8394a', '#8f1020'); c.fill();
+    c.save(); c.shadowColor = 'rgba(0,0,0,.35)'; c.shadowBlur = w * .04; rr(c, -w * .48, w * .14, w * .96, w * .22, w * .11); c.fillStyle = '#f7f4ee'; c.fill(); c.restore();
+    c.fillStyle = 'rgba(210,214,224,.6)'; for (let i = 0; i < 9; i++) { c.beginPath(); c.arc(-w * .4 + i * w * .1, w * .25 + (i % 2) * w * .03, w * .025, 0, 7); c.fill(); }
+    c.beginPath(); c.arc(w * .37, -w * .2, w * .1, 0, 7); c.fillStyle = '#f7f4ee'; c.fill(); c.strokeStyle = 'rgba(160,165,180,.6)'; c.lineWidth = w * .01; c.stroke(); } },
+  antlers: { name: 'Antlers', ar: .6, g: 'christmas', draw(c, w) {
+    c.lineCap = 'round'; c.lineJoin = 'round';
+    const one = () => { c.beginPath(); c.moveTo(w * .14, w * .28); c.quadraticCurveTo(w * .22, w * .02, w * .44, -w * .2); c.moveTo(w * .22, w * .06); c.lineTo(w * .12, -w * .14); c.moveTo(w * .31, -w * .06); c.lineTo(w * .27, -w * .27); c.moveTo(w * .4, -w * .16); c.lineTo(w * .49, -w * .26); };
+    [1, -1].forEach(d => { c.save(); c.scale(d, 1); one(); c.strokeStyle = '#5c3a1a'; c.lineWidth = w * .075; c.stroke(); one(); c.strokeStyle = '#a06a35'; c.lineWidth = w * .045; c.stroke(); c.restore(); });
+    c.beginPath(); c.arc(0, w * .7, w * .44, Math.PI * 1.32, Math.PI * 1.68); c.lineWidth = w * .035; c.strokeStyle = '#D4AF37'; c.stroke(); } },
+  rednose: { name: 'Red nose', ar: 1, g: 'christmas', draw(c, w) {
+    const r = w * .45; c.beginPath(); c.arc(0, 0, r, 0, 7); const g = c.createRadialGradient(-r * .35, -r * .35, 0, 0, 0, r); g.addColorStop(0, '#ff8a8a'); g.addColorStop(.5, '#e0182c'); g.addColorStop(1, '#8a0a18'); c.fillStyle = g; c.fill();
+    c.beginPath(); c.ellipse(-r * .35, -r * .38, r * .2, r * .12, -.6, 0, 7); c.fillStyle = 'rgba(255,255,255,.75)'; c.fill(); } },
+  scarf: { name: 'Scarf', ar: .65, g: 'christmas', draw(c, w) {
+    const band = () => { c.beginPath(); c.moveTo(-w * .48, -w * .24); c.quadraticCurveTo(0, w * .02, w * .48, -w * .24); c.lineTo(w * .48, -w * .05); c.quadraticCurveTo(0, w * .2, -w * .48, -w * .05); c.closePath(); };
+    const tail = () => { c.beginPath(); c.moveTo(w * .08, 0); c.lineTo(w * .26, -w * .02); c.lineTo(w * .32, w * .27); c.lineTo(w * .14, w * .29); c.closePath(); };
+    c.fillStyle = '#c62a3a'; tail(); c.fill(); c.save(); tail(); c.clip(); c.fillStyle = '#D4AF37'; c.fillRect(0, w * .08, w * .5, w * .04); c.fillRect(0, w * .17, w * .5, w * .04); c.restore();
+    c.strokeStyle = '#D4AF37'; c.lineWidth = w * .012; for (let i = 0; i < 6; i++) { c.beginPath(); c.moveTo(w * .145 + i * w * .034, w * .285); c.lineTo(w * .15 + i * w * .034, w * .33); c.stroke(); }
+    band(); c.fillStyle = gfill(c, 0, -w * .2, 0, w * .1, '#e03a4b', '#a01828'); c.fill(); c.save(); band(); c.clip(); c.fillStyle = 'rgba(212,175,55,.95)'; for (let i = -5; i <= 5; i++) c.fillRect(i * w * .1 - w * .015, -w * .3, w * .03, w * .6); c.restore();
+    c.strokeStyle = 'rgba(80,10,20,.6)'; c.lineWidth = w * .01; band(); c.stroke(); } },
+  snowflake: { name: 'Snowflake', ar: 1, g: 'christmas', draw(c, w) {
+    c.save(); c.strokeStyle = '#eef8ff'; c.lineCap = 'round'; c.lineWidth = w * .05; c.shadowColor = 'rgba(160,210,255,.9)'; c.shadowBlur = w * .08;
+    for (let k = 0; k < 6; k++) { c.save(); c.rotate(k * Math.PI / 3); c.beginPath(); c.moveTo(0, 0); c.lineTo(0, -w * .46); [.2, .33].forEach(f => { c.moveTo(0, -w * f); c.lineTo(-w * .1, -w * (f + .1)); c.moveTo(0, -w * f); c.lineTo(w * .1, -w * (f + .1)); }); c.stroke(); c.restore(); }
+    c.restore(); } },
+  bunnyears: { name: 'Bunny ears', ar: 1, g: 'easter', draw(c, w) {
+    [1, -1].forEach(d => { c.save(); c.scale(d, 1); c.translate(w * .17, -w * .08); c.rotate(.18); c.beginPath(); c.ellipse(0, 0, w * .13, w * .38, 0, 0, 7); c.fillStyle = '#f8f6f2'; c.fill(); c.strokeStyle = 'rgba(120,110,130,.5)'; c.lineWidth = w * .012; c.stroke();
+      c.beginPath(); c.ellipse(0, w * .03, w * .065, w * .28, 0, 0, 7); c.fillStyle = '#f5b3c6'; c.fill(); c.restore(); });
+    c.beginPath(); c.arc(0, w * .78, w * .5, Math.PI * 1.25, Math.PI * 1.75); c.lineWidth = w * .05; c.strokeStyle = '#D4AF37'; c.stroke(); } },
+  egg: { name: 'Easter egg', ar: 1.25, g: 'easter', draw(c, w, i) {
+    const h = w * 1.25, col = EGG_COLS[(i || 0) % EGG_COLS.length]; eggPath(c, w, h); c.fillStyle = gfill(c, -w / 2, -h / 2, w / 2, h / 2, col[0], col[1]); c.fill();
+    c.save(); eggPath(c, w, h); c.clip(); c.strokeStyle = '#D4AF37'; c.lineWidth = w * .06; c.beginPath(); for (let k = 0; k <= 10; k++) c.lineTo(-w / 2 + k * w / 10, (k % 2 ? -1 : 1) * w * .06); c.stroke();
+    c.fillStyle = 'rgba(255,255,255,.75)'; [[-.18, -.3], [.15, -.25], [0, .3], [-.2, .32], [.22, .3]].forEach(([x, y]) => { c.beginPath(); c.arc(x * w, y * h, w * .05, 0, 7); c.fill(); }); c.restore();
+    eggPath(c, w, h); c.lineWidth = w * .02; c.strokeStyle = 'rgba(11,20,38,.4)'; c.stroke(); } },
+  flower: { name: 'Flower', ar: 1, g: 'easter', draw(c, w, i) {
+    const pc = ['#f8f6f2', '#ffc2d4', '#ffe08a', '#cdb8f5'][(i || 0) % 4];
+    for (let k = 0; k < 6; k++) { c.save(); c.rotate(k * Math.PI / 3); c.beginPath(); c.ellipse(0, -w * .25, w * .13, w * .23, 0, 0, 7); c.fillStyle = pc; c.fill(); c.strokeStyle = 'rgba(11,20,38,.25)'; c.lineWidth = w * .015; c.stroke(); c.restore(); }
+    c.beginPath(); c.arc(0, 0, w * .14, 0, 7); c.fillStyle = goldGrad(c, -w * .14, -w * .14, w * .14, w * .14); c.fill(); } },
+  heart: { name: 'Heart', ar: .95, g: 'valentine', draw(c, w) {
+    heartPath(c, w); c.fillStyle = gfill(c, 0, -w * .4, 0, w * .4, '#ff5d7d', '#b0122f'); c.fill(); c.lineWidth = w * .035; c.strokeStyle = goldGrad(c, -w / 2, -w / 2, w / 2, w / 2); c.stroke();
+    c.beginPath(); c.ellipse(-w * .18, -w * .2, w * .08, w * .045, -.7, 0, 7); c.fillStyle = 'rgba(255,255,255,.7)'; c.fill(); } },
+  hearts: { name: 'Hearts', ar: .8, g: 'valentine', draw(c, w) {
+    [[-.22, .08, .42, -.3], [.2, -.12, .34, .25], [.12, .24, .22, .1]].forEach(([x, y, s, r]) => at(c, x * w, y * w, r, () => ACC.heart.draw(c, s * w))); } },
+  partyhat: { name: 'Party hat', ar: 1.1, g: 'newyear', draw(c, w) {
+    const cone = () => { c.beginPath(); c.moveTo(0, -w * .45); c.lineTo(w * .32, w * .48); c.quadraticCurveTo(0, w * .58, -w * .32, w * .48); c.closePath(); };
+    cone(); c.fillStyle = gfill(c, -w * .3, 0, w * .3, 0, '#24386a', '#0B1426'); c.fill(); c.save(); cone(); c.clip(); c.strokeStyle = '#D4AF37'; c.lineWidth = w * .06;
+    for (let k = -4; k < 6; k++) { c.beginPath(); c.moveTo(-w * .5, k * w * .2); c.lineTo(w * .5, k * w * .2 - w * .3); c.stroke(); } c.fillStyle = '#f3d77a'; [[-.05, -.1], [.1, .15], [-.15, .3], [.05, .38]].forEach(([x, y]) => { c.beginPath(); c.arc(x * w, y * w, w * .025, 0, 7); c.fill(); }); c.restore();
+    c.beginPath(); c.ellipse(0, w * .5, w * .33, w * .06, 0, 0, 7); c.lineWidth = w * .03; c.strokeStyle = '#D4AF37'; c.stroke();
+    for (let k = 0; k < 8; k++) { c.save(); c.translate(0, -w * .46); c.rotate(k * Math.PI / 4); c.beginPath(); c.moveTo(0, 0); c.lineTo(0, -w * .09); c.lineWidth = w * .03; c.strokeStyle = PARTY[k % PARTY.length]; c.stroke(); c.restore(); }
+    c.beginPath(); c.arc(0, -w * .46, w * .045, 0, 7); c.fillStyle = '#f3d77a'; c.fill(); } },
+  sunglasses: { name: 'Sunglasses', ar: .38, g: 'summer', draw(c, w) {
+    const lens = d => { rr(c, d * w * .26 - w * .2, -w * .13, w * .4, w * .26, w * .1); };
+    c.lineWidth = w * .025; c.strokeStyle = goldGrad(c, -w / 2, 0, w / 2, 0);
+    c.beginPath(); c.moveTo(-w * .07, -w * .06); c.quadraticCurveTo(0, -w * .11, w * .07, -w * .06); c.stroke();
+    c.beginPath(); c.moveTo(-w * .46, -w * .08); c.lineTo(-w * .5, -w * .1); c.moveTo(w * .46, -w * .08); c.lineTo(w * .5, -w * .1); c.stroke();
+    [-1, 1].forEach(d => { lens(d); c.fillStyle = gfill(c, 0, -w * .13, 0, w * .13, '#2b3550', '#05070c'); c.fill(); c.stroke();
+      c.save(); lens(d); c.clip(); c.strokeStyle = 'rgba(255,255,255,.35)'; c.lineWidth = w * .03; c.beginPath(); c.moveTo(d * w * .26 - w * .14, w * .1); c.lineTo(d * w * .26 - w * .02, -w * .14); c.stroke(); c.restore(); }); } },
+  goldchain: { name: 'Gold chain', ar: .75, g: 'any', draw(c, w) {
+    const P = t => { const a = (1 - t) * (1 - t), b = 2 * (1 - t) * t, d = t * t; return [a * -w * .46 + d * w * .46, a * -w * .36 + b * w * .5 + d * -w * .36]; };
+    for (let k = 0; k <= 26; k++) { const t = k / 26, [x, y] = P(t), [x2, y2] = P(Math.min(1, t + .01)), ang = Math.atan2(y2 - y, x2 - x);
+      c.save(); c.translate(x, y); c.rotate(ang); c.beginPath(); if (k % 2) c.ellipse(0, 0, w * .032, w * .01, 0, 0, 7); else c.ellipse(0, 0, w * .032, w * .02, 0, 0, 7); c.lineWidth = w * .013; c.strokeStyle = goldGrad(c, -w * .03, -w * .02, w * .03, w * .02); c.stroke(); c.restore(); }
+    const [px, py] = P(.5), r = w * .1; c.beginPath(); c.arc(px, py + r * .9, r, 0, 7); c.fillStyle = goldGrad(c, px - r, py, px + r, py + r * 2); c.fill(); c.lineWidth = w * .01; c.strokeStyle = '#6b5214'; c.stroke();
+    c.beginPath(); c.arc(px, py + r * .9, r * .74, 0, 7); c.fillStyle = '#0B1426'; c.fill(); c.font = '700 ' + (r * .95) + 'px Cinzel, Georgia, serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillStyle = '#f3d77a'; c.fillText('A', px, py + r * .95); } },
+  crown: { name: 'Crown', ar: .62, g: 'any', draw(c, w) { crown(c, 0, 0, w); } },
+  goldstar: { name: 'Gold star', ar: 1, g: 'any', draw(c, w) {
+    c.save(); c.shadowColor = 'rgba(0,0,0,.45)'; c.shadowBlur = w * .06; starPath(c, w * .5, w * .22, 5); c.fillStyle = goldGrad(c, -w / 2, -w / 2, w / 2, w / 2); c.fill(); c.restore();
+    starPath(c, w * .5, w * .22, 5); c.lineWidth = w * .025; c.strokeStyle = '#6b5214'; c.stroke(); } }
+};
+const ACC_GROUPS = [['halloween', 'Halloween'], ['christmas', 'Christmas'], ['easter', 'Easter'], ['valentine', "Valentine's"], ['newyear', 'New Year'], ['summer', 'Summer'], ['any', 'Any time']];
+// where a new accessory lands, relative to the artwork box: [x, y, width] as fractions
+const ACC_SPOT = { witchhat: [.5, .12, .5], santahat: [.5, .12, .5], partyhat: [.5, .1, .3], crown: [.5, .1, .4], bunnyears: [.5, .1, .45], antlers: [.5, .1, .6],
+  sunglasses: [.5, .45, .5], rednose: [.5, .58, .1], scarf: [.5, .82, .62], goldchain: [.5, .8, .5], pumpkin: [.2, .82, .26], bat: [.8, .16, .3], snowflake: [.82, .18, .18],
+  egg: [.18, .82, .18], flower: [.82, .82, .18], heart: [.8, .2, .2], hearts: [.8, .2, .28], goldstar: [.82, .18, .18] };
+function drawAccs(c, W, H, list, sel) {
+  const u = Math.min(W, H);
+  list.forEach(a => { const d = ACC[a.k]; if (!d) return; const w = a.s * u;
+    c.save(); c.translate(a.x * W, a.y * H); c.rotate(a.r || 0); if (a.f) c.scale(-1, 1); c.save(); d.draw(c, w, a.i || 0); c.restore();
+    if (sel && a.id === sel) { const h = w * d.ar; c.setLineDash([u * .012, u * .009]); c.lineWidth = Math.max(1.5, u * .004); c.strokeStyle = 'rgba(243,215,122,.95)'; c.strokeRect(-w * .56, -h * .56, w * 1.12, h * 1.12);
+      c.setLineDash([]); c.fillStyle = '#f3d77a'; [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(([p, q]) => { c.beginPath(); c.arc(p * w * .56, q * h * .56, u * .009, 0, 7); c.fill(); }); }
+    c.restore(); });
+}
+
 const K = 'anonMaker.v1';
 const saved = (() => { try { return JSON.parse(localStorage.getItem(K) || '{}'); } catch (e) { return {}; } })();
-const S = Object.assign({ mode: 'avatar', art: 'anon', bg: 'navy', frame: 'ring', badge: 'none', avText: '', avMark: true, layout: 'blur', motto: MOTTOS[0], wpText: '' }, saved, { zoom: 1, px: 0, py: 0 });
+const S = Object.assign({ mode: 'avatar', art: 'anon', nft: '', bg: 'navy', frame: 'ring', badge: 'none', avText: '', avMark: true, layout: 'blur', motto: MOTTOS[0], wpText: '', theme: '', themeFor: '', greet: true, acc: {} }, saved, { zoom: 1, px: 0, py: 0 });
 const urlMode = new URLSearchParams(location.search).get('mode'); if (SIZES[urlMode]) S.mode = urlMode;
 if (!ARTS.find(a => a.id === S.art)) S.art = 'anon';
+if (typeof S.nft !== 'string' || !/^[a-z-]+\/\d+$/.test(S.nft)) S.nft = '';
+const SEASON = seasonNow(), urlTheme = new URLSearchParams(location.search).get('theme');
+if (!THEMES[S.theme] || S.themeFor !== SEASON) { S.theme = SEASON; S.themeFor = SEASON; }   // new season: switch to its theme
+if (THEMES[urlTheme]) S.theme = urlTheme;
+S.acc = (S.acc && typeof S.acc === 'object') ? S.acc : {};
+Object.keys(SIZES).forEach(m => { S.acc[m] = Array.isArray(S.acc[m]) ? S.acc[m].filter(a => a && ACC[a.k] && isFinite(a.x) && isFinite(a.y) && isFinite(a.s)).slice(0, 40) : []; });
 const persist = () => { try { const o = Object.assign({}, S); delete o.zoom; delete o.px; delete o.py; localStorage.setItem(K, JSON.stringify(o)); } catch (e) {} };
 
 const IMG = {};
@@ -188,6 +443,7 @@ function loadImg(src) {
   return (IMG[src] = new Promise((res, rej) => { const i = new Image(); i.decoding = 'async'; i.onload = () => res(i); i.onerror = () => { delete IMG[src]; rej(new Error('img')); }; i.src = src; }));
 }
 const artImg = id => loadImg(A + id + '.webp');
+const nftImg = key => loadImg('nfts/' + key + '.webp');
 const fontsP = (document.fonts && document.fonts.load ? Promise.all([document.fonts.load('700 40px Cinzel', 'ANON'), document.fonts.ready]).catch(() => {}) : Promise.resolve());
 const logoP = loadImg('../assets/logo.webp').catch(() => null);
 
@@ -262,8 +518,8 @@ function bigText(c, text, cx, cy, maxW, size) {
 /* ---------- the two makers ---------- */
 let lastPlace = null;   // where the art was drawn on the preview (for dragging)
 function renderAvatar(c, W, img, logo) {
-  const bg = BGS.find(b => b.id === S.bg) || BGS[0], u = W;
-  paintBg(c, W, W, bg);
+  const bg = BGS.find(b => b.id === S.bg) || BGS[0], u = W, th = THEMES[S.theme] || THEMES.none;
+  paintBg(c, W, W, bg); themeBg(c, W, W, th); if (S.theme !== 'none') themeDecor(c, W, W, S.theme, false);
   let box, clip;
   if (S.frame === 'ring') { const r = u * .42; box = { x: W / 2 - r, y: W / 2 - r, w: r * 2, h: r * 2 }; clip = () => { c.beginPath(); c.arc(W / 2, W / 2, r, 0, 7); }; }
   else if (S.frame === 'square') { const m = u * .08; box = { x: m, y: m, w: W - 2 * m, h: W - 2 * m }; clip = () => rr(c, box.x, box.y, box.w, box.h, u * .035); }
@@ -283,6 +539,8 @@ function renderAvatar(c, W, img, logo) {
     const g = c.createLinearGradient(0, W * .6, 0, W); g.addColorStop(0, 'rgba(5,10,21,0)'); g.addColorStop(1, 'rgba(5,10,21,.75)');
     if (S.avText) { c.fillStyle = g; c.fillRect(0, W * .6, W, W * .4); }
   }
+  if (S.frame === 'ring') { frameAccent(c, th, { cx: W / 2, cy: W / 2, r: u * .42 + u * .041 }, u); frameMotifs(c, th, { cx: W / 2, cy: W / 2, r: u * .42 + u * .03 }, u); }
+  else if (S.frame === 'square') { const m = u * .04; frameAccent(c, th, { x: box.x - m, y: box.y - m, w: box.w + 2 * m, h: box.h + 2 * m }, u); frameMotifs(c, th, { x: box.x - u * .014, y: box.y - u * .014, w: box.w + u * .028, h: box.h + u * .028 }, u); }
   if (S.badge === 'crown') crown(c, W / 2, S.frame === 'ring' ? u * .085 : S.frame === 'square' ? u * .075 : u * .1, u * .22);
   if (S.badge === 'star') star(c, S.frame === 'ring' ? W * .8 : W * .84, S.frame === 'ring' ? W * .8 : W * .84, u * .085);
   const t = S.avText.trim();
@@ -293,20 +551,23 @@ function renderAvatar(c, W, img, logo) {
     c.lineWidth = u * .004; c.strokeStyle = '#6b5214'; c.stroke();
     c.fillStyle = '#0B1426'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(t, W / 2, cy + fs * .04); c.restore();
   }
+  if (S.greet && th.greet) greeting(c, th.greet, W / 2, t ? W - u * .175 : (S.frame === 'none' ? W - u * .1 : W - u * .075), u * .62, u * .046, th);
   if (S.avMark) mark(c, u * .045, u * .055, u * .036, logo, 'left');
 }
 function renderWall(c, W, H, img) {
-  const u = Math.min(W, H), port = H > W, bg = BGS[0];
+  const u = Math.min(W, H), port = H > W, bg = BGS[0], th = THEMES[S.theme] || THEMES.none, on = S.theme !== 'none', gr = S.greet && th.greet;
   const text = (S.wpText.trim() || (S.motto === 'None' ? '' : S.motto));
   if (S.layout === 'full') {
     const box = { x: 0, y: 0, w: W, h: H }; const p = drawArt(c, img, box, S.zoom, S.px, S.py); lastPlace = { box, p };
     const g = c.createLinearGradient(0, H * .55, 0, H); g.addColorStop(0, 'rgba(5,10,21,0)'); g.addColorStop(1, 'rgba(5,10,21,.85)'); c.fillStyle = g; c.fillRect(0, H * .55, W, H * .45);
+    if (on) themeDecor(c, W, H, S.theme, true);
+    if (gr) greeting(c, th.greet, W / 2, port ? H * .3 : H * .1, W * .7, u * (port ? .05 : .04), th);
     bigText(c, text, W / 2, H - u * (port ? .42 : .17), W * .84, u * (port ? .085 : .07));
     siteMark(c, W, H, u); return;
   }
   if (S.layout === 'blur') { blurFill(c, img, W, H); c.fillStyle = 'rgba(5,10,21,.42)'; c.fillRect(0, 0, W, H);
-    const v = c.createRadialGradient(W / 2, H / 2, u * .3, W / 2, H / 2, Math.max(W, H) * .75); v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,.55)'); c.fillStyle = v; c.fillRect(0, 0, W, H); }
-  else { paintBg(c, W, H, bg); c.save(); c.globalAlpha = .07; c.strokeStyle = '#D4AF37'; c.lineWidth = u * .002; for (let i = -H; i < W + H; i += u * .06) { c.beginPath(); c.moveTo(i, 0); c.lineTo(i - H, H); c.stroke(); } c.restore(); }
+    const v = c.createRadialGradient(W / 2, H / 2, u * .3, W / 2, H / 2, Math.max(W, H) * .75); v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,.55)'); c.fillStyle = v; c.fillRect(0, 0, W, H); if (on) { c.save(); c.globalAlpha = .35; themeBg(c, W, H, th); c.restore(); themeDecor(c, W, H, S.theme, false); } }
+  else { paintBg(c, W, H, bg); themeBg(c, W, H, th); if (on) themeDecor(c, W, H, S.theme, false); c.save(); c.globalAlpha = .07; c.strokeStyle = '#D4AF37'; c.lineWidth = u * .002; for (let i = -H; i < W + H; i += u * .06) { c.beginPath(); c.moveTo(i, 0); c.lineTo(i - H, H); c.stroke(); } c.restore(); }
   // art box: keeps the artwork's own shape, as big as fits the area
   const ar = img.width / img.height, maxW = port ? W * .84 : W * .62, maxH = port ? H * .42 : H * .62;
   let bw = maxW, bh = bw / ar; if (bh > maxH) { bh = maxH; bw = bh * ar; }
@@ -314,15 +575,19 @@ function renderWall(c, W, H, img) {
   c.save(); c.shadowColor = 'rgba(0,0,0,.7)'; c.shadowBlur = u * .06; c.shadowOffsetY = u * .02; rr(c, box.x, box.y, bw, bh, rad); c.fillStyle = '#000'; c.fill(); c.restore();
   c.save(); rr(c, box.x, box.y, bw, bh, rad); c.clip(); const p = drawArt(c, img, box, S.zoom, S.px, S.py); c.restore(); lastPlace = { box, p };
   rr(c, box.x - u * .008, box.y - u * .008, bw + u * .016, bh + u * .016, rad + u * .008); c.lineWidth = u * (S.layout === 'card' ? .014 : .008); c.strokeStyle = goldGrad(c, box.x, box.y, box.x + bw, box.y + bh); c.stroke();
+  if (on) { frameAccent(c, th, { x: box.x - u * .02, y: box.y - u * .02, w: bw + u * .04, h: bh + u * .04 }, u); frameMotifs(c, th, { x: box.x - u * .008, y: box.y - u * .008, w: bw + u * .016, h: bh + u * .016 }, u); }
+  if (gr) greeting(c, th.greet, W / 2, box.y - u * (port ? .1 : .065), W * .7, u * (port ? .05 : .04), th);
   if (S.layout === 'card') { rr(c, box.x - u * .03, box.y - u * .03, bw + u * .06, bh + u * .06, rad + u * .03); c.lineWidth = u * .003; c.strokeStyle = 'rgba(243,215,122,.6)'; c.stroke(); }
   bigText(c, text, W / 2, box.y + bh + u * (port ? .17 : .1), W * .84, u * (port ? .075 : .06));
   siteMark(c, W, H, u);
 }
-async function render(c, W, H) {
+async function render(c, W, H, preview) {
   const art = ARTS.find(a => a.id === S.art) || ARTS[0];
-  const [img, logo] = await Promise.all([artImg(art.id), logoP, fontsP]);
+  const src = S.nft ? nftImg(S.nft).catch(() => artImg(art.id)) : artImg(art.id);
+  const [img, logo] = await Promise.all([src, logoP, fontsP]);
   c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, W, H); c.imageSmoothingEnabled = true; c.imageSmoothingQuality = 'high';
   if (S.mode === 'avatar') renderAvatar(c, W, img, logo); else renderWall(c, W, H, img);
+  drawAccs(c, W, H, accList(), preview ? sel : null);
 }
 
 /* ---------- preview ---------- */
@@ -333,7 +598,7 @@ function draw() {
   drawQ++; if (drawing) return; drawing = true;
   requestAnimationFrame(async () => {
     const my = drawQ; const [w, h] = previewSize(); if (cv.width !== w || cv.height !== h) { cv.width = w; cv.height = h; }
-    try { await render(cx, w, h); cv.dataset.ready = '1'; } catch (e) { cv.dataset.ready = 'err'; }
+    try { await render(cx, w, h, true); cv.dataset.ready = '1'; } catch (e) { cv.dataset.ready = 'err'; }
     drawing = false; if (drawQ !== my) draw();
   });
 }
@@ -350,9 +615,9 @@ function renderArts() {
   // avatars: square art first; wallpapers: wide art first on desktop
   const list = S.mode === 'desktop' ? ARTS.filter(a => a.wide).concat(ARTS.filter(a => !a.wide)) : ARTS.filter(a => !a.wide).concat(ARTS.filter(a => a.wide));
   list.forEach(a => {
-    const b = el('button', 'art' + (a.id === S.art ? ' on' : '')); b.type = 'button'; b.dataset.art = a.id; b.setAttribute('role', 'option'); b.setAttribute('aria-selected', String(a.id === S.art));
+    const on0 = !S.nft && a.id === S.art, b = el('button', 'art' + (on0 ? ' on' : '')); b.type = 'button'; b.dataset.art = a.id; b.setAttribute('role', 'option'); b.setAttribute('aria-selected', String(on0));
     const i = el('img'); i.src = A + a.id + '-t.webp'; i.alt = ''; i.loading = 'lazy'; i.width = 74; i.height = 74; b.appendChild(i); b.appendChild(el('span', '', a.name));
-    b.onclick = () => { S.art = a.id; S.zoom = 1; S.px = 0; S.py = 0; syncSliders(); host.querySelectorAll('.art').forEach(x => { const on = x === b; x.classList.toggle('on', on); x.setAttribute('aria-selected', String(on)); }); persist(); draw(); };
+    b.onclick = () => { S.art = a.id; S.nft = ''; $('#ngrid').querySelectorAll('.nft.on').forEach(x => { x.classList.remove('on'); x.setAttribute('aria-selected', 'false'); }); showPicked(); S.zoom = 1; S.px = 0; S.py = 0; syncSliders(); host.querySelectorAll('.art').forEach(x => { const on = x === b; x.classList.toggle('on', on); x.setAttribute('aria-selected', String(on)); }); persist(); draw(); };
     host.appendChild(b);
   });
 }
@@ -368,7 +633,8 @@ function setMode(m) {
   S.mode = m; document.body.className = 'mode-' + m;
   $('#modes').querySelectorAll('button').forEach(b => { const on = b.dataset.mode === m; b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); });
   $('#avOpts').classList.toggle('hide', m !== 'avatar'); $('#wpOpts').classList.toggle('hide', m === 'avatar');
-  const art = ARTS.find(a => a.id === S.art); if (m === 'desktop' && art && !art.wide && !setMode.touched) S.art = 'horizon';
+  const art = ARTS.find(a => a.id === S.art); if (m === 'desktop' && art && !art.wide && !setMode.touched && !S.nft) S.art = 'horizon';
+  if (typeof sel !== 'undefined') { sel = null; $('#accEdit').classList.add('hide'); }
   S.zoom = 1; S.px = 0; S.py = 0; syncSliders(); renderArts(); persist(); draw();
 }
 $('#modes').querySelectorAll('button').forEach(b => b.onclick = () => setMode(b.dataset.mode));
@@ -381,22 +647,147 @@ $('#wpText').addEventListener('input', e => { S.wpText = e.target.value.replace(
 $('#avMark').addEventListener('change', e => { S.avMark = e.target.checked; persist(); draw(); });
 [$('#avText'), $('#wpText')].forEach(i => i.addEventListener('keydown', e => { if (e.key === 'Enter') i.blur(); }));
 
-// drag to move (one finger or mouse); pinch with two fingers to zoom
-const ptrs = new Map(); let pinch0 = 0, zoom0 = 1;
-cv.addEventListener('pointerdown', e => { cv.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY }); if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; pinch0 = Math.hypot(a.x - b.x, a.y - b.y); zoom0 = S.zoom; } });
+
+/* ---------- every ANON NFT: picker with search ---------- */
+let NFTS = null, nCol = 'all';
+const nftKey = (s, id) => s + '/' + id;
+function nftInfo(key) { if (!NFTS || !key) return null; const [s, id] = key.split('/'); const col = NFTS.cols.find(x => x.s === s); if (!col) return null; const it = col.items.find(x => String(x[0]) === id); return it ? { col, it } : null; }
+const nftLabel = inf => inf.col.n + ' #' + inf.it[0] + (inf.it[3] ? ' · ' + inf.it[3] : '');
+function nftMatches() {
+  const q = $('#nq').value.toLowerCase().replace(/[#,]/g, ' ').trim(), words = q.split(/\s+/).filter(Boolean);
+  const nums = words.filter(w => /^\d+$/.test(w)), txt = words.filter(w => !/^\d+$/.test(w));
+  const out = [];
+  NFTS.cols.forEach(col => {
+    if (nCol !== 'all' && col.s !== nCol) return;
+    col.items.forEach(it => {
+      const hay = (col.n + ' ' + col.k + ' ' + col.s + ' ' + (it[3] || '')).toLowerCase();
+      if (txt.some(w => hay.indexOf(w) < 0)) return;
+      if (nums.length && !nums.some(n => +n === it[0])) return;
+      out.push({ col, it });
+    });
+  });
+  return out;
+}
+// thumbnails load only when they scroll into view inside the grid, so the page stays light on phones
+const thumbIO = 'IntersectionObserver' in window ? new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { const i = e.target; i.src = i.dataset.src; i.removeAttribute('data-src'); thumbIO.unobserve(i); } }), { root: $('#ngrid'), rootMargin: '160px 0px' }) : null;
+function renderNftGrid() {
+  if (thumbIO) thumbIO.disconnect();
+  const host = $('#ngrid'); if (!NFTS) return; host.innerHTML = '';
+  const list = nftMatches(), frag = document.createDocumentFragment();
+  list.forEach(({ col, it }) => {
+    const key = nftKey(col.s, it[0]), b = el('button', 'nft' + (S.nft === key ? ' on' : '')); b.type = 'button'; b.dataset.nft = key; b.setAttribute('role', 'option'); b.setAttribute('aria-selected', String(S.nft === key));
+    b.title = col.n + ' #' + it[0] + (it[3] ? ' ' + it[3] : ''); b.setAttribute('aria-label', b.title);
+    const i = el('img'); i.dataset.src = 'nfts/' + key + '-t.webp'; i.alt = ''; i.decoding = 'async'; i.width = 64; i.height = 64; b.appendChild(i); b.appendChild(el('span', '', '#' + it[0]));
+    frag.appendChild(b);
+  });
+  host.appendChild(frag);
+  host.querySelectorAll('img[data-src]').forEach(i => thumbIO ? thumbIO.observe(i) : (i.src = i.dataset.src));
+  $('#nmeta').textContent = list.length ? (list.length === NFTS.count ? 'All ' + NFTS.count + ' ANON NFTs. Tap one to use it.' : list.length + ' of ' + NFTS.count + ' ANON NFTs match.') : 'No ANON NFT matches that. Try a collection name and a number, e.g. skulls 12.';
+}
+function showPicked() { const inf = nftInfo(S.nft); $('#picked').textContent = inf ? 'Using ' + nftLabel(inf) : ''; }
+function pickNft(key) {
+  S.nft = key; S.zoom = 1; S.px = 0; S.py = 0; setMode.touched = true; syncSliders();
+  $('#ngrid').querySelectorAll('.nft').forEach(x => { const on = x.dataset.nft === key; x.classList.toggle('on', on); x.setAttribute('aria-selected', String(on)); });
+  $('#arts').querySelectorAll('.art').forEach(x => { x.classList.remove('on'); x.setAttribute('aria-selected', 'false'); });
+  showPicked(); persist(); draw();
+}
+function renderNftCols() {
+  const host = $('#ncols'); host.innerHTML = '';
+  [['all', 'All']].concat(NFTS.cols.map(c => [c.s, c.n.replace(/^ANON /, '') + ' (' + c.items.length + ')'])).forEach(([id, name]) => {
+    const b = el('button', 'chip' + (nCol === id ? ' on' : ''), name); b.type = 'button'; b.dataset.v = id; b.setAttribute('aria-pressed', String(nCol === id));
+    b.onclick = () => { nCol = id; host.querySelectorAll('.chip').forEach(x => { x.classList.toggle('on', x === b); x.setAttribute('aria-pressed', String(x === b)); }); $('#ngrid').scrollTop = 0; renderNftGrid(); };
+    host.appendChild(b);
+  });
+}
+$('#ngrid').addEventListener('click', e => { const b = e.target.closest('.nft'); if (b) pickNft(b.dataset.nft); });
+$('#nq').addEventListener('input', () => { $('#ngrid').scrollTop = 0; renderNftGrid(); });
+$('#nq').addEventListener('keydown', e => { if (e.key === 'Enter') { const m = nftMatches(); if (m.length === 1 || (m.length && /\d/.test($('#nq').value))) pickNft(nftKey(m[0].col.s, m[0].it[0])); $('#nq').blur(); } });
+fetch('nfts/index.json', { cache: 'no-cache' }).then(r => r.json()).then(d => {
+  NFTS = d; if (S.nft && !nftInfo(S.nft)) { S.nft = ''; persist(); renderArts(); draw(); }
+  renderNftCols(); renderNftGrid(); showPicked();
+}).catch(() => { $('#nmeta').textContent = 'Could not load the NFT list. Check your connection and reload.'; });
+
+/* ---------- season themes ---------- */
+function themeChips() {
+  const host = $('#themes'); host.innerHTML = '';
+  THEME_IDS.forEach(id => { const b = el('button', 'chip' + (S.theme === id ? ' on' : ''), THEMES[id].name); b.type = 'button'; b.dataset.v = id; b.setAttribute('aria-pressed', String(S.theme === id));
+    b.onclick = () => { S.theme = id; S.themeFor = seasonNow(); host.querySelectorAll('.chip').forEach(x => { x.classList.toggle('on', x === b); x.setAttribute('aria-pressed', String(x === b)); }); renderAccPal(); persist(); draw(); };
+    host.appendChild(b); });
+}
+$('#greet').checked = !!S.greet;
+$('#greet').addEventListener('change', e => { S.greet = e.target.checked; persist(); draw(); });
+
+/* ---------- accessories ---------- */
+let sel = null;   // selected accessory id (preview only)
+const accList = () => S.acc[S.mode] || (S.acc[S.mode] = []);
+const selAcc = () => accList().find(a => a.id === sel) || null;
+function accIcon(k) { const cv2 = document.createElement('canvas'), d = Math.min(2, window.devicePixelRatio || 1); cv2.width = cv2.height = 40 * d; const c = cv2.getContext('2d'); c.scale(d, d); c.translate(20, 20); const w = 34 / Math.max(1, ACC[k].ar); ACC[k].draw(c, w, 0); return cv2; }
+function renderAccPal() {
+  const host = $('#accPal'); host.innerHTML = '';
+  const order = ACC_GROUPS.slice().sort((a, b) => (b[0] === S.theme) - (a[0] === S.theme));
+  order.forEach(([g, gname]) => {
+    const keys = Object.keys(ACC).filter(k => ACC[k].g === g); if (!keys.length) return;
+    host.appendChild(el('div', 'accgrp', gname));
+    const grid = el('div', 'accs');
+    keys.forEach(k => { const b = el('button', 'acc'); b.type = 'button'; b.dataset.acc = k; b.setAttribute('aria-label', 'Add ' + ACC[k].name); b.appendChild(accIcon(k)); b.appendChild(el('span', '', ACC[k].name)); b.onclick = () => addAcc(k); grid.appendChild(b); });
+    host.appendChild(grid);
+  });
+}
+function addAcc(k) {
+  const [W, H] = [cv.width, cv.height], box = lastPlace ? lastPlace.box : { x: 0, y: 0, w: W, h: H }, sp = ACC_SPOT[k] || [.5, .5, .3], u = Math.min(W, H);
+  const list = accList(), n = list.filter(a => a.k === k).length;
+  const a = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), k, x: (box.x + box.w * sp[0]) / W + n * .04, y: (box.y + box.h * sp[1]) / H + n * .04, s: Math.max(.05, Math.min(1, box.w * sp[2] / u)), r: 0, f: 0, i: n };
+  a.x = Math.max(.02, Math.min(.98, a.x)); a.y = Math.max(.02, Math.min(.98, a.y));
+  list.push(a); select(a.id); persist(); draw(); toast(ACC[k].name + ' added. Drag it on the picture.');
+}
+function select(id) {
+  sel = id; const a = selAcc(); $('#accEdit').classList.toggle('hide', !a);
+  if (a) { $('#accName').textContent = ACC[a.k].name; $('#accSize').value = a.s; $('#accRot').value = Math.round((a.r || 0) * 180 / Math.PI); $('#accFlip').checked = !!a.f; }
+  draw();
+}
+$('#accSize').addEventListener('input', e => { const a = selAcc(); if (a) { a.s = +e.target.value; persist(); draw(); } });
+$('#accRot').addEventListener('input', e => { const a = selAcc(); if (a) { a.r = +e.target.value * Math.PI / 180; persist(); draw(); } });
+$('#accFlip').addEventListener('change', e => { const a = selAcc(); if (a) { a.f = e.target.checked ? 1 : 0; persist(); draw(); } });
+$('#accFront').onclick = () => { const l = accList(), a = selAcc(); if (!a) return; l.splice(l.indexOf(a), 1); l.push(a); persist(); draw(); };
+$('#accDup').onclick = () => { const a = selAcc(); if (!a) return; const b = Object.assign({}, a, { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), x: Math.min(.98, a.x + .05), y: Math.min(.98, a.y + .05) }); accList().push(b); select(b.id); persist(); };
+$('#accDel').onclick = () => { const l = accList(), a = selAcc(); if (!a) return; l.splice(l.indexOf(a), 1); select(null); persist(); };
+$('#accDone').onclick = () => select(null);
+$('#accClear').onclick = () => { if (!accList().length) return; S.acc[S.mode] = []; select(null); persist(); toast('Accessories removed'); };
+document.addEventListener('keydown', e => { if ((e.key === 'Delete' || e.key === 'Backspace') && sel && !/INPUT|TEXTAREA/.test(document.activeElement.tagName)) { e.preventDefault(); $('#accDel').onclick(); } });
+function hitAcc(px, py) {   // canvas pixel coords; topmost first
+  const W = cv.width, H = cv.height, u = Math.min(W, H), l = accList();
+  for (let i = l.length - 1; i >= 0; i--) { const a = l[i], d = ACC[a.k]; if (!d) continue; const w = a.s * u, h = w * d.ar, dx = px - a.x * W, dy = py - a.y * H, r = -(a.r || 0);
+    const lx = dx * Math.cos(r) - dy * Math.sin(r), ly = dx * Math.sin(r) + dy * Math.cos(r), pad = u * .02;
+    if (Math.abs(lx) <= w * .56 + pad && Math.abs(ly) <= h * .56 + pad) return a; }
+  return null;
+}
+
+// drag to move (one finger or mouse); pinch with two fingers to zoom. Accessories: drag, pinch to resize and turn
+const ptrs = new Map(); let pinch0 = 0, zoom0 = 1, accDrag = null, ang0 = 0, s0 = 0, r0 = 0;
+const toCanvas = (x, y) => { const b = cv.getBoundingClientRect(); return [(x - b.left) * cv.width / b.width, (y - b.top) * cv.height / b.height]; };
+cv.addEventListener('pointerdown', e => {
+  cv.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (ptrs.size === 1) { const [px, py] = toCanvas(e.clientX, e.clientY), hit = hitAcc(px, py); accDrag = hit; if (hit) { if (sel !== hit.id) select(hit.id); } else if (sel) select(null); }
+  if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; pinch0 = Math.hypot(a.x - b.x, a.y - b.y); zoom0 = S.zoom; ang0 = Math.atan2(b.y - a.y, b.x - a.x); const sa = accDrag; if (sa) { s0 = sa.s; r0 = sa.r || 0; } }
+});
 cv.addEventListener('pointermove', e => {
   const prev = ptrs.get(e.pointerId); if (!prev || !lastPlace) return;
   const cur = { x: e.clientX, y: e.clientY }; ptrs.set(e.pointerId, cur);
-  if (ptrs.size === 2) { const [a, b] = [...ptrs.values()], d = Math.hypot(a.x - b.x, a.y - b.y); if (pinch0) { S.zoom = Math.max(1, Math.min(3, zoom0 * d / pinch0)); syncSliders(); draw(); } return; }
-  const k = cv.width / cv.getBoundingClientRect().width, { box, p } = lastPlace;
+  if (ptrs.size === 2) { const [a, b] = [...ptrs.values()], d = Math.hypot(a.x - b.x, a.y - b.y); if (!pinch0) return;
+    if (accDrag) { accDrag.s = Math.max(.05, Math.min(1, s0 * d / pinch0)); accDrag.r = r0 + Math.atan2(b.y - a.y, b.x - a.x) - ang0; if (accDrag.r > Math.PI) accDrag.r -= 2 * Math.PI; if (accDrag.r < -Math.PI) accDrag.r += 2 * Math.PI; $('#accSize').value = accDrag.s; $('#accRot').value = Math.round(accDrag.r * 180 / Math.PI); draw(); }
+    else { S.zoom = Math.max(1, Math.min(3, zoom0 * d / pinch0)); syncSliders(); draw(); }
+    return; }
+  const rect = cv.getBoundingClientRect();
+  if (accDrag) { accDrag.x = Math.max(0, Math.min(1, accDrag.x + (cur.x - prev.x) / rect.width)); accDrag.y = Math.max(0, Math.min(1, accDrag.y + (cur.y - prev.y) / rect.height)); draw(); return; }
+  const k = cv.width / rect.width, { box, p } = lastPlace;
   const ox = p.w - box.w, oy = p.h - box.h;
   if (ox > 1) S.px = Math.max(-1, Math.min(1, S.px - 2 * (cur.x - prev.x) * k / ox));
   if (oy > 1) S.py = Math.max(-1, Math.min(1, S.py - 2 * (cur.y - prev.y) * k / oy));
   syncSliders(); draw();
 });
-const up = e => { ptrs.delete(e.pointerId); if (ptrs.size < 2) pinch0 = 0; };
+const up = e => { ptrs.delete(e.pointerId); if (ptrs.size < 2) pinch0 = 0; if (!ptrs.size) { if (accDrag) persist(); accDrag = null; } };
 cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up);
-cv.addEventListener('wheel', e => { e.preventDefault(); S.zoom = Math.max(1, Math.min(3, S.zoom * (e.deltaY < 0 ? 1.06 : 1 / 1.06))); syncSliders(); draw(); }, { passive: false });
+cv.addEventListener('wheel', e => { e.preventDefault(); const sa = selAcc(); if (sa) { const [px, py] = toCanvas(e.clientX, e.clientY); if (hitAcc(px, py) === sa) { sa.s = Math.max(.05, Math.min(1, sa.s * (e.deltaY < 0 ? 1.06 : 1 / 1.06))); $('#accSize').value = sa.s; persist(); draw(); return; } } S.zoom = Math.max(1, Math.min(3, S.zoom * (e.deltaY < 0 ? 1.06 : 1 / 1.06))); syncSliders(); draw(); }, { passive: false });
 
 /* ---------- export ---------- */
 async function makeBlob() {
@@ -404,7 +795,7 @@ async function makeBlob() {
   const keep = lastPlace; await render(c.getContext('2d'), w, h); lastPlace = keep;
   return new Promise((res, rej) => c.toBlob(b => b ? res(b) : rej(new Error('blob')), 'image/png'));
 }
-const fileName = () => 'anon-' + (S.mode === 'avatar' ? 'avatar' : 'wallpaper-' + S.mode) + '-' + S.art + '.png';
+const fileName = () => 'anon-' + (S.mode === 'avatar' ? 'avatar' : 'wallpaper-' + S.mode) + '-' + (S.nft ? S.nft.replace('/', '-') : S.art) + (S.theme !== 'none' ? '-' + S.theme : '') + '.png';
 const shareText = () => S.mode === 'avatar' ? 'Made my ANON avatar at anonnfts.com/arcade' : 'Made my ANON wallpaper at anonnfts.com/arcade';
 const canShareFiles = () => { try { return !!(navigator.canShare && navigator.share && navigator.canShare({ files: [new File([new Blob(['x'], { type: 'image/png' })], 'a.png', { type: 'image/png' })] })); } catch (e) { return false; } };
 if (canShareFiles()) $('#share').classList.remove('hide');
@@ -439,10 +830,10 @@ $('#dl').onclick = () => busy($('#dl'), async () => {
 });
 $('#share').onclick = () => busy($('#share'), async () => { const blob = await makeBlob(); await shareBlob(blob); });
 
-chips($('#frames'), FRAMES, 'frame'); chips($('#badges'), BADGES, 'badge'); chips($('#layouts'), LAYOUTS, 'layout'); renderBgs(); mottoChips();
+chips($('#frames'), FRAMES, 'frame'); chips($('#badges'), BADGES, 'badge'); chips($('#layouts'), LAYOUTS, 'layout'); renderBgs(); mottoChips(); themeChips(); renderAccPal();
 setMode(S.mode);
 window.addEventListener('resize', draw);
-window.ANON_MAKER = { state: S, makeBlob, setMode, sizes: SIZES };
+window.ANON_MAKER = { state: S, makeBlob, setMode, sizes: SIZES, pickNft, addAcc, select, themes: THEME_IDS };
 })();
 </script>
 </body>
