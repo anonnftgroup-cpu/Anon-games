@@ -67,8 +67,8 @@
     const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
     // paused card
     const ov = el('div', 'gs-ov'); ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-label', 'Paused');
-    const h = el('h2', '', 'PAUSED'), info = el('p'), bRes = el('button', 'go', 'RESUME'), bEnd = el('button', 'go alt', 'End game and post score'), bMenu = el('button', 'go alt', 'Menu (keeps your save)');
-    [bRes, bEnd, bMenu].forEach(b => b.type = 'button'); ov.append(h, info, bRes, bEnd, bMenu);
+    const h = el('h2', '', 'PAUSED'), info = el('p'), bRes = el('button', 'go', 'RESUME'), bEnd = el('button', 'go alt', 'End game and post score'), bMenu = el('button', 'go alt', 'Menu (keeps your save)'), bNew = el('button', 'go alt', o.newLabel || 'New game');
+    [bRes, bEnd, bNew, bMenu].forEach(b => b.type = 'button'); ov.append(h, info, bRes, bEnd, bNew, bMenu); bNew.style.display = o.newLabel && o.newGame ? '' : 'none';
     if (getComputedStyle(o.stage).position === 'static') o.stage.style.position = 'relative'; o.stage.appendChild(ov);
     // pause button
     let pb = o.pauseBtn || null;
@@ -98,7 +98,7 @@
       ended() { // the run is over: keep a small record until the game's own post has gone out, then remove it
         K.hide(); const f = fin(), id = runId; runId = null;
         if (f && action) S.save(game, { id, over: true, fin: f }); else clearIf(id);
-        setTimeout(() => clearIf(id), 1500);
+        setTimeout(() => { clearIf(id); paint(); }, 1500);
       },
       clear() { S.clear(game); runId = null; paint(); },
       load, paint, guard, submitLast
@@ -132,6 +132,7 @@
     bRes.onclick = () => K.resume();
     bEnd.onclick = () => { if (o.inProgress() && o.endNow) { K.hide(); o.endNow(); } };
     bMenu.onclick = () => { saver.saveNow(); K.hide(); if (o.toMenu) o.toMenu(); paint(); };
+    bNew.onclick = () => { saver.saveNow(); guard(() => { K.hide(); o.newGame(); })(); };
     bResume.onclick = doResume;
     bLast.onclick = () => { const d = load(); if (d && d.fin) submitLast(d); else paint(); };
     if (pb) pb.onclick = () => { if (!o.inProgress()) return; isPaused() ? K.resume() : K.pause('button'); };

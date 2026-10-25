@@ -50,12 +50,13 @@
   <div class="hud"><span id="tm"></span><span id="mv"></span><span id="fd"></span></div>
   <div class="stage"><canvas id="cv"></canvas><div class="tap" id="msg"></div></div>
   <div class="pad"><button data-k="U">↶ Undo</button><button data-k="H">💡 Hint</button><button data-k="D">🂠 Deal</button></div>
-  <div class="bar"><button id="againBtn">New deal</button><button id="setBtn">Change ANON</button></div>
+  <div class="bar"></div>
 </section>
 <script src="../shared/leaderboard.js?v=1.7.0"></script>
 <script src="../shared/newsletter.js"></script>
 <script src="../assets/nft/kit.js"></script>
 <script src="../assets/play/play.js"></script>
+<script src="../shared/gamesave.js?v=1.2.0"></script>
 <script>
 const GAME = 'spider', TITLE = 'ANON Spider Solitaire', PK = 'anonB.spider', ASPECT = 0.64, MOVES = 'moves', DEFMODE = 'easy';
 'use strict';
@@ -87,25 +88,34 @@ function ring(x, im, cx, cy, r, col) { x.save(); x.beginPath(); x.arc(cx, cy, r,
   x.lineWidth = Math.max(1.5, r * .16); x.strokeStyle = col || '#f3d77a'; x.beginPath(); x.arc(cx, cy, r, 0, 7); x.stroke(); }
 function bgArt(x, id, a) { const im = IM('c-' + id); if (!im) return; x.globalAlpha = a || .22; const k = Math.max(C.w / im.width, C.h / im.height); x.drawImage(im, (C.w - im.width * k) / 2, (C.h - im.height * k) / 2, im.width * k, im.height * k); x.globalAlpha = 1; }
 const L = AP.loop(dt => { if (S && !S.over && !S.paused) step(dt); }, () => draw());
-let paused = false;
-function pause() { if (!S || S.over || S.paused) return; S.paused = true; $('#msg').textContent = 'Paused\nTap to resume'; }
-function resume() { if (S && S.paused) { S.paused = false; $('#msg').textContent = ''; } }
-document.addEventListener('visibilitychange', () => { if (document.hidden) pause(); });
-$('#msg').parentElement.addEventListener('pointerdown', () => { if (S && S.paused) resume(); }, true);
-async function start() { show('play'); if (!C) C = AP.canvas($('#cv'), ASPECT, () => draw()); else C.fit(); $('#msg').textContent = ''; newRun(); L.start(); }
+// ---- pause + save (shared/gamesave.js): Pause button, P / Esc, auto-pause when hidden, resume later ----
+const inPlay = () => !!S && !S.over && $('#play').classList.contains('on');
+const K = ANONSAVE.kit({ game: GAME, kind: 'puzzle', newLabel: 'New deal', stage: $('#cv').parentElement, bar: $('#play .bar'), setupAnchor: $('#goBtn'), art: art(pref.art).img,
+  inProgress: inPlay, paused: () => !!S.paused,
+  pause: () => { S.paused = true; if (typeof held !== 'undefined') held.clear(); dirty = true; }, resume: () => { S.paused = false; $('#msg').textContent = ''; dirty = true; },
+  snapshot: () => JSON.parse(JSON.stringify(Object.assign({}, S, { paused: false }), (k, v) => v instanceof Set ? { __set: [...v] } : v instanceof Map ? { __map: [...v] } : v)),
+  restore: d => { show('play'); if (!C) C = AP.canvas($('#cv'), ASPECT, () => draw()); else C.fit(); $('#msg').textContent = ''; S = JSON.parse(JSON.stringify(d), (k, v) => v && typeof v === 'object' && Array.isArray(v.__set) ? new Set(v.__set) : v && typeof v === 'object' && Array.isArray(v.__map) ? new Map(v.__map) : v); S.paused = true; try { if (typeof hud === 'function') hud(); } catch (e) {} dirty = true; L.start(); },
+  final: null, endNow: null,
+  newGame: () => start(), toMenu: () => { if (S) S.over = true; L.stop(); show('setup'); },
+  describe: (st, f) => { const x = st || S; if (!x) return f ? '⭐ ' + f.score : ''; return [x.score != null ? '⭐ ' + x.score : '', x.level ? 'Level ' + x.level : x.wave ? 'Wave ' + x.wave : '', x.t ? Math.floor(x.t / 60) + ':' + String(Math.floor(x.t % 60)).padStart(2, '0') : ''].filter(Boolean).join(' · '); },
+  valid: d => !!d && typeof d === 'object' && typeof d.t === 'number' && isFinite(d.t) && d.t >= 0 });
+function pause() { if (inPlay()) K.pause('button'); }
+function resume() { K.resume(); }
+async function start() { show('play'); if (!C) C = AP.canvas($('#cv'), ASPECT, () => draw()); else C.fit(); $('#msg').textContent = ''; newRun(); K.begin(); L.start(); }
 function end(score, secs, moves, mode, title, text) {
-  if (!S || S.over) return; S.over = true; draw(); setTimeout(() => L.stop(), 50); if (navigator.vibrate) navigator.vibrate([40, 30, 70]);
+  if (!S || S.over) return; S.over = true; S.paused = false; K.ended(); draw(); setTimeout(() => L.stop(), 50); if (navigator.vibrate) navigator.vibrate([40, 30, 70]);
   const a = art(S.art || pref.art), pb = score > (pref.best || 0); if (pb) { pref.best = score; ls.set(PK, pref); }
   S.final = { score, secs, moves, mode };
   setTimeout(() => { modal({ art: a.img, title: pb && score > 0 ? 'New best! 🏆' : title, text, lb: score > 0,
-    buttons: [['PLAY AGAIN', () => start()], ['Leaderboard', () => lb(), 1], ['Change ANON', () => show('setup'), 1]] });
+    buttons: [['PLAY AGAIN', () => start()], ['Leaderboard', () => lb(), 1], ['Change ANON', () => { show('setup'); K.paint(); }, 1]] });
     if (score > 0) post(GAME, score, Math.max(1, Math.round(secs)), moves, mode); }, 500);
   gameOver();
 }
 const lb = () => openLB(GAME, TITLE, MODES, MOVES);
-$('#goBtn').onclick = () => start(); $('#againBtn').onclick = () => { if (S) S.over = true; start(); };
-$('#setBtn').onclick = $('#menuBtn').onclick = () => { if (S) S.over = true; L.stop(); show('setup'); };
-$('#lbBtn').onclick = lb;
+$('#goBtn').onclick = K.guard(() => start());
+// during a run the header button pauses (Menu is on the paused card), so one stray tap can't end a run
+$('#menuBtn').onclick = () => { if (inPlay()) K.pause('button'); else { L.stop(); show('setup'); K.paint(); } };
+$('#lbBtn').onclick = () => { if (inPlay()) K.pause('button'); lb(); };
 // hold-buttons for on-screen pads: data-k = key name
 const held = new Set(); window.__held = held;
 document.querySelectorAll('.pad [data-k]').forEach(b => { const k = b.dataset.k;
@@ -113,7 +123,7 @@ document.querySelectorAll('.pad [data-k]').forEach(b => { const k = b.dataset.k;
   ['pointerup', 'pointerleave', 'pointercancel'].forEach(t => b.addEventListener(t, () => { held.delete(k); b.classList.remove('on'); })); });
 const KM = { ArrowLeft: 'L', a: 'L', A: 'L', ArrowRight: 'R', d: 'R', D: 'R', ArrowUp: 'U', w: 'U', W: 'U', ArrowDown: 'D', s: 'D', S: 'D', ' ': 'B', Enter: 'B', x: 'B', z: 'B' };
 const playing = () => $('#play').classList.contains('on') && !document.querySelector('.modal.show,.alb-ov,.anw-ov');
-window.addEventListener('keydown', e => { const k = KM[e.key]; if (!k || !playing()) return; e.preventDefault(); if (S && S.paused) resume(); if (!held.has(k) && window.onPad) onPad(k); held.add(k); });
+window.addEventListener('keydown', e => { const k = KM[e.key]; if (!k || !playing()) return; e.preventDefault(); if (S && S.paused) return; if (!held.has(k) && window.onPad) onPad(k); held.add(k); });
 window.addEventListener('keyup', e => { const k = KM[e.key]; if (k) held.delete(k); });
 
 // pointer -> canvas CSS coords (canvas has a 2px border)
