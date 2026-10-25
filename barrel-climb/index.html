@@ -5,18 +5,18 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#05070a">
 <title>ANON Barrel Climb · ANON NFTs</title>
-<meta name="description" content="ANON Barrel Climb: climb the girders, jump the rolling barrels and reach the giant shadow boss at the top. Free, no sign-up.">
+<meta name="description" content="ANON Barrel Climb: climb the girders, jump the rolling barrels and reach the giant hooded boss at the top. Free, no sign-up.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="ANON Arcade">
 <meta property="og:title" content="ANON Barrel Climb">
-<meta property="og:description" content="ANON Barrel Climb: climb the girders, jump the rolling barrels and reach the giant shadow boss at the top. Free, no sign-up.">
+<meta property="og:description" content="ANON Barrel Climb: climb the girders, jump the rolling barrels and reach the giant hooded boss at the top. Free, no sign-up.">
 <meta property="og:url" content="https://anonnftgroup-cpu.github.io/Anon-games/barrel-climb/">
 <meta property="og:image" content="https://anonnftgroup-cpu.github.io/Anon-games/barrel-climb/og.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="ANON Barrel Climb">
-<meta name="twitter:description" content="ANON Barrel Climb: climb the girders, jump the rolling barrels and reach the giant shadow boss at the top. Free, no sign-up.">
+<meta name="twitter:description" content="ANON Barrel Climb: climb the girders, jump the rolling barrels and reach the giant hooded boss at the top. Free, no sign-up.">
 <meta name="twitter:image" content="https://anonnftgroup-cpu.github.io/Anon-games/barrel-climb/og.jpg">
 <link rel="icon" href="../assets/logo.webp">
 <link rel="stylesheet" href="../assets/nft/kit.css">
@@ -41,7 +41,7 @@
   <div class="chars five" id="artPick"></div>
   <div class="lbl">Difficulty</div><div class="seg" id="diff"><button data-v="easy">Easy</button><button data-v="medium">Medium</button><button data-v="hard">Hard</button></div>
   <button class="go" id="goBtn">PLAY</button>
-  <p class="howto">◀ ▶ to run, ▲ ▼ to climb ladders, JUMP (or Space) to leap. Keys: arrows / WASD. The giant shadow at the top hurls barrels down the girders. Jump them for points, grab NFT coins, and reach the top girder to beat the level. Hard mode sends faster barrels that love ladders.</p>
+  <p class="howto">◀ ▶ to run, ▲ ▼ to climb ladders, JUMP (or Space) to leap. Keys: arrows / WASD. The giant boss at the top hurls barrels down the girders. Jump them for points, grab NFT coins, and reach the top girder to beat the level. Hard mode sends faster barrels that love ladders.</p>
   <div class="nick" id="nick"></div>
 </section>
 <section class="view" id="play">
@@ -143,7 +143,7 @@ function step(dt) {
     if (!p.lad) { const v = (R_ ? 1 : 0) - (L_ ? 1 : 0); if (v) p.face = v; p.x = Math.max(3, Math.min(97, p.x + v * 30 * dt * (p.h > 0 ? .9 : 1)));
       if (p.h > 0 || p.vh > 0) { p.h += p.vh * dt; p.vh -= 120 * dt; if (p.h <= 0) { p.h = 0; p.vh = 0; } } }
   }
-  if (!p.lad && p.f === NF - 1) { S.won = 2; const b = Math.floor(S.bonus / 100) * 100; S.score += 1000 + b; tone(523, .15, 'square', .07); setTimeout(() => tone(659, .15, 'square', .07), 140); setTimeout(() => tone(784, .3, 'square', .07), 280); $('#msg').textContent = 'You reached the shadow! +' + (1000 + b); hud(); return; }
+  if (!p.lad && p.f === NF - 1) { S.won = 2; const b = Math.floor(S.bonus / 100) * 100; S.score += 1000 + b; tone(523, .15, 'square', .07); setTimeout(() => tone(659, .15, 'square', .07), 140); setTimeout(() => tone(784, .3, 'square', .07), 280); $('#msg').textContent = 'You reached the boss! +' + (1000 + b); hud(); return; }
   // boss throws barrels
   S.next -= dt; if (S.next <= 0) { S.next = d.every / sp * (.75 + AP.rnd() * .5); S.br.push({ x: 14, f: NF - 2, vx: dir(NF - 2), fall: 0, rot: 0, dn: null, jumped: false }); tone(140, .15, 'triangle', .07, 70); }
   for (const b of S.br) {

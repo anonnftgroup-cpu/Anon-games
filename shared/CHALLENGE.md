@@ -6,7 +6,7 @@ Files: `shared/challenge.js` + `shared/challenge.css` (the JS loads the CSS itse
 - **Game over:** a green **⚔️ Challenge a friend** button appears on the result card, just under the
   leaderboard message (the newsletter pop-up and score posting are untouched).
   It shares the game's public link with `?ch=<nickname>&s=<score>`:
-  `https://anonnftgroup-cpu.github.io/Anon-games/<game-folder>/?ch=Shadow-Fox-42&s=1240`
+  `https://anonnftgroup-cpu.github.io/Anon-games/<game-folder>/?ch=Lucky-Comet-42&s=1240`
   - Phones: the native share sheet (`navigator.share`).
   - Otherwise (or inside the anonnfts.com iframe): Copy link · Post on X · WhatsApp · Facebook, plus the link in a box.
   - Text, e.g. `I scored 1,240 on ANON Snake 🐍 Think you can beat me? #ANONArcade`. No money, value or backing claims, ever.

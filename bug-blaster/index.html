@@ -5,18 +5,18 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#05070a">
 <title>ANON Bug Blaster · ANON NFTs</title>
-<meta name="description" content="ANON Bug Blaster: blast the shadow bug chain as it snakes down through the NFT stone field. Free, no sign-up.">
+<meta name="description" content="ANON Bug Blaster: blast the glitch bug chain as it snakes down through the NFT stone field. Free, no sign-up.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="ANON Arcade">
 <meta property="og:title" content="ANON Bug Blaster">
-<meta property="og:description" content="ANON Bug Blaster: blast the shadow bug chain as it snakes down through the NFT stone field. Free, no sign-up.">
+<meta property="og:description" content="ANON Bug Blaster: blast the glitch bug chain as it snakes down through the NFT stone field. Free, no sign-up.">
 <meta property="og:url" content="https://anonnftgroup-cpu.github.io/Anon-games/bug-blaster/">
 <meta property="og:image" content="https://anonnftgroup-cpu.github.io/Anon-games/bug-blaster/og.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="ANON Bug Blaster">
-<meta name="twitter:description" content="ANON Bug Blaster: blast the shadow bug chain as it snakes down through the NFT stone field. Free, no sign-up.">
+<meta name="twitter:description" content="ANON Bug Blaster: blast the glitch bug chain as it snakes down through the NFT stone field. Free, no sign-up.">
 <meta name="twitter:image" content="https://anonnftgroup-cpu.github.io/Anon-games/bug-blaster/og.jpg">
 <link rel="icon" href="../assets/logo.webp">
 <link rel="stylesheet" href="../assets/nft/kit.css">
@@ -154,7 +154,7 @@ function step(dt) {
   if (!S.ch.length) { S.score += 0; tone(660, .2, 'square', .06); setTimeout(() => tone(990, .3, 'square', .06), 160); nextWave(); }
   hud();
 }
-function finish() { end(S.score, S.t, S.kills, S.diff, 'The shadow bugs got through 🐛', `<b>${art(S.art).name}</b> blasted <b>${S.kills}</b> shadow bug segments and reached <b>wave ${S.wave}</b>.<br>Score <b>${S.score}</b>`); }
+function finish() { end(S.score, S.t, S.kills, S.diff, 'The glitch bugs got through 🐛', `<b>${art(S.art).name}</b> blasted <b>${S.kills}</b> glitch bug segments and reached <b>wave ${S.wave}</b>.<br>Score <b>${S.score}</b>`); }
 const toW = (x0, y0) => { const r = $('#cv').getBoundingClientRect(); return { x: (x0 - r.left) / r.width * 100, y: (y0 - r.top) / r.height * 133 }; };
 let dragOff = null;
 $('#cv').addEventListener('pointerdown', e => { if (!playing()) return; const w = toW(e.clientX, e.clientY); dragOff = { x: S.p.x - w.x, y: S.p.y - w.y }; S.drag = { x: S.p.x, y: S.p.y }; $('#cv').setPointerCapture && $('#cv').setPointerCapture(e.pointerId); });

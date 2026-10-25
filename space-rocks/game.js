@@ -50,7 +50,7 @@
       for (const b of S.eshots) { b.x = wrap(b.x + b.vx * h, W); b.y = wrap(b.y + b.vy * h, H); b.life -= h; }
       for (const b of S.bits) { b.x += b.vx * h; b.y += b.vy * h; b.life -= h; }
       S.shots = S.shots.filter(b => b.life > 0); S.eshots = S.eshots.filter(b => b.life > 0); S.bits = S.bits.filter(b => b.life > 0);
-      // shadow drone
+      // rogue drone
       if (S.wave >= 2 && !S.drone && S.waveT <= 0) { S.droneT -= h; if (S.droneT <= 0) { const left = rnd() < 0.5; S.drone = { x: left ? -16 : W + 16, y: 60 + rnd() * (H - 120), y0: 0, d: left ? 1 : -1, v: 70 + 6 * Math.min(8, S.wave), fireT: 1.2, ph: rnd() * 6, art: rnd() * 10 | 0 }; S.drone.y0 = S.drone.y; sfx('alien'); ev('drone'); } }
       const D = S.drone;
       if (D) { D.x += D.d * D.v * h; D.ph += h; D.y = wrap(D.y0 + Math.sin(D.ph * 1.6) * 50, H);

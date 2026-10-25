@@ -381,7 +381,7 @@
     },
     {
       "id": "shadow-dodge",
-      "name": "ANON Shadow Dodge",
+      "name": "ANON Star Dodge",
       "tagline": "Pick your ANON and dodge the blocks",
       "path": "shadow-dodge/",
       "thumb": "shadow-dodge/thumb.webp",
@@ -417,7 +417,7 @@
     },
     {
       "id": "ninja-memory",
-      "name": "ANON Ninja Memory",
+      "name": "ANON Gem Memory",
       "tagline": "Find the hidden ANON pairs",
       "path": "ninja-memory/",
       "thumb": "ninja-memory/thumb.webp",
@@ -446,7 +446,7 @@
     },
     {
       "id": "shadow-runner",
-      "name": "ANON Shadow Runner",
+      "name": "ANON Forest Runner",
       "tagline": "Dash through the forest, grab the gems",
       "path": "shadow-runner/",
       "thumb": "shadow-runner/thumb.webp",
@@ -680,7 +680,7 @@
     {
       "id": "bomb-maze",
       "name": "ANON Bomb Maze",
-      "tagline": "Blast crates and shadows with ANON bombs",
+      "tagline": "Blast crates and gloop blobs with ANON bombs",
       "path": "bomb-maze/",
       "thumb": "bomb-maze/thumb.webp",
       "category": "Arcade",
@@ -710,7 +710,7 @@
     {
       "id": "barrel-climb",
       "name": "ANON Barrel Climb",
-      "tagline": "Jump the barrels, climb to the giant shadow",
+      "tagline": "Jump the barrels, climb to the giant boss",
       "path": "barrel-climb/",
       "thumb": "barrel-climb/thumb.webp",
       "category": "Arcade",
@@ -769,7 +769,7 @@
     },
     {
       "id": "shadow-echo",
-      "name": "ANON Shadow Echo",
+      "name": "ANON Neon Echo",
       "tagline": "Repeat the light & sound pattern on 4 NFT pads",
       "path": "shadow-echo/",
       "thumb": "shadow-echo/thumb.webp",
@@ -837,7 +837,7 @@
     {
       "id": "bug-blaster",
       "name": "ANON Bug Blaster",
-      "tagline": "Blast the shadow bug chain through the NFT stones",
+      "tagline": "Blast the glitch bug chain through the NFT stones",
       "path": "bug-blaster/",
       "thumb": "bug-blaster/thumb.webp",
       "category": "Arcade",
@@ -865,8 +865,8 @@
     },
     {
       "id": "shadow-maze",
-      "name": "ANON Shadow Maze",
-      "tagline": "Collect gold coins, spook the shadows with pink gems",
+      "name": "ANON Lantern Maze",
+      "tagline": "Collect gold coins, spook the ghosts with pink gems",
       "path": "shadow-maze/",
       "thumb": "shadow-maze/thumb.webp",
       "category": "Arcade",
@@ -953,7 +953,7 @@
     {
       "id": "crossing",
       "name": "ANON Crossing",
-      "tagline": "Hop the shadow road and the gold river to the shrines",
+      "tagline": "Hop the neon road and the gold river to the shrines",
       "path": "crossing/",
       "thumb": "crossing/thumb.webp",
       "category": "Arcade",
@@ -1528,7 +1528,7 @@
     {
       "id": "galaxy-shooter",
       "name": "ANON Galaxy Shooter",
-      "tagline": "Blast swooping shadow drones in deep space",
+      "tagline": "Blast swooping rogue drones in deep space",
       "path": "galaxy-shooter/",
       "thumb": "galaxy-shooter/thumb.webp",
       "category": "Arcade",

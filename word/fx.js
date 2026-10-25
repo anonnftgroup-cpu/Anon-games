@@ -1,8 +1,8 @@
 /* ANON word games: crown + gold sparkle win effect, themed messages. Shared by Daily ANON Word and ANON Word Unlimited. */
 window.ANONWordFX = (function () {
   'use strict';
-  const WIN = ['Crowned! 👑', 'Royal genius! 👑', 'Masterful, ninja! 🥷', 'A gem of a guess! 💎', 'Nice one, ANON! ✨', 'Phew! Crowned at the last! 👑'];
-  const LOSE = ['The shadows win this time', 'Lost in the forest… for now', 'The hood stays on today'];
+  const WIN = ['Crowned! 👑', 'Royal genius! 👑', 'Masterful, ANON! ✨', 'A gem of a guess! 💎', 'Nice one, ANON! ✨', 'Phew! Crowned at the last! 👑'];
+  const LOSE = ['The forest wins this time', 'Lost in the forest… for now', 'The hood stays on today'];
   function crown(target) {
     const r = (target || document.body).getBoundingClientRect(), fx = document.createElement('div'); fx.className = 'fx';
     const cx = r.left + r.width / 2, cy = r.top + r.height * 0.42;

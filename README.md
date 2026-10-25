@@ -22,7 +22,7 @@ solitaire/            ANON Solitaire (index.html, thumb.webp, assets/)
 ```json
 {
   "id": "memory",
-  "name": "Ninja Memory",
+  "name": "Gem Memory",
   "tagline": "Find the hidden ANON pairs",
   "path": "memory/",
   "thumb": "memory/thumb.webp",
@@ -55,7 +55,7 @@ Deep links: `?game=solitaire` opens a game straight away; `?tab=leaderboards&gam
   ANONLB.submit({ game: 'memory', score, time: seconds, moves, mode: 'easy' })
         .then(r => showStatus(r.message));             // r.status: online | local | rejected | skipped | error
   // a leaderboard button:
-  ANONLB.openBoard('memory', { title: 'Ninja Memory' });
+  ANONLB.openBoard('memory', { title: 'Gem Memory' });
 </script>
 ```
 The Arcade opens games as `<path>?hub=1` so the game knows to show "← Arcade".

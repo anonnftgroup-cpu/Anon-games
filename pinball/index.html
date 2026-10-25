@@ -5,18 +5,18 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#05070a">
 <title>ANON Galaxy Pinball · ANON NFTs</title>
-<meta name="description" content="ANON Galaxy Pinball: a free space pinball table from ANON NFTs. Pink gem bumpers, crown targets, missions and ranks from Shadow Recruit to ANON King. No sign-up.">
+<meta name="description" content="ANON Galaxy Pinball: a free space pinball table from ANON NFTs. Pink gem bumpers, crown targets, missions and ranks from Rookie to ANON King. No sign-up.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="ANON Arcade">
 <meta property="og:title" content="ANON Galaxy Pinball">
-<meta property="og:description" content="ANON Galaxy Pinball: a free space pinball table from ANON NFTs. Pink gem bumpers, crown targets, missions and ranks from Shadow Recruit to ANON King. No sign-up.">
+<meta property="og:description" content="ANON Galaxy Pinball: a free space pinball table from ANON NFTs. Pink gem bumpers, crown targets, missions and ranks from Rookie to ANON King. No sign-up.">
 <meta property="og:url" content="https://anonnftgroup-cpu.github.io/Anon-games/pinball/">
 <meta property="og:image" content="https://anonnftgroup-cpu.github.io/Anon-games/pinball/og.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="ANON Galaxy Pinball">
-<meta name="twitter:description" content="ANON Galaxy Pinball: a free space pinball table from ANON NFTs. Pink gem bumpers, crown targets, missions and ranks from Shadow Recruit to ANON King. No sign-up.">
+<meta name="twitter:description" content="ANON Galaxy Pinball: a free space pinball table from ANON NFTs. Pink gem bumpers, crown targets, missions and ranks from Rookie to ANON King. No sign-up.">
 <meta name="twitter:image" content="https://anonnftgroup-cpu.github.io/Anon-games/pinball/og.jpg">
 <link rel="icon" href="../assets/logo.webp">
 <link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
@@ -56,7 +56,7 @@ canvas{display:block;border-radius:14px;box-shadow:0 0 0 1px rgba(212,175,55,.55
   <ul id="help">
     <li><b>Flippers:</b> tap the left or right half of the table.</li>
     <li><b>Launch:</b> hold the right side (or swipe down), then let go. Longer hold = stronger shot.</li>
-    <li><b>Missions:</b> collect pink gems, hit the crown targets, spell A-N-O-N and escape the shadow forest to rise from Shadow Recruit to <b>ANON King</b>.</li>
+    <li><b>Missions:</b> collect pink gems, hit the crown targets, spell A-N-O-N and escape the enchanted forest to rise from Rookie to <b>ANON King</b>.</li>
     <li>Every third mission starts <b>Galaxy Multiball</b>. Loop the forest during multiball for a jackpot.</li>
     <li><b>Nudge</b> to save a ball, but nudge too often and you'll TILT.</li>
   </ul>
@@ -66,9 +66,9 @@ canvas{display:block;border-radius:14px;box-shadow:0 0 0 1px rgba(212,175,55,.55
 </section>
 <section class="view" id="play">
   <div class="bg"><img id="rkImg" alt=""><div class="sc" id="sc">0</div><div class="bi" id="bi">BALL 1/3</div>
-    <div class="ms"><span class="rk" id="rk">Shadow Recruit</span><span class="mn" id="mn"></span><span class="pb"><i id="pg"></i></span></div></div>
+    <div class="ms"><span class="rk" id="rk">Rookie</span><span class="mn" id="mn"></span><span class="pb"><i id="pg"></i></span></div></div>
   <div class="cw" id="cw"><canvas id="cv" aria-label="ANON Galaxy pinball table"></canvas>
-    <div class="pause" id="pause"><div class="mcard"><h2>Paused</h2><p>Take a breather, ninja.</p>
+    <div class="pause" id="pause"><div class="mcard"><h2>Paused</h2><p>Take a breather, ANON.</p>
       <button class="go" id="resBtn">RESUME</button><button class="go alt" id="newBtn2">New game</button><button class="go alt" id="lbBtn2">Leaderboard</button></div></div>
   </div>
   <div class="bar"><button id="pauseBtn">⏸ Pause</button><button id="nudgeBtn">🫸 Nudge</button><button id="launchBtn">🚀 Launch</button><button id="sndBtn" aria-label="Sound on or off">🔊</button></div>
@@ -205,7 +205,7 @@ function drawStatic() {
   for (let i = 0; i < 3; i++) { x.beginPath(); x.ellipse(0, 0, 112 - i * 22, 40 - i * 7, 0, 0, Math.PI * 2); x.strokeStyle = `rgba(243,215,122,${0.10 + i * 0.05})`; x.lineWidth = 1.2; x.stroke(); }
   x.restore();
   const R = rngOf(7); for (let i = 0; i < 170; i++) { const sx = R() * 360 + 14, sy = R() * 560 + 20, s = R() < 0.1 ? 1.6 : 0.8; x.fillStyle = R() < 0.2 ? 'rgba(255,190,225,.9)' : 'rgba(255,255,255,.75)'; x.fillRect(sx, sy, s, s); }
-  // shadow forest silhouettes
+  // enchanted forest silhouettes
   const pine = (px, py, h, col) => { x.fillStyle = col; x.beginPath(); for (let k = 0; k < 3; k++) { const yy = py - h * (0.35 + k * 0.28), ww = h * (0.32 - k * 0.07); x.moveTo(px, yy - h * 0.32); x.lineTo(px - ww, yy + h * 0.12); x.lineTo(px + ww, yy + h * 0.12); } x.fill(); x.fillRect(px - h * 0.03, py - h * 0.3, h * 0.06, h * 0.3); };
   const R2 = rngOf(3);
   for (let i = 0; i < 16; i++) pine(14 + i * 24 + R2() * 10, 724, 70 + R2() * 70, 'rgba(6,30,18,.85)');
@@ -217,7 +217,7 @@ function drawStatic() {
   // orbit channel tint + label
   x.save(); x.beginPath(); x.moveTo(14, 280); x.lineTo(14, 200); x.arc(200, 200, 186, Math.PI, 232 * Math.PI / 180); x.lineTo(200 + 152 * Math.cos(232 * Math.PI / 180), 200 + 152 * Math.sin(232 * Math.PI / 180)); x.arc(200, 200, 152, 232 * Math.PI / 180, Math.PI, true); x.lineTo(48, 280); x.closePath();
   x.fillStyle = 'rgba(10,40,20,.55)'; x.fill(); x.restore();
-  x.save(); x.translate(31, 238); x.rotate(-Math.PI / 2); x.font = '700 8.5px system-ui,sans-serif'; x.fillStyle = 'rgba(43,255,136,.7)'; x.textAlign = 'center'; x.fillText('SHADOW FOREST', 0, 3); x.restore();
+  x.save(); x.translate(31, 238); x.rotate(-Math.PI / 2); x.font = '700 7.5px system-ui,sans-serif'; x.fillStyle = 'rgba(43,255,136,.7)'; x.textAlign = 'center'; x.fillText('ENCHANTED FOREST', 0, 3); x.restore();
   // crowned hooded ANON logo
   x.save(); x.beginPath(); x.arc(186, 395, 47, 0, Math.PI * 2); x.closePath(); x.shadowColor = 'rgba(255,61,154,.6)'; x.shadowBlur = 22; x.fillStyle = '#05070a'; x.fill(); x.shadowBlur = 0; x.clip();
   if (IM.logo.complete && IM.logo.naturalWidth) x.drawImage(IM.logo, 139, 348, 94, 94); x.restore();

@@ -18,7 +18,7 @@
   const LIVE = 'https://anonnftgroup-cpu.github.io/Anon-games/';
   const TAG = '#ANONArcade';
   const EMOJI = { 'anon-snake': '🐍', solitaire: '🃏', hearts: '♥️', 'daily-word': '🟨', 'word-unlimited': '🔥', connect4: '🔴', tictactoe: '❌', minesweeper: '💣',
-    checkers: '⛀', chess: '♞', jigsaw: '🧩', 'slide-puzzle': '🧩', 'whack-an-anon': '🔨', 'shadow-dodge': '🌑', 'ninja-memory': '🧠', 'shadow-runner': '🏃',
+    checkers: '⛀', chess: '♞', jigsaw: '🧩', 'slide-puzzle': '🧩', 'whack-an-anon': '🔨', 'shadow-dodge': '⭐', 'ninja-memory': '🧠', 'shadow-runner': '🏃',
     'anon-flutter': '🪽', 'brick-breaker': '🧱', pinball: '🪐', 'anon-2048': '🔢', 'block-drop': '🟦', 'gem-match': '💎', 'bomb-maze': '💣', 'barrel-climb': '🛢️',
     'sky-defence': '🛡️', 'shadow-echo': '🎵', 'pyramid-hop': '🔺', 'bug-blaster': '🐛', 'shadow-maze': '👻', 'paper-toss': '🗑️', 'flag-swipe': '🚩', crossing: '🚸',
     'backing-quiz': '❓', 'space-rocks': '☄️', 'rug-runner': '🏃', 'hype-pop': '🎈', 'paddle-duel': '🏓', 'pool-plumber': '🔧', 'chain-detective': '🔍',

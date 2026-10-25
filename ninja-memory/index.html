@@ -4,19 +4,19 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#05070a">
-<title>ANON Ninja Memory · ANON NFTs</title>
-<meta name="description" content="ANON Ninja Memory: flip the cards and match the ANON NFT pairs. Free, no sign-up.">
+<title>ANON Gem Memory · ANON NFTs</title>
+<meta name="description" content="ANON Gem Memory: flip the cards and match the ANON NFT pairs. Free, no sign-up.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="ANON Arcade">
-<meta property="og:title" content="ANON Ninja Memory">
-<meta property="og:description" content="ANON Ninja Memory: flip the cards and match the ANON NFT pairs. Free, no sign-up.">
+<meta property="og:title" content="ANON Gem Memory">
+<meta property="og:description" content="ANON Gem Memory: flip the cards and match the ANON NFT pairs. Free, no sign-up.">
 <meta property="og:url" content="https://anonnftgroup-cpu.github.io/Anon-games/ninja-memory/">
 <meta property="og:image" content="https://anonnftgroup-cpu.github.io/Anon-games/ninja-memory/og.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="ANON Ninja Memory">
-<meta name="twitter:description" content="ANON Ninja Memory: flip the cards and match the ANON NFT pairs. Free, no sign-up.">
+<meta name="twitter:title" content="ANON Gem Memory">
+<meta name="twitter:description" content="ANON Gem Memory: flip the cards and match the ANON NFT pairs. Free, no sign-up.">
 <meta name="twitter:image" content="https://anonnftgroup-cpu.github.io/Anon-games/ninja-memory/og.jpg">
 <link rel="icon" href="../assets/logo.webp">
 <link rel="stylesheet" href="../assets/nft/kit.css">
@@ -36,7 +36,7 @@
 </head>
 <body>
 <header><div class="top">
-  <div class="brand"><a class="back-btn" href="../" aria-label="Back to ANON Arcade">&larr; Arcade</a><img src="../assets/logo.webp" alt=""><h1>ANON NINJA MEMORY</h1></div>
+  <div class="brand"><a class="back-btn" href="../" aria-label="Back to ANON Arcade">&larr; Arcade</a><img src="../assets/logo.webp" alt=""><h1>ANON GEM MEMORY</h1></div>
   <div class="top-r"><button class="icon-btn" id="lbBtn" aria-label="Leaderboard">🏆</button><button class="icon-btn" id="menuBtn" aria-label="New game">↻</button></div>
 </div></header>
 <section class="view on" id="setup">
@@ -59,7 +59,7 @@
 <script>
 'use strict';
 const { $, el, ls, modal, post, openLB, gameOver, art, ART, B } = AK;
-const GAME = 'ninja-memory', TITLE = 'Ninja Memory';
+const GAME = 'ninja-memory', TITLE = 'Gem Memory';
 const LV = { easy: { p: 6, c: 3, base: 1000 }, medium: { p: 10, c: 4, base: 2000 }, hard: { p: 15, c: 5, base: 3500 } };
 const NAMES = { easy: 'Easy', medium: 'Medium', hard: 'Hard' };
 const FACES = ART.map(a => ({ id: 'p-' + a.id, src: a.img, name: a.name })).concat(ART.slice(0, 5).map(a => ({ id: 'c-' + a.id, src: a.cover, name: a.name })));
@@ -102,7 +102,7 @@ function check() {
   if (S.done.size !== S.deck.length) return;
   S.over = true; S.end = Date.now(); clearInterval(tick); hud();
   const t = Math.max(1, secs()), sc = score(S.diff, S.moves, t), ok = t >= minTime(S.diff), last = FACES.find(f => f.id === S.deck[[...S.done].pop()]);
-  ((S) => setTimeout(() => { modal({ art: last.src, title: 'All pairs found! 🥷', text: `${NAMES[S.diff]}: <b>${S.moves}</b> turns in <b>${t}s</b>.`, lb: true,
+  ((S) => setTimeout(() => { modal({ art: last.src, title: 'All pairs found! 🎉', text: `${NAMES[S.diff]}: <b>${S.moves}</b> turns in <b>${t}s</b>.`, lb: true,
     buttons: [['PLAY AGAIN', () => newGame()], ['Leaderboard', () => openLB(GAME, TITLE, NAMES, 'turns'), 1], ['Settings', () => show('setup'), 1]] });
     if (ok) post(GAME, sc, t, S.moves, S.diff); else { const m = $('#lbMsg'); if (m) m.textContent = 'Too quick to verify, so this one is not posted.'; } }, 700))(S); // snapshot: a quick new game must not change this post
   gameOver();

@@ -5,16 +5,16 @@
   'use strict';
   const W = 400, H = 720, BR = 9, GRAV = 1150, MAXV = 2600, STEP = 1 / 720, DRAIN_Y = 735;
   const LANE_X = 374, LANE_REST_Y = 700;
-  const RANKS = ['Shadow Recruit', 'Hooded Scout', 'Forest Ninja', 'Gem Hunter', 'Night Ronin', 'Shadow Knight', 'Crown Guard', 'ANON Prince', 'ANON King'];
+  const RANKS = ['Rookie', 'Hooded Scout', 'Forest Explorer', 'Gem Hunter', 'Night Ranger', 'Gold Knight', 'Crown Guard', 'ANON Prince', 'ANON King'];
   const MISSIONS = [
     { id: 'gems', name: 'Collect 5 pink gems', stat: 'gem', n: 5 },
     { id: 'crown', name: 'Hit the crown targets', stat: 'target', n: 3 },
     { id: 'spell', name: 'Spell A-N-O-N in the top lanes', stat: 'spell', n: 1 },
-    { id: 'forest', name: 'Escape the shadow forest', stat: 'orbit', n: 1 },
+    { id: 'forest', name: 'Escape the enchanted forest', stat: 'orbit', n: 1 },
     { id: 'sling', name: 'Slingshot storm: 8 slings', stat: 'sling', n: 8 },
     { id: 'gems2', name: 'Collect 12 pink gems', stat: 'gem', n: 12 },
     { id: 'crown2', name: 'Crown targets x2', stat: 'target', n: 6 },
-    { id: 'forest2', name: 'Escape the shadow forest twice', stat: 'orbit', n: 2 },
+    { id: 'forest2', name: 'Escape the enchanted forest twice', stat: 'orbit', n: 2 },
     { id: 'gems3', name: 'Gem galaxy: 20 pink gems', stat: 'gem', n: 20 }
   ];
   const PTS = { bumper: 50, sling: 10, lane: 100, laneAgain: 20, spell: 1000, target: 100, bank: 1000, orbit: 1000, jackpot: 5000, skill: 2000, mission: 2500 };
@@ -39,7 +39,7 @@
     const g1 = seg(360, 250, 388, 214, { kind: 'gate', e: 0.3, group: 'gate' }); g1.oneway = true; g1.nx = -g1.ty; g1.ny = g1.tx; if (g1.nx > 0) { g1.nx = -g1.nx; g1.ny = -g1.ny; }
     // inlane guides into the flipper pivots
     seg(40, 480, 116, 628, { group: 'rail' }); seg(332, 480, 256, 628, { group: 'rail' });
-    // shadow forest orbit: channel up the left side, around the dome, one-way at its top
+    // enchanted forest orbit: channel up the left side, around the dome, one-way at its top
     poly([[48, 275], [48, 200]].concat(arcPts(200, 200, 152, 180, 232, 10)), { group: 'rail', kind: 'wall' });
     const ga = 232 * Math.PI / 180; const gi = [200 + 152 * Math.cos(ga), 200 + 152 * Math.sin(ga)], go = [200 + 188 * Math.cos(ga), 200 + 188 * Math.sin(ga)];
     const g2 = seg(gi[0], gi[1], go[0], go[1], { kind: 'gate', e: 0.3, group: 'gate' }); g2.oneway = true; g2.nx = -Math.sin(ga); g2.ny = Math.cos(ga);

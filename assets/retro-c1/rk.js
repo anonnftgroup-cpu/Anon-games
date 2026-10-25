@@ -58,7 +58,7 @@
       <div class="lbl">${o.pickLabel || 'Pick your ANON'}</div><div class="chars" id="artPick"></div>
       <button class="go" id="goBtn">PLAY</button><p class="howto">${o.how}</p><div class="nick" id="nick"></div></section>
       <section class="view" id="play"><div class="hud" id="hud"></div><div class="stage" id="stage"><canvas id="cv"></canvas><div class="msg" id="msg"></div>
-      <div class="pz" id="pz"><div class="mcard"><h2>Paused</h2><p>Take a breather, ninja.</p><button class="go" id="resBtn">RESUME</button><button class="go alt" id="newBtn">New game</button><button class="go alt" id="lbBtn2">Leaderboard</button></div></div></div>
+      <div class="pz" id="pz"><div class="mcard"><h2>Paused</h2><p>Take a breather, ANON.</p><button class="go" id="resBtn">RESUME</button><button class="go alt" id="newBtn">New game</button><button class="go alt" id="lbBtn2">Leaderboard</button></div></div></div>
       <div class="ctl" id="ctl"></div></section>`;
     const cv = $('#cv'), x = cv.getContext('2d'), stage = $('#stage');
     const show = id => document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === id));

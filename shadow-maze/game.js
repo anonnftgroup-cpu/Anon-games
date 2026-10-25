@@ -1,4 +1,4 @@
-/* ANON Shadow Maze · rules + movement (no DOM). Original asymmetric maze "Shadow Shrine" by ANON NFTs: off-centre shrine, no wrap tunnels. */
+/* ANON Lantern Maze · rules + movement (no DOM). Original asymmetric maze "Lantern Shrine" by ANON NFTs: off-centre shrine, no wrap tunnels. */
 (function (root, f) { if (typeof module === 'object' && module.exports) module.exports = f(); else root.SMGame = f(); })(this, function () {
   'use strict';
   const MAZE = [
@@ -48,7 +48,7 @@
       if (g.fr) return c[Math.floor(rnd() * c.length)];
       const smart = g.roam > 0 ? 0.2 : Math.min(0.9, [0.62, 0.52, 0.42, 0.36][g.i] + 0.06 * (S.level - 1));
       if (rnd() > smart) return c[Math.floor(rnd() * c.length)];
-      // pack hunting: two hunters go for the ninja, two try to cut off the tile the ninja is heading to
+      // pack hunting: two hunters go for the player, two try to cut off the tile the player is heading to
       const p = S.pl, [dx, dy] = DIRS[p.dir], ahead = g.i % 2 ? 3 : 0; let tx = p.x, ty = p.y;
       for (let k = 0; k < ahead && walkP(tx + dx, ty + dy); k++) { tx += dx; ty += dy; } tx = (tx + W) % W;
       const f = field(tx, ty, false); let best = c[0], bv = 1e9;

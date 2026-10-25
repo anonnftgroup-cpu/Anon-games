@@ -122,7 +122,7 @@ footer a{color:#b9a35c;text-decoration:none}
       <div class="chips" id="cats" role="toolbar" aria-label="Categories"></div>
     </div>
     <div class="grid" id="grid"></div>
-    <div class="empty" id="empty">No games match. Try another word, ninja.</div>
+    <div class="empty" id="empty">No games match. Try another word, ANON.</div>
   </section>
 
   <section class="view" id="viewLb" aria-label="Leaderboards">
@@ -159,7 +159,7 @@ function computeNew() {
 }
 
 function open(g) {
-  if (!isLive(g)) { toast('🥷 ' + g.name + ' is coming soon'); return; }
+  if (!isLive(g)) { toast('🎮 ' + g.name + ' is coming soon'); return; }
   location.href = gameUrl(g);
 }
 
@@ -307,7 +307,7 @@ async function load() {
   if (want && tab !== 'leaderboards') {
     const g = GAMES.find(x => x.id === want);
     if (g && isLive(g)) { location.replace(gameUrl(g)); return; }
-    if (g) toast('🥷 ' + g.name + ' is coming soon'); else toast('Game not found');
+    if (g) toast('🎮 ' + g.name + ' is coming soon'); else toast('Game not found');
   }
   if (want) lbGame = want;
   renderTools(); renderGrid();

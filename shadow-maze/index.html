@@ -4,19 +4,19 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#05070a">
-<title>ANON Shadow Maze · ANON NFTs</title>
-<meta name="description" content="ANON Shadow Maze: guide your ANON ninja through the Shadow Shrine, collect gold coins and turn the tables with pink power gems. Free, no sign-up.">
+<title>ANON Lantern Maze · ANON NFTs</title>
+<meta name="description" content="ANON Lantern Maze: guide your ANON through the Lantern Shrine, collect gold coins and turn the tables with pink power gems. Free, no sign-up.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="ANON Arcade">
-<meta property="og:title" content="ANON Shadow Maze">
-<meta property="og:description" content="ANON Shadow Maze: guide your ANON ninja through the Shadow Shrine, collect gold coins and turn the tables with pink power gems. Free, no sign-up.">
+<meta property="og:title" content="ANON Lantern Maze">
+<meta property="og:description" content="ANON Lantern Maze: guide your ANON through the Lantern Shrine, collect gold coins and turn the tables with pink power gems. Free, no sign-up.">
 <meta property="og:url" content="https://anonnftgroup-cpu.github.io/Anon-games/shadow-maze/">
 <meta property="og:image" content="https://anonnftgroup-cpu.github.io/Anon-games/shadow-maze/og.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="ANON Shadow Maze">
-<meta name="twitter:description" content="ANON Shadow Maze: guide your ANON ninja through the Shadow Shrine, collect gold coins and turn the tables with pink power gems. Free, no sign-up.">
+<meta name="twitter:title" content="ANON Lantern Maze">
+<meta name="twitter:description" content="ANON Lantern Maze: guide your ANON through the Lantern Shrine, collect gold coins and turn the tables with pink power gems. Free, no sign-up.">
 <meta name="twitter:image" content="https://anonnftgroup-cpu.github.io/Anon-games/shadow-maze/og.jpg">
 <link rel="icon" href="../assets/logo.webp">
 <link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
@@ -63,12 +63,12 @@
     if (!fr) RK.portrait(x, im, cx, cy - r * 0.15, r * 0.52, 'rgba(0,0,0,.7)'); else { x.fillStyle = '#120e02'; x.beginPath(); x.arc(cx - r * .25, cy - r * .2, r * .13, 0, 7); x.arc(cx + r * .25, cy - r * .2, r * .13, 0, 7); x.fill(); }
   }
   RK.shell({
-    game: 'shadow-maze', title: 'ANON Shadow Maze', h1: 'ANON SHADOW MAZE', W: 19 * T, H: 21 * T, movesLabel: 'level', swipe: true, controls: ['pad'],
-    pickLabel: 'Pick your ninja', startMsg: 'GO!',
-    how: '<b>Swipe</b>, use the pad or the arrow keys / WASD to steer your ninja through the Shadow Shrine. Collect every 🪙 gold coin to clear the level. A 💎 pink power gem spooks the shadows for a few seconds, so catch them for 200, 400, 800 and 1,600. Grab the ANON NFT tokens for bonus points. Each level gets faster.',
+    game: 'shadow-maze', title: 'ANON Lantern Maze', h1: 'ANON LANTERN MAZE', W: 19 * T, H: 21 * T, movesLabel: 'level', swipe: true, controls: ['pad'],
+    pickLabel: 'Pick your ANON', startMsg: 'GO!',
+    how: '<b>Swipe</b>, use the pad or the arrow keys / WASD to steer your ANON through the Lantern Shrine. Collect every 🪙 gold coin to clear the level. A 💎 pink power gem spooks the ghosts for a few seconds, so catch them for 200, 400, 800 and 1,600. Grab the ANON NFT tokens for bonus points. Each level gets faster.',
     create: o => { wallLayer = null; const S = G.create(o); S.shades = SHADES.map(s => s.slice()); S.shades.forEach(s => { if (s[1] === o.art) s[1] = 'grumpy'; }); return S; },
     hud: S => `<span>⭐ ${S.score.toLocaleString()}</span><span>LVL ${S.level}</span><span>${'❤️'.repeat(Math.max(0, Math.min(5, S.lives)))}</span>`,
-    result: S => ({ score: S.score, time: S.t, moves: S.level, text: `Level ${S.level} · ${S.ghostsEaten} shadows caught · ${Math.round(S.t)} s` }),
+    result: S => ({ score: S.score, time: S.t, moves: S.level, text: `Level ${S.level} · ${S.ghostsEaten} ghosts caught · ${Math.round(S.t)} s` }),
     draw(x, S, t) {
       if (!wallLayer) wallLayer = walls(S); x.drawImage(wallLayer, 0, 0, S.W * T, S.H * T);
       for (let y = 0; y < S.H; y++) for (let xx = 0; xx < S.W; xx++) { const c = S.coins[y][xx]; if (!c) continue; const X = xx * T + T / 2, Y = y * T + T / 2;

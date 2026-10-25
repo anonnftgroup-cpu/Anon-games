@@ -1,4 +1,4 @@
-/* ANON Crossing · rules (no DOM). Hop the shadow road and the gold river to fill the five ANON shrines. Original lanes by ANON NFTs. */
+/* ANON Crossing · rules (no DOM). Hop the neon road and the gold river to fill the five ANON shrines. Original lanes by ANON NFTs. */
 (function (root, f) { if (typeof module === 'object' && module.exports) module.exports = f(); else root.CRGame = f(); })(this, function () {
   'use strict';
   const W = 11, ROWS = 13, L = W + 5, SLOTS = [1, 3, 5, 7, 9], LIFE_T = 40;
@@ -31,7 +31,7 @@
       for (const it of ln.items) { const a = itemX(ln, it, lt); if (x >= a - 0.1 && x <= a + it.len + 0.1 - 1e-9 && x - a > -0.1) { if (x > a - 0.15 && x < a + it.len - 0.85 + 0.15 + 0.7) return { ln, it }; } } return null; }
     function hitCar(row, x, lt) { const ln = S.lanes[row]; if (!ln || ln.t !== 'road') return false;
       for (const it of ln.items) { const a = itemX(ln, it, lt); if (x + 0.32 > a + 0.08 && x - 0.32 < a + it.len - 0.08) return true; } return false; }
-    // is a ninja centred at column-space x (0..W-1, centre = x + 0.5) safe on row at lane time + ahead?
+    // is a player centred at column-space x (0..W-1, centre = x + 0.5) safe on row at lane time + ahead?
     S.safe = function (row, x, ahead) { const lt = S.lt + (ahead || 0); const c = x + 0.5;
       if (row === 6 || row === 12) return x >= -0.01 && x <= W - 0.99;
       if (row === 0) return true;

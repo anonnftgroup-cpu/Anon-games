@@ -43,7 +43,7 @@
   <div class="chars five" id="artPick"></div>
   <div class="lbl">Difficulty</div><div class="seg" id="diff"><button data-v="easy">Easy</button><button data-v="medium">Medium</button><button data-v="hard">Hard</button></div>
   <button class="go" id="goBtn">PLAY</button>
-  <p class="howto">Both fleets hide 5 ships (Shogun 5, Ronin 4, Ninja 3, Shadow 3, Kunai 2). Tap the enemy grid to fire: ✕ is a hit, a dot is a miss. You take turns with the CPU. Sink all 5 enemy ships first to win. Fewer shots score more. Don't like your fleet? Tap 🔀 New fleet before your first shot.</p>
+  <p class="howto">Both fleets hide 5 ships (Flagship 5, Cruiser 4, Frigate 3, Scout 3, Dinghy 2). Tap the enemy grid to fire: ✕ is a hit, a dot is a miss. You take turns with the CPU. Sink all 5 enemy ships first to win. Fewer shots score more. Don't like your fleet? Tap 🔀 New fleet before your first shot.</p>
   <div class="nick" id="nick"></div>
 </section>
 <section class="view" id="play">
@@ -126,7 +126,7 @@ const fmt = s => Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(
 
 const MODES = {"easy": "Easy", "medium": "Medium", "hard": "Hard"};
 // ANON Sea Battle vs computer
-const BASE = { easy: 100, medium: 300, hard: 600 }, SHIPS = [['Shogun', 5], ['Ronin', 4], ['Ninja', 3], ['Shadow', 3], ['Kunai', 2]];
+const BASE = { easy: 100, medium: 300, hard: 600 }, SHIPS = [['Flagship', 5], ['Cruiser', 4], ['Frigate', 3], ['Scout', 3], ['Dinghy', 2]];
 function fleet() { const g = Array(100).fill(-1), ships = [];
   SHIPS.forEach(([n, len], si) => { for (;;) { const h = AP.rnd() < .5, r = AP.ri(0, h ? 9 : 10 - len), c = AP.ri(0, h ? 10 - len : 9), cells = [];
     for (let k = 0; k < len; k++) cells.push((r + (h ? 0 : k)) * 10 + c + (h ? k : 0)); if (cells.every(i => g[i] < 0)) { cells.forEach(i => g[i] = si); ships.push({ n, len, cells, h, hits: 0 }); break; } } });

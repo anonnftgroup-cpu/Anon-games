@@ -391,7 +391,7 @@ function showGame() {
   const w = S.result.winner, cpu = S.mode === 'cpu';
   openModal(p => {
     if (w !== 0) { const d = el('div', 'disc res-disc' + (w === -1 ? ' p2' : '')); setDisc(d, charById(w === 1 ? S.p1 : S.p2)); p.appendChild(d); }
-    p.appendChild(el('h2', '', w === 0 ? 'Draw!' : cpu ? (w === 1 ? 'Crowned! 👑' : 'The shadows win this one') : (w === 1 ? 'Player 1 wins!' : 'Player 2 wins!')));
+    p.appendChild(el('h2', '', w === 0 ? 'Draw!' : cpu ? (w === 1 ? 'Crowned! 👑' : 'The computer wins this one') : (w === 1 ? 'Player 1 wins!' : 'Player 2 wins!')));
     p.appendChild(el('div', 'res-sub', 'Game ' + (S.gi + 1) + ' of ' + GAMES + (cpu ? ' · ' + DIFF_NAME[S.diff] : '')));
     tallyRow(p);
     const row = el('div', 'row'), nx = el('button', 'btn pri', 'Next game ▶'); nx.type = 'button'; nx.id = 'nextGame'; nx.onclick = nextGame; row.appendChild(nx); p.appendChild(row);
@@ -403,7 +403,7 @@ function showSeries() {
   openModal(p => {
     const hero = S.w === S.l ? null : (S.w > S.l ? 1 : -1);
     if (hero) { const d = el('div', 'disc res-disc' + (hero === -1 ? ' p2' : '')); setDisc(d, charById(hero === 1 ? S.p1 : S.p2)); p.appendChild(d); }
-    p.appendChild(el('h2', '', cpu ? (won ? 'Series crowned! 👑' : S.w === S.l ? 'Series tied' : 'The shadows take the series') : (hero === 1 ? 'Player 1 takes the series!' : hero === -1 ? 'Player 2 takes the series!' : 'Series tied!')));
+    p.appendChild(el('h2', '', cpu ? (won ? 'Series crowned! 👑' : S.w === S.l ? 'Series tied' : 'The computer takes the series') : (hero === 1 ? 'Player 1 takes the series!' : hero === -1 ? 'Player 2 takes the series!' : 'Series tied!')));
     p.appendChild(el('div', 'res-sub', 'Best of ' + GAMES + (cpu ? ' · ' + DIFF_NAME[S.diff] : ' · 2 players')));
     tallyRow(p);
     if (cpu) { const st = stats(); p.appendChild(el('div', 'rec', 'Score ' + sc + ' = ' + MULT[S.diff] + ' × (3 × ' + S.w + ' wins + ' + S.d + ' draws) · your best on ' + DIFF_NAME[S.diff] + ': ' + (st.best[S.diff] || 0))); }

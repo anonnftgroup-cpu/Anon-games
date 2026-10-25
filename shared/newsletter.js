@@ -49,7 +49,7 @@
     ov.innerHTML = '<div class="anw-card" role="dialog" aria-modal="true" aria-labelledby="anw-t" aria-describedby="anw-d">' +
       '<button class="anw-x" type="button" aria-label="Close">✕</button>' +
       '<img src="' + BASE + '../assets/logo.webp" alt="">' +
-      '<h2 id="anw-t">Stay in the loop 🥷</h2>' +
+      '<h2 id="anw-t">Stay in the loop ✨</h2>' +
       '<p id="anw-d">Keep up to date with all the latest ANON news. Subscribe to the ANON NFTs newsletter.</p>' +
       '<a class="anw-sub" href="' + URL_SUB + '" target="_blank" rel="noopener">SUBSCRIBE</a>' +
       '<button class="anw-later" type="button">Maybe later</button></div>';

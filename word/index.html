@@ -206,7 +206,7 @@ async function submitGuess() {
   paintKeys(); busy = false;
   const FX = window.ANONWordFX;
   if (won) { rows[r].cells.forEach((t, i) => setTimeout(() => t.classList.add('win'), i * 90)); toast(FX ? FX.winMsg(r + 1) : 'Crowned! 👑', 1800); if (FX) setTimeout(() => FX.crown(board), 450); }
-  else if (lost) { toast((FX ? FX.loseMsg() : 'The shadows win this time') + ' · ' + ANSWER.toUpperCase(), 2600); if (FX) FX.shadows(); }
+  else if (lost) { toast((FX ? FX.loseMsg() : 'The forest wins this time') + ' · ' + ANSWER.toUpperCase(), 2600); if (FX) FX.shadows(); }
   if (won || lost) setTimeout(() => { showResult(); if (won) postScore(); }, won ? 1500 : 1800);
   if ((won || lost) && window.ANONNews) window.ANONNews.gameOver({ delay: 4200 });   // newsletter pop-up after the result
 }
@@ -239,7 +239,7 @@ async function postScore() {
 function paintLb() {
   const box = document.getElementById('lbMsg'); if (!box) return;
   box.innerHTML = ''; box.className = 'lbmsg' + (S.lb && S.lb.ok ? ' ok' : '');
-  if (S.status !== 'won') { box.textContent = S.status === 'lost' ? 'Win to get on the leaderboard. Back tomorrow, ninja.' : ''; return; }
+  if (S.status !== 'won') { box.textContent = S.status === 'lost' ? 'Win to get on the leaderboard. Back tomorrow, ANON.' : ''; return; }
   const sc = S.lb && S.lb.score != null ? S.lb.score : score(solvedIn(), secsUsed());
   box.appendChild(document.createTextNode('Score ' + sc + '. ' + (S.lb ? S.lb.msg : '')));
   if (S.lb && S.lb.retry) { const b = el('button', '', 'Post score'); b.onclick = () => { S.lb = null; postScore(); }; box.appendChild(b); }
@@ -261,7 +261,7 @@ function showHelp() {
     p.appendChild(el('h2', '', 'How to play'));
     p.appendChild(el('p', '', 'Guess the hidden 5-letter word in 6 tries. Type a real word and press Enter. The tiles change colour to show how close you are.'));
     p.appendChild(exRow('crown', ['correct'])); p.appendChild(el('p', 'small', 'C is in the word and in the right spot (gold).'));
-    p.appendChild(exRow('ninja', ['', '', '', 'present'])); p.appendChild(el('p', 'small', 'J is in the word but in another spot (pink).'));
+    p.appendChild(exRow('pixel', ['', '', '', 'present'])); p.appendChild(el('p', 'small', 'E is in the word but in another spot (pink).'));
     p.appendChild(exRow('ghost', ['', '', 'absent'])); p.appendChild(el('p', 'small', 'O is not in the word at all (grey).'));
     p.appendChild(el('p', '', 'Everyone gets the same word. A new one arrives every day at midnight UK time. Win in fewer guesses (and a bit faster) for a higher leaderboard score.'));
     const r = el('div', 'btnrow'), b = el('button', 'btn pri', "Let's play"); b.onclick = closeModal; r.appendChild(b); p.appendChild(r);
@@ -274,7 +274,7 @@ function showResult() {
   openModal(p => {
     if (done) {
       const img = el('img', 'res-art'); img.src = '../assets/logo.webp'; img.alt = 'ANON hooded figure'; p.appendChild(img);
-      p.appendChild(el('h2', '', S.remote ? 'Already played today' : S.status === 'won' ? 'Crowned! 👑' : 'The shadows win this time'));
+      p.appendChild(el('h2', '', S.remote ? 'Already played today' : S.status === 'won' ? 'Crowned! 👑' : 'The forest wins this time'));
       const w = el('div', 'res-word' + (S.status === 'lost' ? ' lost' : '')); ANSWER.split('').forEach(c => w.appendChild(el('span', '', c.toUpperCase()))); p.appendChild(w);
       p.appendChild(el('div', 'res-msg', S.remote ? 'Solved in ' + S.remote.moves + '/6 as ' + S.remote.nickname + ' · Word #' + S.n : S.status === 'won' ? 'Solved in ' + S.guesses.length + '/6 · Word #' + S.n : 'The word was ' + ANSWER.toUpperCase() + ' · Word #' + S.n));
       if (S.remote) p.appendChild(el('p', 'small', 'Your score for today is already on the leaderboard, so this word is locked. Come back for a new word at midnight UK time.'));
@@ -365,7 +365,7 @@ async function checkServer() {
 function tick() {
   const left = T.next - now();
   $('#pCd').textContent = fmtCd(left); const m = document.getElementById('mCd'); if (m) m.textContent = fmtCd(left);
-  if (left <= 0) { load(); toast('🥷 A new ANON word is ready!', 2500); tick(); checkServer(); }
+  if (left <= 0) { load(); toast('✨ A new ANON word is ready!', 2500); tick(); checkServer(); }
 }
 
 $('#helpBtn').onclick = showHelp;

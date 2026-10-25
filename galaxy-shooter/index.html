@@ -5,18 +5,18 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#05070a">
 <title>ANON Galaxy Shooter · ANON NFTs</title>
-<meta name="description" content="ANON Galaxy Shooter: blast waves of swooping shadow drones with your ANON NFT ship. Free, no sign-up.">
+<meta name="description" content="ANON Galaxy Shooter: blast waves of swooping rogue drones with your ANON NFT ship. Free, no sign-up.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="ANON Arcade">
 <meta property="og:title" content="ANON Galaxy Shooter">
-<meta property="og:description" content="ANON Galaxy Shooter: blast waves of swooping shadow drones with your ANON NFT ship. Free, no sign-up.">
+<meta property="og:description" content="ANON Galaxy Shooter: blast waves of swooping rogue drones with your ANON NFT ship. Free, no sign-up.">
 <meta property="og:url" content="https://anonnftgroup-cpu.github.io/Anon-games/galaxy-shooter/">
 <meta property="og:image" content="https://anonnftgroup-cpu.github.io/Anon-games/galaxy-shooter/og.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="ANON Galaxy Shooter">
-<meta name="twitter:description" content="ANON Galaxy Shooter: blast waves of swooping shadow drones with your ANON NFT ship. Free, no sign-up.">
+<meta name="twitter:description" content="ANON Galaxy Shooter: blast waves of swooping rogue drones with your ANON NFT ship. Free, no sign-up.">
 <meta name="twitter:image" content="https://anonnftgroup-cpu.github.io/Anon-games/galaxy-shooter/og.jpg">
 <link rel="icon" href="../assets/logo.webp">
 <link rel="stylesheet" href="../assets/nft/kit.css">
@@ -43,7 +43,7 @@
   <div class="chars five" id="artPick"></div>
   <div class="lbl">Difficulty</div><div class="seg" id="diff"><button data-v="easy">Easy</button><button data-v="medium">Medium</button><button data-v="hard">Hard</button></div>
   <button class="go" id="goBtn">PLAY</button>
-  <p class="howto">Your ANON ship fires by itself. Slide your finger anywhere on the screen (or use ◀ ▶ / arrow keys) to move. Shadow drones fly in formation and swoop down at you: divers score double, crowned drones take 2 hits. Catch pink gems for a double shot. Clear a wave for a bonus. Easy has 4 lives, Medium and Hard 3.</p>
+  <p class="howto">Your ANON ship fires by itself. Slide your finger anywhere on the screen (or use ◀ ▶ / arrow keys) to move. Rogue drones fly in formation and swoop down at you: divers score double, crowned drones take 2 hits. Catch pink gems for a double shot. Clear a wave for a bonus. Easy has 4 lives, Medium and Hard 3.</p>
   <div class="nick" id="nick"></div>
 </section>
 <section class="view" id="play">
@@ -125,7 +125,7 @@ var dirty = true; window.addEventListener('resize', () => dirty = true); window.
 const fmt = s => Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
 
 const MODES = {"easy": "Easy", "medium": "Medium", "hard": "Hard"};
-// ANON Galaxy Shooter: formation waves of shadow drones that swoop and dive
+// ANON Galaxy Shooter: formation waves of rogue drones that swoop and dive
 const D = { easy: { shot: .9, dive: 4.5, bs: 150, es: 1, lives: 4 }, medium: { shot: 1.4, dive: 3, bs: 200, es: 1.2, lives: 3 }, hard: { shot: 1.8, dive: 2, bs: 250, es: 1.45, lives: 3 } };
 function newRun() { const d = D[pref.diff]; S = { art: pref.art, mode: pref.diff, d, px: .5, lives: d.lives, score: 0, moves: 0, t: 0, wave: 0, bul: [], eb: [], en: [], fx: [], gems: [], fire: 0, dbl: 0, inv: 2, diveT: 2, shotT: 1.5, sway: 0, stars: Array.from({ length: 50 }, () => [AP.rnd(), AP.rnd(), AP.rnd() * .6 + .2]), tx: null, msg: 0 }; wave(); hud(); }
 function wave() { S.wave++; S.en = []; const rows = Math.min(5, 3 + Math.floor(S.wave / 3)), cols = 7;

@@ -91,8 +91,8 @@
 <section class="view on" id="setup">
   <img class="hero" src="../assets/nft/c-royals.webp" alt="ANON NFTs artwork" style="object-position:50% 30%">
   <p class="disc"><b>This is a game with made-up projects. Real NFT prices and backing can fall. Not financial advice.</b><br>You play with in-game coins, not real money.</p>
-  <button class="go" id="goBtn">ENTER THE SHADOW MARKET</button>
-  <p class="howto">Welcome to the <b>ANON Shadow Market</b>. You start with <b>🪙 100 coins</b> and <b>3 minutes</b>. Buy and sell made-up NFT collections and end with the highest <b>net worth</b>.</p>
+  <button class="go" id="goBtn">ENTER THE ANON MARKET</button>
+  <p class="howto">Welcome to the <b>ANON Market</b>. You start with <b>🪙 100 coins</b> and <b>3 minutes</b>. Buy and sell made-up NFT collections and end with the highest <b>net worth</b>.</p>
   <p class="howto"><b>Every market sale pays a 20% tax.</b> Quick flips can lose coins. <b>🔍 Check backing</b> before you buy. In this game, <b>backed</b> collections have a pool worth 50% of mint price per NFT. It only grows as sale fees flow in, the price never shows below it, and you can <b>Redeem to pool</b> for the backing at any time, tax-free. <b>Unbacked</b> ones can swing wildly, run out of buyers, or get rug-pulled to zero.</p>
   <p class="howto">Watch for 🆕 surprise mints, streak bonuses for quick winning trades, and a HYPER final 30 seconds.</p>
   <div class="nick" id="nick"></div>
@@ -121,7 +121,7 @@
 'use strict';
 const { $, ls, post, openLB, gameOver, modal } = AK;
 const GAME = 'nft-tycoon', TITLE = 'ANON NFT Tycoon';
-$('#ver').textContent = 'ANON NFT Tycoon ' + VERSION + ' · ANON Shadow Market';
+$('#ver').textContent = 'ANON NFT Tycoon ' + VERSION + ' · ANON Market';
 AK.nickLine($('#nick')); BK.muteBtn($('#sndBtn'));
 const pref = ls.get('anonTycoon.pref', { best: 0, tip: false });
 const show = id => document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === id));
