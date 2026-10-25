@@ -121,7 +121,7 @@ html.anon-home-on .acts{bottom:calc(36px + env(safe-area-inset-bottom))}
   </div>
 
   <div class="stage"><canvas id="cv" width="600" height="600" aria-label="Preview of your image" role="img"></canvas></div>
-  <p class="hint">Drag the picture to move the artwork. Use Zoom to get closer. Tap an accessory to move it.</p>
+  <p class="hint">Drag the picture to move the artwork. Use Zoom to get closer. Tap an accessory to move it, and tap the X to remove it.</p>
 
   <div class="lbl">ARTWORK</div>
   <div class="arts" id="arts" role="listbox" aria-label="Choose an ANON artwork"></div>
@@ -142,7 +142,7 @@ html.anon-home-on .acts{bottom:calc(36px + env(safe-area-inset-bottom))}
   <label class="tog"><input type="checkbox" id="greet" checked> Seasonal greeting on the picture</label>
 
   <div class="lbl">ACCESSORIES</div>
-  <p class="hint" style="text-align:left;margin:0 2px 4px">Tap one to add it. Drag it on the picture to move it, pinch or use the sliders to resize and turn it. Add as many as you like.</p>
+  <p class="hint" style="text-align:left;margin:0 2px 4px">Tap one to add it. Drag it on the picture to move it, pinch or use the sliders to resize and turn it, and tap the X to remove it. Add as many as you like.</p>
   <div id="accPal"></div>
   <div class="accedit hide" id="accEdit">
     <div class="t" id="accName">Accessory</div>
@@ -415,6 +415,20 @@ const ACC_GROUPS = [['halloween', 'Halloween'], ['christmas', 'Christmas'], ['ea
 const ACC_SPOT = { witchhat: [.5, .12, .5], santahat: [.5, .12, .5], partyhat: [.5, .1, .3], crown: [.5, .1, .4], bunnyears: [.5, .1, .45], antlers: [.5, .1, .6],
   sunglasses: [.5, .45, .5], rednose: [.5, .58, .1], scarf: [.5, .82, .62], goldchain: [.5, .8, .5], pumpkin: [.2, .82, .26], bat: [.8, .16, .3], snowflake: [.82, .18, .18],
   egg: [.18, .82, .18], flower: [.82, .82, .18], heart: [.8, .2, .2], hearts: [.8, .2, .28], goldstar: [.82, .18, .18] };
+// round X on the selected accessory (preview only): top-right corner of its outline, kept inside the canvas
+function xBtnPos(a, W, H) {
+  const d = ACC[a.k], u = Math.min(W, H), w = a.s * u, h = w * d.ar, r = a.r || 0, ox = w * .56, oy = -h * .56;
+  const k = W / Math.max(1, cv.getBoundingClientRect().width || W), R = 14 * k, hitR = 21 * k;   // 28px circle, 42px touch target
+  let x = a.x * W + ox * Math.cos(r) - oy * Math.sin(r), y = a.y * H + ox * Math.sin(r) + oy * Math.cos(r);
+  x = Math.max(R + 2 * k, Math.min(W - R - 2 * k, x)); y = Math.max(R + 2 * k, Math.min(H - R - 2 * k, y));
+  return { x, y, R, hitR };
+}
+function drawXBtn(c, a, W, H) {
+  const { x, y, R } = xBtnPos(a, W, H);
+  c.save(); c.shadowColor = 'rgba(0,0,0,.6)'; c.shadowBlur = R * .5; c.beginPath(); c.arc(x, y, R, 0, 7); c.fillStyle = '#0B1426'; c.fill(); c.shadowColor = 'transparent';
+  c.lineWidth = R * .16; c.strokeStyle = '#D4AF37'; c.stroke();
+  const q = R * .4; c.beginPath(); c.moveTo(x - q, y - q); c.lineTo(x + q, y + q); c.moveTo(x + q, y - q); c.lineTo(x - q, y + q); c.lineWidth = R * .2; c.lineCap = 'round'; c.strokeStyle = '#ffffff'; c.stroke(); c.restore();
+}
 function drawAccs(c, W, H, list, sel) {
   const u = Math.min(W, H);
   list.forEach(a => { const d = ACC[a.k]; if (!d) return; const w = a.s * u;
@@ -422,6 +436,7 @@ function drawAccs(c, W, H, list, sel) {
     if (sel && a.id === sel) { const h = w * d.ar; c.setLineDash([u * .012, u * .009]); c.lineWidth = Math.max(1.5, u * .004); c.strokeStyle = 'rgba(243,215,122,.95)'; c.strokeRect(-w * .56, -h * .56, w * 1.12, h * 1.12);
       c.setLineDash([]); c.fillStyle = '#f3d77a'; [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(([p, q]) => { c.beginPath(); c.arc(p * w * .56, q * h * .56, u * .009, 0, 7); c.fill(); }); }
     c.restore(); });
+  const sa = sel && list.find(a => a.id === sel); if (sa && ACC[sa.k]) drawXBtn(c, sa, W, H);
 }
 
 const K = 'anonMaker.v1';
@@ -767,7 +782,9 @@ const ptrs = new Map(); let pinch0 = 0, zoom0 = 1, accDrag = null, ang0 = 0, s0 
 const toCanvas = (x, y) => { const b = cv.getBoundingClientRect(); return [(x - b.left) * cv.width / b.width, (y - b.top) * cv.height / b.height]; };
 cv.addEventListener('pointerdown', e => {
   cv.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
-  if (ptrs.size === 1) { const [px, py] = toCanvas(e.clientX, e.clientY), hit = hitAcc(px, py); accDrag = hit; if (hit) { if (sel !== hit.id) select(hit.id); } else if (sel) select(null); }
+  if (ptrs.size === 1) { const [px, py] = toCanvas(e.clientX, e.clientY), sa = selAcc();
+    if (sa) { const xb = xBtnPos(sa, cv.width, cv.height); if (Math.hypot(px - xb.x, py - xb.y) <= xb.hitR) { ptrs.delete(e.pointerId); accDrag = null; e.preventDefault(); $('#accDel').onclick(); toast(ACC[sa.k].name + ' removed'); return; } }
+    const hit = hitAcc(px, py); accDrag = hit; if (hit) { if (sel !== hit.id) select(hit.id); } else if (sel) select(null); }
   if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; pinch0 = Math.hypot(a.x - b.x, a.y - b.y); zoom0 = S.zoom; ang0 = Math.atan2(b.y - a.y, b.x - a.x); const sa = accDrag; if (sa) { s0 = sa.s; r0 = sa.r || 0; } }
 });
 cv.addEventListener('pointermove', e => {
