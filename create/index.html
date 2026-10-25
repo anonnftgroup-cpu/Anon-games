@@ -1,0 +1,449 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0B1426">
+<title>ANON Avatar and Wallpaper Maker · ANON Arcade · ANON NFTs</title>
+<meta name="description" content="Make your own ANON profile picture or phone and desktop wallpaper from ANON NFTs artwork. Free, no sign-up, no wallet. Everything is made on your device.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ANON Arcade">
+<meta property="og:title" content="ANON Avatar and Wallpaper Maker">
+<meta property="og:description" content="Make your own ANON profile picture or wallpaper. Free, no sign-up, no wallet.">
+<meta property="og:url" content="https://anonnftgroup-cpu.github.io/Anon-games/create/">
+<meta property="og:image" content="https://anonnftgroup-cpu.github.io/Anon-games/create/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ANON Avatar and Wallpaper Maker">
+<meta name="twitter:description" content="Make your own ANON profile picture or wallpaper. Free, no sign-up, no wallet.">
+<meta name="twitter:image" content="https://anonnftgroup-cpu.github.io/Anon-games/create/og.jpg">
+<link rel="icon" href="../assets/logo.webp">
+<link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
+<link rel="preload" href="../assets/maker/cinzel-700.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+@font-face{font-family:'Cinzel';font-style:normal;font-weight:700;font-display:swap;src:url(../assets/maker/cinzel-700.woff2) format('woff2')}
+:root{--navy:#0B1426;--gold:#D4AF37;--gold2:#f3d77a;--txt:#e9e3cf;--mut:#9aa3b5;--line:rgba(212,175,55,.35)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{background:#08101f}
+body{margin:0;min-height:100vh;color:var(--txt);font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  background:radial-gradient(ellipse 90% 40% at 50% 0%,rgba(212,175,55,.12),transparent 70%),linear-gradient(170deg,#13203a 0%,#0B1426 45%,#08101f 100%) fixed}
+button,input{font:inherit;color:inherit}
+.wrap{max-width:560px;margin:0 auto;padding:calc(10px + env(safe-area-inset-top)) 12px calc(18px + env(safe-area-inset-bottom))}
+.top{display:flex;align-items:center;gap:10px;padding:4px 0 10px}
+.back-btn{display:none;align-items:center;gap:4px;height:36px;padding:0 12px 0 9px;border-radius:18px;border:1px solid rgba(212,175,55,.7);background:rgba(0,0,0,.45);color:var(--gold2);font-weight:800;font-size:13px;letter-spacing:.04em;text-decoration:none;flex:none;white-space:nowrap}
+.in-hub .back-btn{display:inline-flex}
+.brand{display:flex;align-items:center;gap:9px;min-width:0}
+.brand img{width:40px;height:40px;border-radius:50%;box-shadow:0 0 0 1px rgba(212,175,55,.7);flex:none}
+h1{margin:0;font-family:Cinzel,Georgia,serif;font-weight:700;font-size:clamp(17px,5.4vw,26px);letter-spacing:.08em;line-height:1.1;white-space:nowrap;
+  background:linear-gradient(180deg,#fff3c4 0%,#e9c858 45%,#b48a25 75%,#f5dc85 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{font-size:12px;color:var(--mut);margin-top:2px}
+.seg{display:flex;gap:4px;padding:4px;border:1px solid var(--line);border-radius:14px;background:rgba(0,0,0,.35)}
+.seg button{flex:1;min-height:42px;border:0;border-radius:10px;background:transparent;color:#c9b56e;font-weight:800;font-size:13.5px;letter-spacing:.02em;cursor:pointer;padding:0 4px}
+.seg button.on{background:linear-gradient(180deg,#e9c858,#a47c1f);color:#120e02}
+.stage{position:relative;margin:12px auto 0;display:flex;justify-content:center;align-items:center;border:1px solid var(--line);border-radius:16px;background:repeating-conic-gradient(#0d1730 0 25%,#0a1224 0 50%) 0 0/22px 22px;padding:10px;overflow:hidden}
+#cv{display:block;max-width:100%;border-radius:8px;box-shadow:0 10px 30px rgba(0,0,0,.55);touch-action:none;cursor:grab;background:#0B1426}
+#cv:active{cursor:grabbing}
+.mode-avatar #cv{width:min(100%,400px)}
+.mode-phone #cv{height:min(62vh,520px);width:auto}
+.mode-desktop #cv{width:100%}
+.hint{font-size:11.5px;color:var(--mut);text-align:center;margin:6px 0 0}
+.lbl{font-family:Cinzel,Georgia,serif;font-size:12px;letter-spacing:.18em;color:var(--gold);margin:16px 2px 7px}
+.arts{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 8px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;scrollbar-width:thin;scrollbar-color:#D4AF37 transparent}
+.art{flex:0 0 74px;scroll-snap-align:start;border:2px solid rgba(212,175,55,.25);border-radius:12px;padding:0;background:#0a1224;overflow:hidden;cursor:pointer;text-align:center}
+.art img{display:block;width:100%;aspect-ratio:1;object-fit:cover}
+.art span{display:block;font-size:10px;line-height:1.2;padding:4px 3px 5px;color:#cfd5e0;min-height:29px}
+.art.on{border-color:var(--gold2);box-shadow:0 0 0 2px rgba(212,175,55,.25)}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{min-height:36px;padding:0 13px;border-radius:18px;border:1px solid rgba(212,175,55,.45);background:rgba(0,0,0,.3);color:#d8c886;font-weight:700;font-size:13px;cursor:pointer}
+.chip.on{background:rgba(212,175,55,.2);color:var(--gold2);border-color:var(--gold);box-shadow:inset 0 0 0 1px var(--gold)}
+.sw{width:38px;height:38px;border-radius:50%;border:2px solid rgba(255,255,255,.15);cursor:pointer;padding:0}
+.sw.on{border-color:var(--gold2);box-shadow:0 0 0 3px rgba(212,175,55,.35)}
+.txt{width:100%;min-height:44px;padding:10px 14px;border-radius:12px;border:1px solid rgba(212,175,55,.5);background:rgba(255,255,255,.05);color:#f5f0e1;font-size:16px;outline:none}
+.txt:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(212,175,55,.2)}
+.row{display:flex;align-items:center;gap:10px;margin:6px 2px}
+.row label{flex:0 0 74px;font-size:12.5px;color:var(--mut)}
+.row input[type=range]{flex:1;accent-color:#D4AF37;height:30px}
+.tog{display:flex;align-items:center;gap:9px;margin-top:10px;font-size:13.5px;color:#d6dbe5;cursor:pointer}
+.tog input{width:20px;height:20px;accent-color:#D4AF37}
+.small-btn{min-height:32px;padding:0 12px;border-radius:16px;border:1px solid rgba(212,175,55,.4);background:transparent;color:#c9b56e;font-size:12.5px;font-weight:700;cursor:pointer}
+.acts{position:sticky;bottom:0;z-index:20;display:flex;gap:8px;margin:18px -12px 0;padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:linear-gradient(180deg,rgba(8,16,31,0),rgba(8,16,31,.94) 30%)}
+.btn{flex:1;min-height:50px;border-radius:999px;border:0;background:#D4AF37;color:#0B1426;font-family:Cinzel,Georgia,serif;font-weight:700;font-size:15px;letter-spacing:.06em;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.4)}
+.btn:disabled{opacity:.6}
+.btn2{background:transparent;color:var(--gold2);border:1px solid var(--gold)}
+.hide{display:none!important}
+html.anon-home-on .acts{bottom:calc(36px + env(safe-area-inset-bottom))}
+.note{font-size:11.5px;line-height:1.5;color:#8590a5;text-align:center;margin:16px 4px 0}
+.note a{color:#c9b56e}
+/* result sheet */
+.ov{position:fixed;inset:0;z-index:5000;display:flex;align-items:center;justify-content:center;padding:14px;background:rgba(3,6,12,.82)}
+.sheet{width:100%;max-width:420px;max-height:calc(100% - 10px);overflow:auto;border:1px solid var(--gold);border-radius:18px;background:linear-gradient(170deg,#13203a,#0B1426 60%);padding:16px;text-align:center}
+.sheet h2{margin:0 0 6px;font-family:Cinzel,Georgia,serif;font-size:19px;color:#f5f0e1}
+.sheet p{margin:6px 0 10px;font-size:13px;line-height:1.45;color:#c3cad6}
+.sheet img{display:block;max-width:100%;max-height:52vh;margin:6px auto 10px;border-radius:10px;border:1px solid var(--line);-webkit-touch-callout:default}
+.sheet .btns{display:flex;flex-direction:column;gap:8px}
+.sheet .btn{min-height:46px;flex:none}
+#toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:rgba(0,0,0,.9);border:1px solid var(--gold);color:var(--gold2);padding:8px 15px;border-radius:20px;font-size:13px;opacity:0;transition:opacity .25s;pointer-events:none;z-index:6000;white-space:nowrap}
+#toast.show{opacity:1}
+</style>
+</head>
+<body>
+<div class="wrap" id="app">
+  <div class="top">
+    <a class="back-btn" id="backBtn" href="../?hub=1" aria-label="Back to ANON Arcade">&larr; Arcade</a>
+    <div class="brand"><img src="../assets/logo.webp" alt="ANON NFTs logo" width="40" height="40"><div><h1>ANON CREATE</h1><div class="sub">Avatar and wallpaper maker · free, no sign-up</div></div></div>
+  </div>
+
+  <div class="seg" id="modes" role="group" aria-label="What to make">
+    <button type="button" data-mode="avatar" class="on">Avatar</button>
+    <button type="button" data-mode="phone">Phone wallpaper</button>
+    <button type="button" data-mode="desktop">Desktop</button>
+  </div>
+
+  <div class="stage"><canvas id="cv" width="600" height="600" aria-label="Preview of your image" role="img"></canvas></div>
+  <p class="hint">Drag the picture to move the artwork. Use Zoom to get closer.</p>
+
+  <div class="lbl">ARTWORK</div>
+  <div class="arts" id="arts" role="listbox" aria-label="Choose an ANON artwork"></div>
+
+  <div class="row"><label for="zoom">Zoom</label><input id="zoom" type="range" min="1" max="3" step="0.01" value="1"></div>
+  <div class="row"><label for="px">Left / right</label><input id="px" type="range" min="-1" max="1" step="0.01" value="0"></div>
+  <div class="row"><label for="py">Up / down</label><input id="py" type="range" min="-1" max="1" step="0.01" value="0"></div>
+  <div class="row"><label></label><button class="small-btn" type="button" id="reset">Reset position</button></div>
+
+  <div id="avOpts">
+    <div class="lbl">BACKGROUND</div>
+    <div class="chips" id="bgs" role="group" aria-label="Background"></div>
+    <div class="lbl">FRAME</div>
+    <div class="chips" id="frames" role="group" aria-label="Frame"></div>
+    <div class="lbl">BADGE</div>
+    <div class="chips" id="badges" role="group" aria-label="Badge"></div>
+    <div class="lbl">NAME OR TAG</div>
+    <input class="txt" id="avText" maxlength="18" placeholder="Optional, e.g. your X handle" autocomplete="off" spellcheck="false" enterkeyhint="done">
+    <label class="tog"><input type="checkbox" id="avMark" checked> Small ANON mark</label>
+  </div>
+
+  <div id="wpOpts" class="hide">
+    <div class="lbl">LAYOUT</div>
+    <div class="chips" id="layouts" role="group" aria-label="Layout"></div>
+    <div class="lbl">TEXT</div>
+    <div class="chips" id="mottos" role="group" aria-label="Text presets"></div>
+    <input class="txt" id="wpText" maxlength="28" placeholder="Or type your own (optional)" autocomplete="off" spellcheck="false" enterkeyhint="done" style="margin-top:8px">
+    <p class="hint" style="text-align:left;margin-top:8px">Every wallpaper carries a small anonnfts.com mark at the bottom.</p>
+  </div>
+
+  <p class="note">ANON NFTs artwork is released under CC0, so it's yours to use. Your image is made on your device and nothing is uploaded.<br>Just for fun: the images you make here are not NFTs. <a href="https://anonnfts.com/collections" target="_top">See the ANON collections</a></p>
+
+  <div class="acts">
+    <button class="btn" type="button" id="dl">DOWNLOAD PNG</button>
+    <button class="btn btn2 hide" type="button" id="share">SHARE</button>
+  </div>
+</div>
+<div id="toast" role="status" aria-live="polite"></div>
+<script src="../shared/leaderboard.js?v=1.8.0"></script>
+<script>
+(() => {
+'use strict';
+const $ = s => document.querySelector(s);
+const el = (t, c, x) => { const e = document.createElement(t); if (c) e.className = c; if (x != null) e.textContent = x; return e; };
+const toast = (() => { let t; return (m, ms) => { const e = $('#toast'); e.textContent = m; e.classList.add('show'); clearTimeout(t); t = setTimeout(() => e.classList.remove('show'), ms || 2000); }; })();
+const FRAMED = (function () { try { return window.self !== window.top; } catch (e) { return true; } })();
+if (/[?&]hub=1\b/.test(location.search) || FRAMED) document.documentElement.classList.add('in-hub');
+
+/* ---------- artwork (all same-origin, so the canvas is never tainted) ---------- */
+const A = '../assets/maker/';
+const ARTS = [
+  { id: 'anon', name: 'ANON Revenue Share' }, { id: 'royals', name: 'King and Queen Apes' }, { id: 'apes', name: 'ANON Apes' },
+  { id: 'skulls', name: 'ANON Skulls' }, { id: 'eyes', name: 'ANON Eyes' }, { id: 'venge', name: 'Vengeance' },
+  { id: 'lake', name: 'Lake District' }, { id: 'grumpy', name: 'Grumpy Cat' }, { id: 'aces', name: 'Aces by BESC' },
+  { id: 'ghost', name: 'Ghost Dead Hand Aces' }, { id: 'horizon', name: 'ANON Horizon', wide: 1 }, { id: 'forest', name: 'ANON Forest', wide: 1 },
+  { id: 'lake-wide', name: 'Lake District wide', wide: 1 }, { id: 'venge-wide', name: 'Vengeance wide', wide: 1 },
+  { id: 'eyes-wide', name: 'ANON Eyes wide', wide: 1 }, { id: 'skulls-wide', name: 'ANON Skulls wide', wide: 1 }
+];
+const BGS = [
+  { id: 'navy', name: 'Navy and gold', c: ['#1b2c4f', '#0B1426', '#050a15'], glow: 'rgba(212,175,55,.35)' },
+  { id: 'gold', name: 'Gold', c: ['#f7e39a', '#D4AF37', '#7d6118'], glow: 'rgba(255,250,220,.45)' },
+  { id: 'midnight', name: 'Midnight', c: ['#141820', '#07090d', '#000000'], glow: 'rgba(212,175,55,.22)' },
+  { id: 'emerald', name: 'Emerald', c: ['#11553f', '#08281e', '#03110c'], glow: 'rgba(212,175,55,.3)' },
+  { id: 'crimson', name: 'Crimson', c: ['#7a1424', '#360812', '#140306'], glow: 'rgba(212,175,55,.3)' },
+  { id: 'royal', name: 'Royal purple', c: ['#46207e', '#1d0d3a', '#0a0517'], glow: 'rgba(212,175,55,.3)' },
+  { id: 'sky', name: 'Sky blue', c: ['#2f6db5', '#15345e', '#0B1426'], glow: 'rgba(255,255,255,.25)' }
+];
+const FRAMES = [['ring', 'Gold ring'], ['square', 'Gold square'], ['none', 'None']];
+const BADGES = [['none', 'None'], ['crown', 'Crown'], ['star', 'Gold star']];
+const LAYOUTS = [['blur', 'Blurred art fill'], ['card', 'Framed card'], ['full', 'Full screen']];
+const MOTTOS = ['Explore. Learn. Decide.', 'ANON NFTs', 'ANON Arcade', 'None'];
+const SIZES = { avatar: [1080, 1080], phone: [1170, 2532], desktop: [2560, 1440] };
+
+const K = 'anonMaker.v1';
+const saved = (() => { try { return JSON.parse(localStorage.getItem(K) || '{}'); } catch (e) { return {}; } })();
+const S = Object.assign({ mode: 'avatar', art: 'anon', bg: 'navy', frame: 'ring', badge: 'none', avText: '', avMark: true, layout: 'blur', motto: MOTTOS[0], wpText: '' }, saved, { zoom: 1, px: 0, py: 0 });
+const urlMode = new URLSearchParams(location.search).get('mode'); if (SIZES[urlMode]) S.mode = urlMode;
+if (!ARTS.find(a => a.id === S.art)) S.art = 'anon';
+const persist = () => { try { const o = Object.assign({}, S); delete o.zoom; delete o.px; delete o.py; localStorage.setItem(K, JSON.stringify(o)); } catch (e) {} };
+
+const IMG = {};
+function loadImg(src) {
+  if (IMG[src]) return IMG[src];
+  return (IMG[src] = new Promise((res, rej) => { const i = new Image(); i.decoding = 'async'; i.onload = () => res(i); i.onerror = () => { delete IMG[src]; rej(new Error('img')); }; i.src = src; }));
+}
+const artImg = id => loadImg(A + id + '.webp');
+const fontsP = (document.fonts && document.fonts.load ? Promise.all([document.fonts.load('700 40px Cinzel', 'ANON'), document.fonts.ready]).catch(() => {}) : Promise.resolve());
+const logoP = loadImg('../assets/logo.webp').catch(() => null);
+
+/* ---------- drawing helpers ---------- */
+function rr(c, x, y, w, h, r) { r = Math.min(r, w / 2, h / 2); c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
+function goldGrad(c, x0, y0, x1, y1) { const g = c.createLinearGradient(x0, y0, x1, y1); g.addColorStop(0, '#fff1b8'); g.addColorStop(.3, '#e9c858'); g.addColorStop(.6, '#a8862a'); g.addColorStop(.85, '#f3dc8a'); g.addColorStop(1, '#b48a25'); return g; }
+function paintBg(c, W, H, bg) {
+  const g = c.createLinearGradient(0, 0, W * .35, H); g.addColorStop(0, bg.c[0]); g.addColorStop(.55, bg.c[1]); g.addColorStop(1, bg.c[2]);
+  c.fillStyle = g; c.fillRect(0, 0, W, H);
+  const r = c.createRadialGradient(W / 2, H * .3, 0, W / 2, H * .3, Math.max(W, H) * .75); r.addColorStop(0, bg.glow); r.addColorStop(1, 'rgba(0,0,0,0)');
+  c.fillStyle = r; c.fillRect(0, 0, W, H);
+}
+// art drawn to cover a box, with zoom and pan (-1..1 = edge to edge of the overflow)
+function placeArt(img, x, y, w, h, z, px, py) {
+  const s = Math.max(w / img.width, h / img.height) * z, dw = img.width * s, dh = img.height * s;
+  return { x: x + (w - dw) / 2 - px * (dw - w) / 2, y: y + (h - dh) / 2 - py * (dh - h) / 2, w: dw, h: dh };
+}
+function drawArt(c, img, box, z, px, py) { const p = placeArt(img, box.x, box.y, box.w, box.h, z, px, py); c.drawImage(img, p.x, p.y, p.w, p.h); return p; }
+function blurFill(c, img, W, H) {   // soft blur without ctx.filter (Safari): shrink, then scale back up
+  const sm = document.createElement('canvas'); sm.width = Math.max(8, Math.round(W / 40)); sm.height = Math.max(8, Math.round(H / 40));
+  const s = sm.getContext('2d'); s.imageSmoothingEnabled = true; s.imageSmoothingQuality = 'high';
+  const p = placeArt(img, 0, 0, sm.width, sm.height, 1.15, 0, 0); s.drawImage(img, p.x, p.y, p.w, p.h);
+  const md = document.createElement('canvas'); md.width = Math.round(W / 8); md.height = Math.round(H / 8);
+  const m = md.getContext('2d'); m.imageSmoothingEnabled = true; m.imageSmoothingQuality = 'high'; m.drawImage(sm, 0, 0, md.width, md.height);
+  c.imageSmoothingEnabled = true; c.imageSmoothingQuality = 'high'; c.drawImage(md, 0, 0, W, H);
+}
+function fitFont(c, text, maxW, size, weight) { let s = size; do { c.font = (weight || 700) + ' ' + s + 'px Cinzel, Georgia, serif'; if (c.measureText(text).width <= maxW) break; s *= .93; } while (s > 8); return s; }
+function crown(c, cx, cy, w) {
+  const h = w * .62, x = cx - w / 2, y = cy - h / 2;
+  c.save(); c.shadowColor = 'rgba(0,0,0,.55)'; c.shadowBlur = w * .08; c.shadowOffsetY = w * .03;
+  c.beginPath(); c.moveTo(x, y + h); c.lineTo(x + w * .02, y + h * .25); c.lineTo(x + w * .27, y + h * .55); c.lineTo(x + w * .5, y); c.lineTo(x + w * .73, y + h * .55); c.lineTo(x + w * .98, y + h * .25); c.lineTo(x + w, y + h); c.closePath();
+  c.fillStyle = goldGrad(c, x, y, x + w, y + h); c.fill(); c.shadowColor = 'transparent';
+  c.lineWidth = w * .025; c.strokeStyle = '#6b5214'; c.stroke();
+  c.fillStyle = '#7a5d14'; c.fillRect(x + w * .04, y + h * .8, w * .92, h * .1);
+  [[.02, .25], [.5, 0], [.98, .25]].forEach(([a, b]) => { c.beginPath(); c.arc(x + w * a, y + h * b, w * .065, 0, 7); c.fillStyle = goldGrad(c, x, y, x + w, y + h); c.fill(); c.stroke(); });
+  [[.27, .66, '#b3122e'], [.5, .62, '#1f5fd1'], [.73, .66, '#0f8a4f']].forEach(([a, b, col]) => { c.beginPath(); c.arc(x + w * a, y + h * b, w * .05, 0, 7); c.fillStyle = col; c.fill(); });
+  c.restore();
+}
+function star(c, cx, cy, r) {
+  c.save(); c.shadowColor = 'rgba(0,0,0,.55)'; c.shadowBlur = r * .3; c.shadowOffsetY = r * .08;
+  c.beginPath(); c.arc(cx, cy, r, 0, 7); c.fillStyle = goldGrad(c, cx - r, cy - r, cx + r, cy + r); c.fill(); c.shadowColor = 'transparent';
+  c.lineWidth = r * .08; c.strokeStyle = '#6b5214'; c.stroke();
+  c.beginPath(); c.arc(cx, cy, r * .8, 0, 7); c.fillStyle = '#0B1426'; c.fill();
+  c.beginPath(); for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, q = i % 2 ? r * .3 : r * .66; c.lineTo(cx + Math.cos(a) * q, cy + Math.sin(a) * q); } c.closePath();
+  c.fillStyle = goldGrad(c, cx - r, cy - r, cx + r, cy + r); c.fill(); c.restore();
+}
+function mark(c, x, y, size, logo, align) {   // small logo + ANON
+  c.save(); c.font = '700 ' + size + 'px Cinzel, Georgia, serif'; c.textBaseline = 'middle';
+  const tw = c.measureText('ANON').width, lw = logo ? size * 1.25 : 0, gap = logo ? size * .35 : 0, w = lw + gap + tw;
+  const sx = align === 'center' ? x - w / 2 : x;
+  if (logo) { c.save(); c.beginPath(); c.arc(sx + lw / 2, y, lw / 2, 0, 7); c.clip(); c.drawImage(logo, sx, y - lw / 2, lw, lw); c.restore();
+    c.beginPath(); c.arc(sx + lw / 2, y, lw / 2, 0, 7); c.lineWidth = size * .07; c.strokeStyle = '#D4AF37'; c.stroke(); }
+  c.shadowColor = 'rgba(0,0,0,.7)'; c.shadowBlur = size * .35; c.fillStyle = '#f3d77a'; c.textAlign = 'left'; c.fillText('ANON', sx + lw + gap, y + size * .04);
+  c.restore();
+}
+function siteMark(c, W, H, u) {   // anonnfts.com at the bottom of every wallpaper
+  const y = H - u * (H > W ? .2 : .07), size = u * (H > W ? .034 : .026);
+  c.save(); c.font = '700 ' + size + 'px Cinzel, Georgia, serif'; c.textAlign = 'center'; c.textBaseline = 'middle';
+  const t = 'ANONNFTS.COM'; c.letterSpacing = (size * .18) + 'px'; const tw = c.measureText(t).width + size * 2.6;
+  c.shadowColor = 'rgba(0,0,0,.75)'; c.shadowBlur = size * .6; c.fillStyle = 'rgba(243,215,122,.92)'; c.fillText(t, W / 2, y);
+  c.shadowColor = 'transparent'; c.strokeStyle = 'rgba(212,175,55,.75)'; c.lineWidth = Math.max(1, size * .06);
+  c.beginPath(); c.moveTo(W / 2 - tw / 2 - size * 2.2, y); c.lineTo(W / 2 - tw / 2, y); c.moveTo(W / 2 + tw / 2, y); c.lineTo(W / 2 + tw / 2 + size * 2.2, y); c.stroke();
+  c.restore();
+}
+function bigText(c, text, cx, cy, maxW, size) {
+  if (!text) return;
+  c.save(); const s = fitFont(c, text, maxW, size); c.textAlign = 'center'; c.textBaseline = 'middle';
+  c.shadowColor = 'rgba(0,0,0,.8)'; c.shadowBlur = s * .5; c.shadowOffsetY = s * .06;
+  c.fillStyle = goldGrad(c, 0, cy - s / 2, 0, cy + s / 2); c.fillText(text, cx, cy); c.restore();
+}
+
+/* ---------- the two makers ---------- */
+let lastPlace = null;   // where the art was drawn on the preview (for dragging)
+function renderAvatar(c, W, img, logo) {
+  const bg = BGS.find(b => b.id === S.bg) || BGS[0], u = W;
+  paintBg(c, W, W, bg);
+  let box, clip;
+  if (S.frame === 'ring') { const r = u * .42; box = { x: W / 2 - r, y: W / 2 - r, w: r * 2, h: r * 2 }; clip = () => { c.beginPath(); c.arc(W / 2, W / 2, r, 0, 7); }; }
+  else if (S.frame === 'square') { const m = u * .08; box = { x: m, y: m, w: W - 2 * m, h: W - 2 * m }; clip = () => rr(c, box.x, box.y, box.w, box.h, u * .035); }
+  else { box = { x: 0, y: 0, w: W, h: W }; clip = null; }
+  c.save(); if (clip) { c.save(); c.shadowColor = 'rgba(0,0,0,.6)'; c.shadowBlur = u * .04; c.shadowOffsetY = u * .012; clip(); c.fillStyle = '#000'; c.fill(); c.restore(); clip(); c.clip(); }
+  const p = drawArt(c, img, box, S.zoom, S.px, S.py); c.restore();
+  lastPlace = { box, p };
+  if (S.frame === 'ring') {
+    const r = u * .42;
+    c.beginPath(); c.arc(W / 2, W / 2, r + u * .018, 0, 7); c.lineWidth = u * .036; c.strokeStyle = goldGrad(c, 0, 0, W, W); c.stroke();
+    c.beginPath(); c.arc(W / 2, W / 2, r + u * .041, 0, 7); c.lineWidth = u * .006; c.strokeStyle = 'rgba(243,215,122,.7)'; c.stroke();
+    c.beginPath(); c.arc(W / 2, W / 2, r - u * .002, 0, 7); c.lineWidth = u * .004; c.strokeStyle = 'rgba(80,60,10,.8)'; c.stroke();
+  } else if (S.frame === 'square') {
+    rr(c, box.x - u * .014, box.y - u * .014, box.w + u * .028, box.h + u * .028, u * .045); c.lineWidth = u * .03; c.strokeStyle = goldGrad(c, 0, 0, W, W); c.stroke();
+    rr(c, box.x - u * .04, box.y - u * .04, box.w + u * .08, box.h + u * .08, u * .06); c.lineWidth = u * .005; c.strokeStyle = 'rgba(243,215,122,.65)'; c.stroke();
+  } else {
+    const g = c.createLinearGradient(0, W * .6, 0, W); g.addColorStop(0, 'rgba(5,10,21,0)'); g.addColorStop(1, 'rgba(5,10,21,.75)');
+    if (S.avText) { c.fillStyle = g; c.fillRect(0, W * .6, W, W * .4); }
+  }
+  if (S.badge === 'crown') crown(c, W / 2, S.frame === 'ring' ? u * .085 : S.frame === 'square' ? u * .075 : u * .1, u * .22);
+  if (S.badge === 'star') star(c, S.frame === 'ring' ? W * .8 : W * .84, S.frame === 'ring' ? W * .8 : W * .84, u * .085);
+  const t = S.avText.trim();
+  if (t) {
+    c.save(); const fs = fitFont(c, t, u * .62, u * .062); const tw = c.measureText(t).width, ph = fs * 1.75, pw = tw + fs * 1.8, cy = S.frame === 'none' ? W - u * .1 : W - u * .085;
+    c.shadowColor = 'rgba(0,0,0,.55)'; c.shadowBlur = u * .02; c.shadowOffsetY = u * .006;
+    rr(c, W / 2 - pw / 2, cy - ph / 2, pw, ph, ph / 2); c.fillStyle = goldGrad(c, 0, cy - ph / 2, 0, cy + ph / 2); c.fill(); c.shadowColor = 'transparent';
+    c.lineWidth = u * .004; c.strokeStyle = '#6b5214'; c.stroke();
+    c.fillStyle = '#0B1426'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(t, W / 2, cy + fs * .04); c.restore();
+  }
+  if (S.avMark) mark(c, u * .045, u * .055, u * .036, logo, 'left');
+}
+function renderWall(c, W, H, img) {
+  const u = Math.min(W, H), port = H > W, bg = BGS[0];
+  const text = (S.wpText.trim() || (S.motto === 'None' ? '' : S.motto));
+  if (S.layout === 'full') {
+    const box = { x: 0, y: 0, w: W, h: H }; const p = drawArt(c, img, box, S.zoom, S.px, S.py); lastPlace = { box, p };
+    const g = c.createLinearGradient(0, H * .55, 0, H); g.addColorStop(0, 'rgba(5,10,21,0)'); g.addColorStop(1, 'rgba(5,10,21,.85)'); c.fillStyle = g; c.fillRect(0, H * .55, W, H * .45);
+    bigText(c, text, W / 2, H - u * (port ? .42 : .17), W * .84, u * (port ? .085 : .07));
+    siteMark(c, W, H, u); return;
+  }
+  if (S.layout === 'blur') { blurFill(c, img, W, H); c.fillStyle = 'rgba(5,10,21,.42)'; c.fillRect(0, 0, W, H);
+    const v = c.createRadialGradient(W / 2, H / 2, u * .3, W / 2, H / 2, Math.max(W, H) * .75); v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,.55)'); c.fillStyle = v; c.fillRect(0, 0, W, H); }
+  else { paintBg(c, W, H, bg); c.save(); c.globalAlpha = .07; c.strokeStyle = '#D4AF37'; c.lineWidth = u * .002; for (let i = -H; i < W + H; i += u * .06) { c.beginPath(); c.moveTo(i, 0); c.lineTo(i - H, H); c.stroke(); } c.restore(); }
+  // art box: keeps the artwork's own shape, as big as fits the area
+  const ar = img.width / img.height, maxW = port ? W * .84 : W * .62, maxH = port ? H * .42 : H * .62;
+  let bw = maxW, bh = bw / ar; if (bh > maxH) { bh = maxH; bw = bh * ar; }
+  const cy = port ? H * .53 : H * .44, box = { x: (W - bw) / 2, y: cy - bh / 2, w: bw, h: bh }, rad = u * .03;
+  c.save(); c.shadowColor = 'rgba(0,0,0,.7)'; c.shadowBlur = u * .06; c.shadowOffsetY = u * .02; rr(c, box.x, box.y, bw, bh, rad); c.fillStyle = '#000'; c.fill(); c.restore();
+  c.save(); rr(c, box.x, box.y, bw, bh, rad); c.clip(); const p = drawArt(c, img, box, S.zoom, S.px, S.py); c.restore(); lastPlace = { box, p };
+  rr(c, box.x - u * .008, box.y - u * .008, bw + u * .016, bh + u * .016, rad + u * .008); c.lineWidth = u * (S.layout === 'card' ? .014 : .008); c.strokeStyle = goldGrad(c, box.x, box.y, box.x + bw, box.y + bh); c.stroke();
+  if (S.layout === 'card') { rr(c, box.x - u * .03, box.y - u * .03, bw + u * .06, bh + u * .06, rad + u * .03); c.lineWidth = u * .003; c.strokeStyle = 'rgba(243,215,122,.6)'; c.stroke(); }
+  bigText(c, text, W / 2, box.y + bh + u * (port ? .17 : .1), W * .84, u * (port ? .075 : .06));
+  siteMark(c, W, H, u);
+}
+async function render(c, W, H) {
+  const art = ARTS.find(a => a.id === S.art) || ARTS[0];
+  const [img, logo] = await Promise.all([artImg(art.id), logoP, fontsP]);
+  c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, W, H); c.imageSmoothingEnabled = true; c.imageSmoothingQuality = 'high';
+  if (S.mode === 'avatar') renderAvatar(c, W, img, logo); else renderWall(c, W, H, img);
+}
+
+/* ---------- preview ---------- */
+const cv = $('#cv'), cx = cv.getContext('2d');
+let drawQ = 0, drawing = false;
+function previewSize() { const [w, h] = SIZES[S.mode], k = Math.min(1, (S.mode === 'desktop' ? 1200 : 900) / Math.max(w, h)) * Math.min(2, window.devicePixelRatio || 1) / 1.4; return [Math.round(w * k), Math.round(h * k)]; }
+function draw() {
+  drawQ++; if (drawing) return; drawing = true;
+  requestAnimationFrame(async () => {
+    const my = drawQ; const [w, h] = previewSize(); if (cv.width !== w || cv.height !== h) { cv.width = w; cv.height = h; }
+    try { await render(cx, w, h); cv.dataset.ready = '1'; } catch (e) { cv.dataset.ready = 'err'; }
+    drawing = false; if (drawQ !== my) draw();
+  });
+}
+
+/* ---------- controls ---------- */
+function chips(host, list, key, onPick) {
+  host.innerHTML = '';
+  list.forEach(([id, name]) => { const b = el('button', 'chip' + (S[key] === id ? ' on' : ''), name); b.type = 'button'; b.dataset.v = id; b.setAttribute('aria-pressed', String(S[key] === id));
+    b.onclick = () => { S[key] = id; host.querySelectorAll('.chip').forEach(x => { x.classList.toggle('on', x === b); x.setAttribute('aria-pressed', String(x === b)); }); if (onPick) onPick(); persist(); draw(); };
+    host.appendChild(b); });
+}
+function renderArts() {
+  const host = $('#arts'); host.innerHTML = '';
+  // avatars: square art first; wallpapers: wide art first on desktop
+  const list = S.mode === 'desktop' ? ARTS.filter(a => a.wide).concat(ARTS.filter(a => !a.wide)) : ARTS.filter(a => !a.wide).concat(ARTS.filter(a => a.wide));
+  list.forEach(a => {
+    const b = el('button', 'art' + (a.id === S.art ? ' on' : '')); b.type = 'button'; b.dataset.art = a.id; b.setAttribute('role', 'option'); b.setAttribute('aria-selected', String(a.id === S.art));
+    const i = el('img'); i.src = A + a.id + '-t.webp'; i.alt = ''; i.loading = 'lazy'; i.width = 74; i.height = 74; b.appendChild(i); b.appendChild(el('span', '', a.name));
+    b.onclick = () => { S.art = a.id; S.zoom = 1; S.px = 0; S.py = 0; syncSliders(); host.querySelectorAll('.art').forEach(x => { const on = x === b; x.classList.toggle('on', on); x.setAttribute('aria-selected', String(on)); }); persist(); draw(); };
+    host.appendChild(b);
+  });
+}
+function renderBgs() {
+  const host = $('#bgs'); host.innerHTML = '';
+  BGS.forEach(bg => { const b = el('button', 'sw' + (S.bg === bg.id ? ' on' : '')); b.type = 'button'; b.title = bg.name; b.setAttribute('aria-label', bg.name); b.dataset.v = bg.id;
+    b.style.background = 'linear-gradient(160deg,' + bg.c[0] + ',' + bg.c[1] + ' 60%,' + bg.c[2] + ')';
+    b.onclick = () => { S.bg = bg.id; host.querySelectorAll('.sw').forEach(x => x.classList.toggle('on', x === b)); persist(); draw(); }; host.appendChild(b); });
+}
+function mottoChips() { chips($('#mottos'), MOTTOS.map(m => [m, m]), 'motto', () => { $('#wpText').value = ''; S.wpText = ''; }); }
+function syncSliders() { $('#zoom').value = S.zoom; $('#px').value = S.px; $('#py').value = S.py; }
+function setMode(m) {
+  S.mode = m; document.body.className = 'mode-' + m;
+  $('#modes').querySelectorAll('button').forEach(b => { const on = b.dataset.mode === m; b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); });
+  $('#avOpts').classList.toggle('hide', m !== 'avatar'); $('#wpOpts').classList.toggle('hide', m === 'avatar');
+  const art = ARTS.find(a => a.id === S.art); if (m === 'desktop' && art && !art.wide && !setMode.touched) S.art = 'horizon';
+  S.zoom = 1; S.px = 0; S.py = 0; syncSliders(); renderArts(); persist(); draw();
+}
+$('#modes').querySelectorAll('button').forEach(b => b.onclick = () => setMode(b.dataset.mode));
+$('#arts').addEventListener('click', e => { if (e.target.closest('.art')) setMode.touched = true; });
+['zoom', 'px', 'py'].forEach(k => $('#' + k).addEventListener('input', e => { S[k] = +e.target.value; draw(); }));
+$('#reset').onclick = () => { S.zoom = 1; S.px = 0; S.py = 0; syncSliders(); draw(); };
+$('#avText').value = S.avText; $('#wpText').value = S.wpText; $('#avMark').checked = !!S.avMark;
+$('#avText').addEventListener('input', e => { S.avText = e.target.value.replace(/\s+/g, ' '); persist(); draw(); });
+$('#wpText').addEventListener('input', e => { S.wpText = e.target.value.replace(/\s+/g, ' '); persist(); draw(); });
+$('#avMark').addEventListener('change', e => { S.avMark = e.target.checked; persist(); draw(); });
+[$('#avText'), $('#wpText')].forEach(i => i.addEventListener('keydown', e => { if (e.key === 'Enter') i.blur(); }));
+
+// drag to move (one finger or mouse); pinch with two fingers to zoom
+const ptrs = new Map(); let pinch0 = 0, zoom0 = 1;
+cv.addEventListener('pointerdown', e => { cv.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY }); if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; pinch0 = Math.hypot(a.x - b.x, a.y - b.y); zoom0 = S.zoom; } });
+cv.addEventListener('pointermove', e => {
+  const prev = ptrs.get(e.pointerId); if (!prev || !lastPlace) return;
+  const cur = { x: e.clientX, y: e.clientY }; ptrs.set(e.pointerId, cur);
+  if (ptrs.size === 2) { const [a, b] = [...ptrs.values()], d = Math.hypot(a.x - b.x, a.y - b.y); if (pinch0) { S.zoom = Math.max(1, Math.min(3, zoom0 * d / pinch0)); syncSliders(); draw(); } return; }
+  const k = cv.width / cv.getBoundingClientRect().width, { box, p } = lastPlace;
+  const ox = p.w - box.w, oy = p.h - box.h;
+  if (ox > 1) S.px = Math.max(-1, Math.min(1, S.px - 2 * (cur.x - prev.x) * k / ox));
+  if (oy > 1) S.py = Math.max(-1, Math.min(1, S.py - 2 * (cur.y - prev.y) * k / oy));
+  syncSliders(); draw();
+});
+const up = e => { ptrs.delete(e.pointerId); if (ptrs.size < 2) pinch0 = 0; };
+cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up);
+cv.addEventListener('wheel', e => { e.preventDefault(); S.zoom = Math.max(1, Math.min(3, S.zoom * (e.deltaY < 0 ? 1.06 : 1 / 1.06))); syncSliders(); draw(); }, { passive: false });
+
+/* ---------- export ---------- */
+async function makeBlob() {
+  const [w, h] = SIZES[S.mode], c = document.createElement('canvas'); c.width = w; c.height = h;
+  const keep = lastPlace; await render(c.getContext('2d'), w, h); lastPlace = keep;
+  return new Promise((res, rej) => c.toBlob(b => b ? res(b) : rej(new Error('blob')), 'image/png'));
+}
+const fileName = () => 'anon-' + (S.mode === 'avatar' ? 'avatar' : 'wallpaper-' + S.mode) + '-' + S.art + '.png';
+const shareText = () => S.mode === 'avatar' ? 'Made my ANON avatar at anonnfts.com/arcade' : 'Made my ANON wallpaper at anonnfts.com/arcade';
+const canShareFiles = () => { try { return !!(navigator.canShare && navigator.share && navigator.canShare({ files: [new File([new Blob(['x'], { type: 'image/png' })], 'a.png', { type: 'image/png' })] })); } catch (e) { return false; } };
+if (canShareFiles()) $('#share').classList.remove('hide');
+let lastUrl = null;
+function sheet(url, blob) {
+  const old = document.querySelector('.ov'); if (old) old.remove();
+  const ov = el('div', 'ov'); ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true'); ov.setAttribute('aria-label', 'Your image');
+  const s = el('div', 'sheet'); s.appendChild(el('h2', '', S.mode === 'avatar' ? 'Your ANON avatar' : 'Your ANON wallpaper'));
+  const img = el('img'); img.src = url; img.alt = S.mode === 'avatar' ? 'Your ANON avatar' : 'Your ANON wallpaper'; s.appendChild(img);
+  const ios = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  s.appendChild(el('p', '', ios ? 'If it did not save, press and hold the image, then tap Save to Photos.' : 'If the download did not start, press and hold (or right-click) the image to save it.'));
+  const bs = el('div', 'btns');
+  const again = el('button', 'btn', 'DOWNLOAD AGAIN'); again.type = 'button'; again.onclick = () => saveBlob(url); bs.appendChild(again);
+  if (canShareFiles()) { const sh = el('button', 'btn btn2', 'SHARE'); sh.type = 'button'; sh.onclick = () => shareBlob(blob); bs.appendChild(sh); }
+  if (FRAMED) { const a = el('a', 'btn btn2', 'OPEN FULL SCREEN'); a.href = location.href.split('#')[0].replace(/([?&])hub=1&?/, '$1'); a.target = '_blank'; a.rel = 'noopener'; a.style.cssText = 'display:flex;align-items:center;justify-content:center;text-decoration:none'; bs.appendChild(a); }
+  const close = el('button', 'btn btn2', 'BACK TO THE MAKER'); close.type = 'button'; close.onclick = () => ov.remove(); bs.appendChild(close);
+  s.appendChild(bs); ov.appendChild(s); ov.onclick = e => { if (e.target === ov) ov.remove(); }; document.body.appendChild(ov);
+}
+function saveBlob(url) {
+  try { const a = document.createElement('a'); a.href = url; a.download = fileName(); a.rel = 'noopener'; document.body.appendChild(a); a.click(); setTimeout(() => a.remove(), 1000); return true; }
+  catch (e) { return false; }
+}
+async function shareBlob(blob) {
+  const file = new File([blob], fileName(), { type: 'image/png' });
+  try { await navigator.share({ files: [file], title: 'ANON NFTs', text: shareText() }); }
+  catch (e) { if (e && e.name === 'AbortError') return; toast('Sharing is not available here. Download it instead.'); }
+}
+async function busy(btn, fn) { const t = btn.textContent; btn.disabled = true; btn.textContent = 'MAKING…'; try { await fn(); } catch (e) { toast('Something went wrong. Please try again.'); } btn.disabled = false; btn.textContent = t; }
+$('#dl').onclick = () => busy($('#dl'), async () => {
+  const blob = await makeBlob(); if (lastUrl) URL.revokeObjectURL(lastUrl); lastUrl = URL.createObjectURL(blob);
+  saveBlob(lastUrl); sheet(lastUrl, blob);
+});
+$('#share').onclick = () => busy($('#share'), async () => { const blob = await makeBlob(); await shareBlob(blob); });
+
+chips($('#frames'), FRAMES, 'frame'); chips($('#badges'), BADGES, 'badge'); chips($('#layouts'), LAYOUTS, 'layout'); renderBgs(); mottoChips();
+setMode(S.mode);
+window.addEventListener('resize', draw);
+window.ANON_MAKER = { state: S, makeBlob, setMode, sizes: SIZES };
+})();
+</script>
+</body>
+</html>

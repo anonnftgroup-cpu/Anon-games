@@ -35,8 +35,9 @@ header{display:flex;align-items:center;gap:12px;padding:4px 2px 10px}
 h1{margin:0;font-family:Georgia,"Times New Roman",serif;font-weight:700;font-size:clamp(24px,7.4vw,34px);letter-spacing:.14em;line-height:1.05;
   background:linear-gradient(180deg,#fff3c4 0%,#e9c858 45%,#b48a25 75%,#f5dc85 100%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 8px rgba(43,255,136,.25))}
 .sub{font-size:12.5px;color:var(--mut);margin-top:3px;letter-spacing:.03em}
-.tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:4px;border:1px solid rgba(212,175,55,.35);border-radius:14px;background:rgba(0,0,0,.4);position:sticky;top:0;z-index:10;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
-.tab{min-height:42px;border:0;border-radius:10px;background:transparent;color:#b9a35c;font-weight:800;letter-spacing:.06em;font-size:14px;cursor:pointer}
+.tabs{display:grid;grid-template-columns:.9fr 1.25fr .9fr;gap:6px;padding:4px;border:1px solid rgba(212,175,55,.35);border-radius:14px;background:rgba(0,0,0,.4);position:sticky;top:0;z-index:10;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.tab{min-height:42px;border:0;border-radius:10px;background:transparent;color:#b9a35c;font-weight:800;letter-spacing:.04em;font-size:14px;cursor:pointer;padding:0 4px;white-space:nowrap;display:flex;align-items:center;justify-content:center;text-decoration:none}
+@media (max-width:400px){.tab{font-size:13px;letter-spacing:.02em}}
 .tab.on{background:linear-gradient(180deg,#e9c858,#a47c1f);color:#120e02;box-shadow:0 0 14px rgba(43,255,136,.18)}
 .tools{margin:12px 0 4px;display:none}
 .tools.show{display:block}
@@ -149,6 +150,22 @@ footer a{color:#b9a35c;text-decoration:none}
 .yv-t{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;padding:7px 9px 0;font-size:12.5px;font-weight:700;line-height:1.3;color:var(--txt)}
 .yv-d{display:block;padding:3px 9px 8px;font-size:11px;color:var(--mut)}
 .hdr-mail{margin-left:auto;flex:none;min-height:32px;padding:0 11px;border-radius:999px;border:1px solid rgba(212,175,55,.55);background:rgba(0,0,0,.35);color:var(--gold2);font-size:12px;font-weight:700;cursor:pointer}
+/* daily check-in streaks (hidden until supabase-checkins.sql is run) */
+.streak{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:6px}
+.streak[hidden]{display:none}
+.st-chip{display:inline-flex;align-items:center;min-height:26px;padding:0 10px;border-radius:999px;border:1px solid var(--gold);background:linear-gradient(180deg,rgba(212,175,55,.28),rgba(212,175,55,.1));color:var(--gold2);font-size:12px;font-weight:800;letter-spacing:.02em;white-space:nowrap}
+.st-chip.zero{border-color:rgba(212,175,55,.45);background:rgba(0,0,0,.35);color:#b9a35c;font-weight:700}
+.st-btn{min-height:26px;padding:0 11px;border-radius:999px;border:0;background:#D4AF37;color:#0B1426;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap}
+.st-btn:disabled{opacity:.6}
+.hof-me{display:flex;justify-content:center;margin:-2px 0 10px}
+.hof-me[hidden]{display:none}
+.hof-det span.bonus{border-color:var(--gold);color:var(--gold2);background:rgba(212,175,55,.12)}
+.hof-seg.four button{font-size:12.5px;padding:0 2px}
+.create-card{display:flex;align-items:center;gap:12px;margin-top:12px;padding:10px;border:1px solid rgba(212,175,55,.55);border-radius:14px;background:linear-gradient(160deg,#13203a 0%,#0B1426 70%);text-decoration:none;color:inherit}
+.create-card img{width:84px;height:63px;flex:none;border-radius:10px;object-fit:cover;border:1px solid rgba(212,175,55,.35)}
+.create-card b{display:block;font-family:Georgia,serif;color:var(--gold2);font-size:15px}
+.create-card span{display:block;font-size:12px;color:#c3cad6;margin-top:2px;line-height:1.35}
+.create-card i{margin-left:auto;flex:none;font-style:normal;font-weight:800;font-size:12px;color:#0B1426;background:#D4AF37;border-radius:999px;padding:7px 12px;white-space:nowrap}
 @media (prefers-reduced-motion:reduce){.logo{animation:none}.tile{transition:none}}
 </style>
 </head>
@@ -156,13 +173,14 @@ footer a{color:#b9a35c;text-decoration:none}
 <div class="wrap">
   <header>
     <img class="logo" src="assets/logo.webp" alt="ANON NFTs logo" width="58" height="58">
-    <div><h1>ANON ARCADE</h1><div class="sub">Free ANON games · no wallet, no sign-up</div></div>
+    <div><h1>ANON ARCADE</h1><div class="sub">Free ANON games · no wallet, no sign-up</div><div class="streak" id="streak" hidden aria-live="polite"></div></div>
     <button class="hdr-mail" id="hdrMail" type="button" aria-label="Get new games by email">✉ Updates</button>
   </header>
 
   <nav class="tabs" role="tablist">
     <button class="tab on" id="tabGames" role="tab" aria-selected="true" data-tab="games">🎮 Games</button>
     <button class="tab" id="tabLb" role="tab" aria-selected="false" data-tab="leaderboards">🏆 Leaderboards</button>
+    <a class="tab" id="tabCreate" href="create/?hub=1" data-tab="create" aria-label="Create: ANON avatar and wallpaper maker">✦ Create</a>
   </nav>
 
   <section class="view on" id="viewGames" aria-label="Games">
@@ -174,6 +192,7 @@ footer a{color:#b9a35c;text-decoration:none}
       <div class="chips sorts" id="sorts" role="toolbar" aria-label="Sort games"></div>
       <div class="chips" id="cats" role="toolbar" aria-label="Categories"></div>
     </div>
+    <a class="create-card" id="createCard" href="create/?hub=1"><img src="create/thumb.webp" alt="" width="84" height="63" loading="lazy"><div><b>New: ANON Avatar Maker</b><span>Make your own ANON profile picture or phone wallpaper. Free.</span></div><i>CREATE</i></a>
     <div class="grid" id="grid"></div>
     <div class="empty" id="empty">No games match. Try another word, ANON.</div>
   </section>
@@ -204,7 +223,7 @@ footer a{color:#b9a35c;text-decoration:none}
   <footer>ANON NFTs · <a href="https://anonnfts.com" target="_blank" rel="noopener">anonnfts.com</a> · <a href="https://anonnfts.com/privacy-notice" target="_blank" rel="noopener">Privacy</a> · Art CC0</footer>
 </div>
 <div id="toast" role="status" aria-live="polite"></div>
-<script src="shared/leaderboard.js?v=1.7.0"></script>
+<script src="shared/leaderboard.js?v=1.9.0"></script>
 <script>
 (() => {
 'use strict';
@@ -383,7 +402,16 @@ async function hofRows(lbs, period) {
   byGame.forEach((rows, g) => rows.sort((a, b) => better(g, a, b) ? -1 : better(g, b, a) ? 1 : 0).slice(0, 15).forEach((r, i) => out.push(Object.assign({ rnk: i + 1 }, r))));
   return out;
 }
-function hofTally(rows, lbs) {
+/* Streak bonus: +1 point per day of a player's current daily check-in streak, up to +30 (All-time and This week). */
+const STREAK_CAP = 30;
+const SB = () => window.ANONLB && ANONLB.streaks;
+let STREAKS = null, STREAKS_T = 0;   // null = not installed yet (supabase-checkins.sql), [] = installed, nobody on a streak
+async function streakBoard(force) {
+  if (!SB()) return null;
+  if (!force && STREAKS_T && Date.now() - STREAKS_T < 60000) return STREAKS;
+  STREAKS = await SB().board(300); STREAKS_T = Date.now(); return STREAKS;
+}
+function hofTally(rows, lbs, streaks) {
   const live = new Map(lbs.map(g => [g.id, g])), clean = n => !window.ANONLB || ANONLB.isCleanName(n);
   const byGame = new Map();
   rows.forEach(r => { if (live.has(r.game) && clean(r.nickname)) { if (!byGame.has(r.game)) byGame.set(r.game, []); byGame.get(r.game).push(r); } });
@@ -394,25 +422,43 @@ function hofTally(rows, lbs) {
     p.points += HOF_PTS - i; if (i === 0) p.golds++; if (i < 3) p.podiums++;
     p.boards.push({ game: g, name: live.get(g).name, rank: i + 1 });
   }));
+  (streaks || []).forEach(r => {
+    const cur = r.current_streak | 0; if (cur <= 0 || !clean(r.name)) return;
+    const k = String(r.name).toLowerCase(); let p = P.get(k);
+    if (!p) P.set(k, p = { nickname: r.name, points: 0, golds: 0, podiums: 0, boards: [] });
+    p.streak = cur; p.bonus = Math.min(cur, STREAK_CAP); p.points += p.bonus;
+  });
   return [...P.values()].map(p => (p.boards.sort((a, b) => a.rank - b.rank), p))
     .sort((a, b) => b.points - a.points || b.golds - a.golds || b.podiums - a.podiums || a.nickname.localeCompare(b.nickname));
 }
 function renderHof(box, lbs) {
   box.innerHTML = ''; box.classList.remove('alb-board');
   let period = 'all', token = 0;
-  box.appendChild(el('div', 'hof-intro')).innerHTML = 'Every game counts. <b>1st on a game\'s board = 10 points</b>, 2nd = 9, down to 10th = 1. Bragging rights only, no prizes.';
+  const intro = box.appendChild(el('div', 'hof-intro'));
+  const INTRO = 'Every game counts. <b>1st on a game\'s board = 10 points</b>, 2nd = 9, down to 10th = 1.';
+  intro.innerHTML = INTRO + ' Bragging rights only, no prizes.';
   const seg = el('div', 'hof-seg'); seg.setAttribute('role', 'group'); seg.setAttribute('aria-label', 'Time period');
-  const PER = [['all', 'All-time'], ['week', 'This week'], ['last', 'Last week']], pb = {};
-  PER.forEach(([k, t]) => { const b = el('button', '', t); b.type = 'button'; b.dataset.period = k; b.onclick = () => { if (period !== k) { period = k; load(); } }; pb[k] = b; seg.appendChild(b); });
+  const PER = [['all', 'All-time'], ['week', 'This week'], ['last', 'Last week'], ['streaks', 'Streaks']], pb = {};
+  PER.forEach(([k, t]) => { const b = el('button', '', t); b.type = 'button'; b.dataset.period = k; if (k === 'streaks') b.hidden = true; b.onclick = () => { if (period !== k) { period = k; load(); } }; pb[k] = b; seg.appendChild(b); });
+  const meRow = el('div', 'hof-me'); meRow.hidden = true; meRow.id = 'hofMe';
   const list = el('ol', 'hof-list'), note = el('div', 'hof-note');
-  box.appendChild(seg); box.appendChild(list); box.appendChild(note);
+  box.appendChild(seg); box.appendChild(meRow); box.appendChild(list); box.appendChild(note);
+  const showStreakUi = on => {
+    pb.streaks.hidden = !on; seg.classList.toggle('four', on);
+    intro.innerHTML = INTRO + (on ? ' Daily check-in streak: <b>+1 point a day, up to +' + STREAK_CAP + '</b>.' : '') + ' Bragging rights only, no prizes.';
+    const st = window.ANON_STREAK; meRow.innerHTML = '';
+    if (on && st && st.available && st.name) { const c = el('span', 'st-chip' + (st.cur ? '' : ' zero'), streakLabel(st)); meRow.appendChild(c); meRow.hidden = false; } else meRow.hidden = true;
+  };
+  window.ANON_HOF_STREAK_UI = showStreakUi;
   const fmtD = d => d.toLocaleDateString('en-GB', { timeZone: 'Europe/London', day: 'numeric', month: 'short' });
   async function load() {
     const my = ++token;
     Object.keys(pb).forEach(k => { pb[k].classList.toggle('on', k === period); pb[k].setAttribute('aria-pressed', String(k === period)); });
     list.innerHTML = ''; list.appendChild(el('div', 'hof-empty', 'Adding up every board…')); note.textContent = '';
+    if (period === 'streaks') return loadStreaks(my);
     let players;
-    try { const ck = period; const rows = HOF_CACHE[ck] && Date.now() - HOF_CACHE[ck].t < 60000 ? HOF_CACHE[ck].rows : (HOF_CACHE[ck] = { t: Date.now(), rows: await hofRows(lbs, period) }).rows; players = hofTally(rows, lbs); }
+    try { const ck = period; const [rows, streaks] = await Promise.all([HOF_CACHE[ck] && Date.now() - HOF_CACHE[ck].t < 60000 ? HOF_CACHE[ck].rows : (HOF_CACHE[ck] = { t: Date.now(), rows: await hofRows(lbs, period) }).rows, streakBoard().catch(() => null)]);
+      if (my !== token) return; showStreakUi(!!streaks); players = hofTally(rows, lbs, period === 'last' ? null : streaks); }
     catch (e) { if (my !== token) return; delete HOF_CACHE[period]; list.innerHTML = ''; const d = el('div', 'hof-empty', 'Could not reach the leaderboards. '); const b = el('button', 'alb-link', 'Try again'); b.style.cssText = 'background:none;border:0;color:#f3d77a;text-decoration:underline;font:inherit;cursor:pointer'; b.onclick = load; d.appendChild(b); list.appendChild(d); return; }
     if (my !== token) return;
     list.innerHTML = '';
@@ -423,15 +469,39 @@ function renderHof(box, lbs) {
       const row = el('button', 'hof-row'); row.type = 'button'; row.setAttribute('aria-expanded', 'false');
       row.appendChild(el('span', 'hof-rk', i < 3 ? ['🥇', '🥈', '🥉'][i] : String(i + 1)));
       const mid = el('span'); mid.style.minWidth = '0'; mid.appendChild(el('span', 'hof-nm', p.nickname));
-      const bits = [p.boards.length + (p.boards.length === 1 ? ' board' : ' boards')]; if (p.golds) bits.unshift(p.golds + ' × 1st'); else if (p.podiums) bits.unshift(p.podiums + ' × top 3');
+      const bits = p.boards.length ? [p.boards.length + (p.boards.length === 1 ? ' board' : ' boards')] : []; if (p.golds) bits.unshift(p.golds + ' × 1st'); else if (p.podiums) bits.unshift(p.podiums + ' × top 3');
+      if (p.bonus) bits.push('Day ' + p.streak + ' streak');
       mid.appendChild(el('span', 'hof-sub', bits.join(' · '))); row.appendChild(mid);
       const pt = el('span', 'hof-pt', String(p.points)); pt.appendChild(el('small', '', 'PTS')); row.appendChild(pt);
       const det = el('div', 'hof-det'); p.boards.forEach(b => det.appendChild(el('span', '', '#' + b.rank + ' ' + b.name)));
+      if (p.bonus) det.appendChild(el('span', 'bonus', 'Streak bonus +' + p.bonus + ' (Day ' + p.streak + ' streak' + (p.streak > STREAK_CAP ? ', capped at +' + STREAK_CAP : '') + ')'));
       row.onclick = () => { const o = li.classList.toggle('open'); row.setAttribute('aria-expanded', String(o)); };
       li.appendChild(row); li.appendChild(det); list.appendChild(li);
     });
     const w = hofWindow(period);
-    note.textContent = period === 'all' ? 'All-time · tap a player to see their boards.' : period === 'week' ? 'This week: since Monday ' + fmtD(w.since) + ', midnight UK time. Resets every Monday.' : 'Last week: Monday ' + fmtD(w.since) + ' to Sunday ' + fmtD(new Date(+w.until - 36e5)) + ' (UK time).';
+    note.textContent = (period === 'all' ? 'All-time · tap a player to see their boards.' : period === 'week' ? 'This week: since Monday ' + fmtD(w.since) + ', midnight UK time. Resets every Monday.' : 'Last week: Monday ' + fmtD(w.since) + ' to Sunday ' + fmtD(new Date(+w.until - 36e5)) + ' (UK time).')
+      + (STREAKS && period !== 'last' ? ' Points include the current streak bonus.' : '');
+  }
+  async function loadStreaks(my) {
+    let rows; try { rows = await streakBoard(); } catch (e) { rows = null; }
+    if (my !== token) return;
+    list.innerHTML = '';
+    if (!rows) { showStreakUi(false); period = 'all'; load(); return; }
+    showStreakUi(true);
+    const on = rows.filter(r => (r.current_streak | 0) > 0).sort((a, b) => (b.current_streak - a.current_streak) || (b.longest_streak - a.longest_streak));
+    if (!on.length) list.appendChild(el('div', 'hof-empty', 'Nobody is on a streak yet. Play any game today to start yours!'));
+    const me = (window.ANONLB && ANONLB.getNickname() || '').toLowerCase();
+    on.slice(0, 50).forEach((r, i) => {
+      const cur = r.current_streak | 0, li = el('li', 'hof-li' + (i === 0 ? ' top1' : '') + (me && String(r.name).toLowerCase() === me ? ' me' : ''));
+      const row = el('div', 'hof-row'); row.style.cursor = 'default';
+      row.appendChild(el('span', 'hof-rk', i < 3 ? ['🥇', '🥈', '🥉'][i] : String(i + 1)));
+      const mid = el('span'); mid.style.minWidth = '0'; mid.appendChild(el('span', 'hof-nm', r.name));
+      mid.appendChild(el('span', 'hof-sub', SB().title(cur) + ' · best ' + (r.longest_streak | 0) + (r.longest_streak === 1 ? ' day' : ' days') + (r.checked_today ? '' : ' · not in yet today')));
+      row.appendChild(mid);
+      const pt = el('span', 'hof-pt', String(cur)); pt.appendChild(el('small', '', cur === 1 ? 'DAY' : 'DAYS')); row.appendChild(pt);
+      li.appendChild(row); list.appendChild(li);
+    });
+    note.textContent = 'Days in a row with a check-in (UK time). You check in by posting a score in any game, or with Check in today at the top. A streak ends after a whole missed day. Titles at 3, 7, 14, 30, 60 and 100 days. Bragging rights only, no prizes.';
   }
   load();
 }
@@ -541,7 +611,39 @@ async function load() {
   } catch (e) {}
 })();
 
-window.ANON_ARCADE = { reload: load, games: () => GAMES.slice() };
+/* ---------- daily check-in streak chip in the header (hidden until supabase-checkins.sql is run) ---------- */
+function streakLabel(st) {
+  if (!st.cur) return 'No streak yet · check in to start';
+  return 'Day ' + st.cur + ' streak · ' + st.title;
+}
+async function paintStreak() {
+  const box = $('#streak'); if (!SB()) return;
+  let st; try { st = await SB().status(); } catch (e) { st = { available: false }; }
+  window.ANON_STREAK = st;
+  if (window.ANON_HOF_STREAK_UI && $('#hofMe')) window.ANON_HOF_STREAK_UI(!!st.available);
+  if (!st.available || !st.name) { box.hidden = true; box.innerHTML = ''; return; }
+  box.innerHTML = '';
+  const chip = el('span', 'st-chip' + (st.cur ? '' : ' zero'), st.cur ? streakLabel(st) : 'Start a daily streak'); chip.id = 'streakChip';
+  if (st.cur && st.next) chip.title = (st.next - st.cur) + ' more ' + (st.next - st.cur === 1 ? 'day' : 'days') + ' to the next title';
+  box.appendChild(chip);
+  if (!st.today) {
+    const b = el('button', 'st-btn', 'Check in today'); b.type = 'button'; b.id = 'checkinBtn';
+    b.onclick = async () => {
+      b.disabled = true; b.textContent = 'Checking in…';
+      const r = await SB().checkin(st.name);
+      if (r === 'ok' || r === 'already') { STREAKS_T = 0; Object.keys(HOF_CACHE).forEach(k => delete HOF_CACHE[k]); await paintStreak(); const n = window.ANON_STREAK; toast(n && n.cur ? 'Checked in · Day ' + n.cur + ' streak' : 'Checked in for today');
+        const bx = $('#lbBox'); if (lbGame === HOF && bx) { bx.dataset.drawn = ''; if ($('#viewLb').classList.contains('on')) renderLb(); } return; }
+      b.disabled = false; b.textContent = 'Check in today';
+      toast(r === 'noscore' ? 'Post a score in any game first, then check in' : r === 'badname' ? 'Change your leaderboard name first' : 'Could not check in. Try again later.');
+    };
+    box.appendChild(b);
+  }
+  box.hidden = false;
+}
+paintStreak();
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') paintStreak(); });
+
+window.ANON_ARCADE = { reload: load, games: () => GAMES.slice(), streak: () => window.ANON_STREAK };
 load();
 })();
 </script>

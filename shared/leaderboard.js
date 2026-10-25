@@ -262,7 +262,7 @@ const SUPABASE_ANON_KEY = 'sb_publishable_-f0lT5SuVJ-TbFzlfMd7kA_hH6ZXp-N';
     try {
       const r = await req('/' + CFG.table, { method: 'POST', keepalive: !!keepalive, headers: headers({ Prefer: 'return=minimal' }),
         body: JSON.stringify({ game: it.game, nickname: it.nick, score: it.score, time_seconds: it.time, moves: it.moves, mode: it.mode }) });
-      if (r.ok) { ls.set(K_LAST(it.game), Date.now()); return 'online'; }
+      if (r.ok) { ls.set(K_LAST(it.game), Date.now()); try { autoCheckin(it.nick, keepalive); } catch (e) {} return 'online'; }
       const msg = (r.body && r.body.message) || '';
       if (/rate/i.test(msg)) { ls.set(K_LAST(it.game), Date.now()); putBack(COOLDOWN); return 'queued'; }
       if (/nickname not allowed/i.test(msg)) { if (getNickname().toLowerCase() === String(it.nick).toLowerCase()) ls.set(K_NICK, ''); ls.set(K_GUEST, '');
@@ -285,6 +285,62 @@ const SUPABASE_ANON_KEY = 'sb_publishable_-f0lT5SuVJ-TbFzlfMd7kA_hH6ZXp-N';
     if (next < Infinity && !keepalive) drainT = setTimeout(drain, Math.max(1000, next - Date.now() + 200));
   }
   const scheduleDrain = () => { clearTimeout(drainT); drainT = setTimeout(drain, 400); };
+
+  /* ---------- daily check-in streaks (needs supabase-checkins.sql; until then everything here stays silent) ----------
+     A player checks in for the UK day when one of their scores is posted, or with the hub's "Check in today" button.
+     The server sets the date, allows one check-in per name per day and only for names with a posted score.
+     Streaks are bragging rights and fun titles only. No prizes. */
+  const K_CI = 'anonCI.v1', CI_OFF_MS = 30 * 60000;
+  const ukDate = t => { try { return new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/London', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(t == null ? Date.now() : t)); } catch (e) { return new Date().toISOString().slice(0, 10); } };
+  const TITLES = [[100, 'Arcade Legend'], [60, 'Arcade Icon'], [30, 'Monthly Master'], [14, 'Fortnight Hero'], [7, 'Week Champ'], [3, 'Regular'], [1, 'Rookie']];
+  const MILESTONES = [3, 7, 14, 30, 60, 100];
+  const streakTitle = n => (TITLES.find(t => n >= t[0]) || [0, ''])[1];
+  const nextMilestone = n => MILESTONES.find(m => m > n) || null;
+  const ciGet = () => { const o = ls.get(K_CI, {}); return o && typeof o === 'object' ? o : {}; };
+  const ciSet = patch => ls.set(K_CI, Object.assign(ciGet(), patch));
+  const ciOff = () => { const o = ciGet().off; return !!o && Date.now() - o < CI_OFF_MS; };
+  const ciMissing = r => r.status === 404 || (r.body && /PGRST20[25]|42P01|42883|does not exist|schema cache/i.test(JSON.stringify(r.body)));
+  async function streakRows(params) {   // null = feature not installed / unreachable
+    if (!configured()) return null;
+    try {
+      const r = await req('/rpc/checkin_streaks', { method: 'POST', headers: headers(), body: JSON.stringify(params) });
+      if (r.ok && Array.isArray(r.body)) { ciSet({ off: 0 }); return r.body; }
+      if (ciMissing(r)) ciSet({ off: Date.now() });
+      return null;
+    } catch (e) { return null; }
+  }
+  // { available, name, cur, longest, today, title } for the current player (or a given name)
+  async function streakStatus(name) {
+    name = name || getNickname();
+    const rows = await streakRows({ p_limit: 1, p_name: name || '~none~' });
+    if (!rows) return { available: false };
+    const r = rows[0] || {};
+    const cur = r.current_streak | 0, today = !!r.checked_today;
+    if (today && name) ciSet({ done: { k: name.toLowerCase(), d: ukDate() } });
+    return { available: true, name: name || '', cur, longest: r.longest_streak | 0, today, title: streakTitle(cur), next: nextMilestone(cur) };
+  }
+  async function streakBoard(limit) { const rows = await streakRows({ p_limit: limit || 200, p_name: null }); return rows && rows.filter(r => r && isCleanName(r.name)); }
+  // 'ok' | 'already' | 'noscore' | 'off' | 'badname' | 'error'
+  async function checkin(name, keepalive) {
+    name = String(name || getNickname() || '').trim();
+    if (!configured() || !validateNickname(name).ok) return 'badname';
+    try {
+      const r = await req('/checkins', { method: 'POST', keepalive: !!keepalive, headers: headers({ Prefer: 'return=minimal' }), body: JSON.stringify({ name }) });
+      const mark = () => ciSet({ off: 0, done: { k: name.toLowerCase(), d: ukDate() } });
+      if (r.ok) { mark(); return 'ok'; }
+      const msg = JSON.stringify(r.body || '');
+      if (r.status === 409 || /23505|duplicate/i.test(msg)) { mark(); return 'already'; }
+      if (/post a score first/i.test(msg)) return 'noscore';
+      if (/nickname not allowed/i.test(msg)) return 'badname';
+      if (ciMissing(r)) { ciSet({ off: Date.now() }); return 'off'; }
+      return 'error';
+    } catch (e) { return 'error'; }
+  }
+  function autoCheckin(name, keepalive) {
+    if (!name || ciOff()) return;
+    const d = ciGet().done; if (d && d.k === String(name).toLowerCase() && d.d === ukDate()) return;
+    setTimeout(() => { checkin(name, keepalive); }, keepalive ? 0 : 600);
+  }
 
   /* the pre-filled post box */
   let PB = null; // the one open post box: { commit }
@@ -468,8 +524,9 @@ const SUPABASE_ANON_KEY = 'sb_publishable_-f0lT5SuVJ-TbFzlfMd7kA_hH6ZXp-N';
   }
 
   window.ANONLB = {
-    version: '1.8.0', isConfigured: configured, submit, guestName, postName, flushPost: flush, _drain: drain, _outbox: outGet, fetchTop, renderBoard, openBoard, promptNickname,
-    getNickname, setNickname, validateNickname, isCleanName, randomNickname, seedLocal, sane, weekStart, ukDayStart, _cfg: CFG
+    version: '1.9.0', isConfigured: configured, submit, guestName, postName, flushPost: flush, _drain: drain, _outbox: outGet, fetchTop, renderBoard, openBoard, promptNickname,
+    getNickname, setNickname, validateNickname, isCleanName, randomNickname, seedLocal, sane, weekStart, ukDayStart, _cfg: CFG,
+    streaks: { status: streakStatus, board: streakBoard, checkin, title: streakTitle, next: nextMilestone, milestones: MILESTONES, ukDate }
   };
 })();
 
