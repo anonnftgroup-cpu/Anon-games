@@ -63,7 +63,7 @@ h1 .u{margin-left:5px}
    Online (Supabase has supabase-word-unlimited.sql): the server picks the word and colours each guess; this page never sees
    the answer until the round is over, and the server keeps the win streak for the leaderboard.
    Before the SQL is run, offline, or without a nickname it falls back to practice words on this device (no leaderboard). */
-const GAME = 'word-unlimited', TITLE = 'ANON Word Unlimited', LINK = 'https://anonnfts.com/anon-games';
+const GAME = 'word-unlimited', TITLE = 'ANON Word Unlimited', LINK = 'https://anonnfts.com/arcade';
 const K_ROUND = 'anonWordU.v1.round', K_STATS = 'anonWordU.v1.stats', K_SEEN = 'anonWordU.v1.seenHelp', K_RECENT = 'anonWordU.v1.recent', K_USED = 'anonWordU.v1.used';
 const EPOCH = Date.UTC(2026, 9, 19);
 const $ = s => document.querySelector(s);

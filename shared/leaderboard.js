@@ -539,7 +539,7 @@ const SUPABASE_ANON_KEY = 'sb_publishable_-f0lT5SuVJ-TbFzlfMd7kA_hH6ZXp-N';
   } catch (e) {}
 })();
 
-/* Outside the Arcade (challenge links, direct visits): a "← ANON Arcade" button to anonnfts.com/anon-games in the top window. */
+/* Outside the Arcade (challenge links, direct visits): a "← ANON Arcade" button to anonnfts.com/arcade in the top window. */
 (function () {
   try {
     const me = document.currentScript && document.currentScript.src; if (!me) return;
@@ -551,7 +551,7 @@ const SUPABASE_ANON_KEY = 'sb_publishable_-f0lT5SuVJ-TbFzlfMd7kA_hH6ZXp-N';
       if (document.getElementById('anonHome')) return;
       const st = document.createElement('style'); st.textContent = '#anonHome{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(6px + env(safe-area-inset-bottom));z-index:4700;display:inline-flex;align-items:center;gap:4px;height:30px;padding:0 13px;border-radius:15px;border:1px solid #d4af37;background:rgba(5,7,10,.92);color:#f3d77a;font:700 12.5px system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;letter-spacing:.04em;text-decoration:none;box-shadow:0 0 12px rgba(43,255,136,.25)}#anonHome:focus-visible{outline:3px solid #2bff88;outline-offset:2px}html.anon-home-on body{padding-bottom:calc(40px + env(safe-area-inset-bottom))}html.anon-home-on .ach-banner,html.anon-home-on .ach-float{bottom:calc(44px + env(safe-area-inset-bottom))}';
       document.head.appendChild(st);
-      const a = document.createElement('a'); a.id = 'anonHome'; a.href = 'https://anonnfts.com/anon-games'; a.target = '_top'; a.rel = 'noopener'; a.textContent = '← ANON Arcade';
+      const a = document.createElement('a'); a.id = 'anonHome'; a.href = 'https://anonnfts.com/arcade'; a.target = '_top'; a.rel = 'noopener'; a.textContent = '← ANON Arcade';
       a.setAttribute('aria-label', 'Go to the ANON Arcade on anonnfts.com');
       document.body.appendChild(a); document.documentElement.classList.add('anon-home-on');
     };

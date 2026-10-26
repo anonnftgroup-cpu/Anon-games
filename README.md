@@ -1,7 +1,7 @@
 # ANON Arcade
 
 Free ANON-themed games for AnonNfts.com. Hosted on GitHub Pages (repo `anonnftgroup-cpu/Anon-games`)
-and shown on https://anonnfts.com/anon-games through one GoDaddy HTML section (an iframe of the repo root).
+and shown on https://anonnfts.com/arcade through one GoDaddy HTML section (an iframe of the repo root).
 The GoDaddy page never needs changing again: new games appear in the Arcade automatically.
 
 ## What's in the repo
