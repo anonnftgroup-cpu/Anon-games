@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Liquid NFT Backing Checker | Liquidity Held by Every NFT</title>
+<meta name="description" content="Check the FUSD liquidity every NFT in any Liquid NFTs collection holds on-chain, plus current Liquid listings next to each NFT's liquidity.">
+<link rel="icon" href="../assets/apple-touch-icon.png">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600&display=swap');
+html,body{margin:0;background:#08101f}
+.bc{box-sizing:border-box;max-width:960px;margin:0 auto;padding:20px 12px 18px;font:15px/1.55 'Inter',Arial,sans-serif;color:#d6dbe5;background:linear-gradient(170deg,#13203a 0%,#0B1426 45%,#08101f 100%);border:1px solid rgba(212,175,55,.55);border-radius:18px;min-height:100vh}
+.bc *{box-sizing:border-box}
+.eye{font:600 12px 'Cinzel',serif;letter-spacing:4px;color:#D4AF37;text-align:center;margin-bottom:6px}
+.bc h1{font:700 27px/1.15 'Cinzel',Georgia,serif;color:#D4AF37;text-align:center;margin:0 0 10px;letter-spacing:1px}
+.bc h2{font:700 18px/1.25 'Cinzel',Georgia,serif;color:#f5f0e1;margin:0 0 4px}
+.intro{text-align:center;color:#f5f0e1;margin:0 auto 14px;max-width:640px}
+.tabs{display:grid;grid-template-columns:1fr 1fr;border:1px solid rgba(212,175,55,.5);border-radius:999px;overflow:hidden;margin:0 0 14px}
+.tabs button,.seg button{font:700 13px 'Cinzel',Georgia,serif;letter-spacing:.4px;color:#D4AF37;background:transparent;border:0;padding:11px 6px;cursor:pointer}
+.tabs button.on,.seg button.on{background:#D4AF37;color:#0B1426}
+.ctl{display:grid;gap:8px;margin:0 0 12px}
+.ctl input,.ctl select{width:100%;font:15px 'Inter',Arial,sans-serif;color:#f5f0e1;background:#0a1324;border:1px solid rgba(212,175,55,.45);border-radius:10px;padding:11px 12px;outline:none;-webkit-appearance:none;appearance:none}
+.ctl select{background-image:linear-gradient(45deg,transparent 50%,#D4AF37 50%),linear-gradient(135deg,#D4AF37 50%,transparent 50%);background-position:calc(100% - 18px) 50%,calc(100% - 13px) 50%;background-size:5px 5px;background-repeat:no-repeat;padding-right:30px}
+.ctl input:focus,.ctl select:focus{border-color:#D4AF37}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.go{font:700 14px 'Cinzel',Georgia,serif;letter-spacing:.5px;color:#0B1426;background:#D4AF37;border:0;border-radius:999px;padding:12px 20px;cursor:pointer;width:100%}
+.go[disabled]{opacity:.6;cursor:wait}
+.msg{font-size:13px;color:#a9b2c3;text-align:center;margin:8px 0}
+.err{color:#f0b3a8}
+.prog{height:6px;border-radius:9px;background:rgba(255,255,255,.08);overflow:hidden;margin:6px 0 2px;display:none}
+.prog i{display:block;height:100%;width:0;background:#D4AF37;transition:width .2s}
+.head{display:flex;gap:12px;align-items:center;margin:16px 0 10px}
+.head img{width:56px;height:56px;border-radius:12px;object-fit:cover;border:1px solid rgba(212,175,55,.4);background:#0a1324;flex:none}
+.chip{display:inline-block;font-size:10px;letter-spacing:.8px;padding:1px 7px;border-radius:999px;border:1px solid rgba(212,175,55,.5);color:#D4AF37;margin-right:6px;text-transform:uppercase}
+.sum{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 8px}
+.sum div{padding:10px 8px;border:1px solid rgba(212,175,55,.32);border-radius:12px;background:rgba(255,255,255,.03);text-align:center}
+.sum b{display:block;font:700 17px/1.25 'Cinzel',Georgia,serif;color:#D4AF37}
+.sum span{font-size:10.5px;letter-spacing:.4px;text-transform:uppercase;color:#8f99ad}
+.when{font-size:12px;color:#8f99ad;text-align:center;margin:4px 0 12px}
+.links{display:flex;gap:8px;margin:0 0 12px}
+.links a,.card .ln a{flex:1;text-align:center;font:700 11.5px 'Cinzel',Georgia,serif;letter-spacing:.4px;padding:8px 6px;border-radius:999px;text-decoration:none;border:1px solid #D4AF37;color:#D4AF37;white-space:nowrap}
+.links a:first-child,.card .ln a:first-child{background:#D4AF37;color:#0B1426}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid rgba(212,175,55,.45);border-radius:10px;overflow:hidden;margin:0 0 8px}
+.seg button{font:600 12.5px 'Inter',Arial,sans-serif;padding:9px 4px}
+.seg button+button{border-left:1px solid rgba(212,175,55,.45)}
+.list{display:grid;gap:8px}
+.card{display:grid;grid-template-columns:auto 1fr auto;gap:2px 10px;align-items:center;padding:10px 12px;border:1px solid rgba(212,175,55,.28);border-radius:12px;background:rgba(255,255,255,.03)}
+.card img{width:52px;height:52px;border-radius:10px;object-fit:cover;background:#0a1324;grid-row:1/3}
+.card .nm{font:700 14.5px/1.3 'Cinzel',Georgia,serif;color:#f5f0e1;min-width:0;overflow-wrap:anywhere}
+.card .sub{font-size:11.5px;color:#8f99ad;min-width:0}
+.card .v{grid-row:1/3;grid-column:3;text-align:right}
+.card .v b{display:block;font:700 15px/1.25 'Cinzel',Georgia,serif;color:#D4AF37;white-space:nowrap}
+.card .v small{font-size:11px;color:#a9b2c3;white-space:nowrap}
+.card .ln{grid-column:1/-1;display:flex;gap:8px;margin-top:8px}
+.card.noimg{grid-template-columns:1fr auto}.card.noimg .v{grid-column:2}
+.pair{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.pair div{border:1px solid rgba(212,175,55,.3);border-radius:10px;padding:7px 8px;text-align:center}
+.pair b{display:block;font:700 15px/1.2 'Cinzel',Georgia,serif;color:#f5f0e1}
+.pair span{font-size:10px;letter-spacing:.4px;text-transform:uppercase;color:#8f99ad}
+.more{display:block;width:100%;margin:12px 0 0;font:700 13px 'Cinzel',Georgia,serif;letter-spacing:.5px;color:#D4AF37;background:transparent;border:1px solid #D4AF37;border-radius:999px;padding:12px;cursor:pointer}
+.none{text-align:center;color:#a9b2c3;padding:16px 8px;border:1px dashed rgba(212,175,55,.35);border-radius:12px}
+.note{margin:16px 0 0;padding-top:12px;border-top:1px solid rgba(212,175,55,.25);font-size:11.5px;line-height:1.55;color:#8f99ad;text-align:center}
+.note b{color:#c9cfdb}
+.bc a{color:#D4AF37}
+.hide{display:none!important}
+@media(min-width:700px){.bc{padding:28px 24px;min-height:0;margin:12px auto}.bc h1{font-size:36px}.sum{grid-template-columns:repeat(4,1fr)}.list{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<div class="bc" id="bc">
+<div class="eye">ANON NFTS &middot; ON-CHAIN</div>
+<h1>Liquid NFT Backing Checker</h1>
+<p class="intro">Pick any Liquid NFTs collection on Polygon, BNB Chain, Ethereum or BESC and see the FUSD liquidity each NFT holds, read live from the chain. You can also see NFTs listed for sale on Liquid, with each asking price shown next to that NFT's liquidity.</p>
+<div class="tabs" role="tablist"><button id="t-col" class="on" role="tab">Check a collection</button><button id="t-lst" role="tab">Listed on Liquid</button></div>
+
+<section id="p-col">
+<div class="ctl">
+<input id="q" type="search" placeholder="Search by name, or paste a Liquid link or contract address" autocomplete="off" spellcheck="false">
+<div class="row2">
+<select id="chain" aria-label="Chain"><option value="">All chains</option><option value="137">Polygon</option><option value="56">BNB Chain</option><option value="1">Ethereum</option><option value="2372">BESC</option></select>
+<select id="sel" aria-label="Collection"></select>
+</div>
+<button class="go" id="go">Check on-chain</button>
+</div>
+<div class="prog" id="prog"><i></i></div>
+<div class="msg" id="cmsg">Loading the collection list&hellip;</div>
+<div id="cres"></div>
+</section>
+
+<section id="p-lst" class="hide">
+<div class="ctl">
+<div class="row2">
+<select id="lchain" aria-label="Chain"><option value="">All chains</option><option value="137">Polygon</option><option value="56">BNB Chain</option><option value="1">Ethereum</option><option value="2372">BESC</option></select>
+<select id="lsort" aria-label="Sort"><option value="new">Newest listed</option><option value="pa">Asking price, low to high</option><option value="pd">Asking price, high to low</option><option value="ld">Liquidity held, high to low</option><option value="la">Liquidity held, low to high</option></select>
+</div>
+<input id="lq" type="search" placeholder="Filter by collection name" autocomplete="off">
+</div>
+<div class="msg" id="lmsg">Press the tab to load listings.</div>
+<div class="list" id="lres"></div>
+</section>
+
+<p class="note"><b>Figures are on-chain facts at the time of reading. Check it on-chain</b> with the link on each NFT before relying on any number here. Liquidity changes with boosts, sales and redemptions, and every NFT's figure can differ. <b>Redeeming (burning) an NFT on Liquid costs a 20% fee</b> at the time of writing, so the liquidity an NFT holds is not what a holder gets back. Asking prices are set by sellers on Liquid; ANON NFTs is not part of those sales. Nothing here is financial advice. Check Liquid's current terms before buying, selling or redeeming. Made by <a href="https://anonnfts.com" target="_blank" rel="noopener">ANON NFTs</a> for every Liquid collection.</p>
+</div>
+
+<script>
+(()=>{
+const MKT='0x9Ee4f4F7d9a0bf8F21CD1f518351AdB8c25D6BD0', ORACLE='0xd4939168a8f0d5c2b014f63c8ebcb70af5e6c245', FUSD='0xcfd6aaa9373ceebcc03d3cd9d87d4033da67b8e9';
+const CH={
+ 137:{n:'Polygon',slug:'polygon',rpc:['https://polygon-bor-rpc.publicnode.com/'],nft:(a,i)=>`https://polygonscan.com/nft/${a}/${i}`,addr:a=>`https://polygonscan.com/address/${a}`},
+ 56:{n:'BNB Chain',slug:'bnb',rpc:['https://bsc-rpc.publicnode.com/','https://bsc-mainnet.public.blastapi.io'],nft:(a,i)=>`https://www.oklink.com/bsc/assets/${a}/${i}`,addr:a=>`https://www.oklink.com/bsc/address/${a}`},
+ 1:{n:'Ethereum',slug:'ethereum',rpc:['https://ethereum-rpc.publicnode.com/','https://eth-mainnet.public.blastapi.io'],nft:(a,i)=>`https://eth.blockscout.com/token/${a}/instance/${i}`,addr:a=>`https://eth.blockscout.com/address/${a}`},
+ 2372:{n:'BESC',slug:'besc',rpc:['https://rpc.beschyperchain.com/'],nft:(a,i)=>`https://explorer.beschyperchain.com/token/${a}/instance/${i}`,addr:a=>`https://explorer.beschyperchain.com/address/${a}`}};
+const SLUG={polygon:137,matic:137,bnb:56,bsc:56,ethereum:1,eth:1,besc:2372};
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad=n=>BigInt(n).toString(16).padStart(64,'0');
+const padA=a=>a.toLowerCase().replace(/^0x/,'').padStart(64,'0');
+const big=h=>(h&&h!=='0x')?BigInt('0x'+h.replace(/^0x/,'').slice(0,64)||'0'):null;
+const word=(h,i)=>h.slice(2+64*i,2+64*(i+1));
+const tok=v=>Number(v)/1e18;
+const fmt=x=>x==null?'-':(x>=1000?x.toLocaleString('en-GB',{maximumFractionDigits:0}):x>=1?x.toLocaleString('en-GB',{maximumFractionDigits:2}):x.toLocaleString('en-GB',{maximumSignificantDigits:3}));
+const liqUrl=(c,a)=>`https://liquidnfts.finance/${CH[c].slug}/collection/${a}`;
+const when=()=>new Date().toLocaleString('en-GB',{hour:'2-digit',minute:'2-digit',day:'numeric',month:'short',year:'numeric'});
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+async function post(c,body){
+ let last;
+ for(let t=0;t<8;t++){
+  const R=CH[c].rpc,url=R[((CH[c].k=(CH[c].k||0)+1))%R.length];
+  try{const r=await fetch(url,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)});
+   if(!r.ok) throw new Error('HTTP '+r.status);
+   const j=await r.json(); if(!Array.isArray(j)||j.length!==body.length) throw new Error(j?.error?.message||'bad reply');
+   if(j.some(x=>x&&x.error&&!(x.error.code===3||/revert/i.test(x.error.message||'')))) throw new Error('rpc busy'); return j;}
+  catch(e){last=e;await sleep((CH[c].rpc.length>1&&t<2?250:1000)*(t+1));}
+ }
+ throw new Error('The public '+CH[c].n+' connection is busy right now. Please try again in a minute.');
+}
+// calls: [[to,data],...] -> hex results (null when the call reverts)
+async function calls(c,list,onp){
+ const B=80,out=new Array(list.length).fill(null),jobs=[];
+ for(let i=0;i<list.length;i+=B) jobs.push(i);
+ let done=0,k=0;
+ async function worker(){
+  while(k<jobs.length){const i=jobs[k++];
+   const body=list.slice(i,i+B).map(([to,data],j)=>({jsonrpc:'2.0',id:i+j,method:'eth_call',params:[{to,data},'latest']}));
+   const r=await post(c,body);
+   for(const x of r){ if(x&&typeof x.id==='number'&&x.result&&x.result!=='0x') out[x.id]=x.result; }
+   done+=body.length; onp&&onp(done/list.length);
+  }
+ }
+ await worker();
+ return out;
+}
+const S={ownerOf:'0x6352211e',liq:'0xb2d4cf18',ts:'0x18160ddd',name:'0x06fdde03',listing:'0x0007df30',price:'0xeb91d37e'};
+function decStr(h){try{const off=Number(big(word(h,0)));const len=Number(BigInt('0x'+h.slice(2+off*2,2+off*2+64)));const hex=h.slice(2+off*2+64,2+off*2+64+len*2);return new TextDecoder().decode(new Uint8Array(hex.match(/../g).map(b=>parseInt(b,16)))).trim();}catch(e){return '';}}
+function decListing(h){ if(!h||h.length<2+64*10) return null;
+ return {seller:'0x'+word(h,0).slice(24),type:Number(big(word(h,3))),price:big(word(h,4)),cur:'0x'+word(h,5).slice(24),end:Number(big(word(h,7))),active:big(word(h,9))===1n};}
+function priceTxt(L){ if(!L) return '-'; const p=fmt(tok(L.price)); return L.cur.toLowerCase()===FUSD?p+' FUSD':p+' (other token)'; }
+
+/* ---------- collection list ---------- */
+let COLS=[],LIST=null;
+const base=new URL('.',location.href).href;
+fetch(base+'collections.json?'+Date.now().toString().slice(0,-5)).then(r=>r.json()).then(d=>{COLS=d.items||[];fill();$('cmsg').textContent=`${COLS.length} Liquid collections in the list. Pick one, or paste any Liquid collection link or contract address.`;
+ const p=new URLSearchParams(location.search); if(p.get('tab')==='listings') tab('lst'); const c=p.get('c'); if(c){$('q').value=c;fill();run();} }).catch(()=>{$('cmsg').textContent='The collection list could not load. You can still paste a Liquid collection link or contract address.';});
+function parseQ(){const v=$('q').value.trim();const m=v.match(/0x[a-fA-F0-9]{40}/);if(!m) return null;
+ let c=null;const s=v.match(/liquidnfts\.finance\/([a-z]+)\//i)||v.match(/^(\d+):/);if(s) c=SLUG[s[1].toLowerCase()]||(CH[s[1]]?Number(s[1]):null);
+ return {a:m[0],c};}
+function fill(){const ch=$('chain').value,q=$('q').value.trim().toLowerCase(),pq=parseQ();
+ let L=COLS.filter(x=>(!ch||x.c==ch));
+ if(pq) L=L.filter(x=>x.a.toLowerCase()===pq.a.toLowerCase()&&(!pq.c||x.c===pq.c)); else if(q) L=L.filter(x=>x.n.toLowerCase().includes(q));
+ const sel=$('sel'),prev=sel.value;
+ sel.innerHTML=(pq&&!L.length?`<option value="paste">Pasted address</option>`:'')+(L.length?'':(pq?'':'<option value="">No match</option>'))+L.map(x=>`<option value="${x.c}:${x.a}">${esc(x.n||x.a.slice(0,10))} (${CH[x.c].n})</option>`).join('');
+ if([...sel.options].some(o=>o.value===prev)) sel.value=prev;
+}
+$('q').addEventListener('input',fill);$('chain').addEventListener('change',fill);
+$('go').addEventListener('click',run);
+$('q').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();run();}});
+
+let CUR=null,SORT='id',SHOW=60,FIND='';
+async function run(){
+ const v=$('sel').value; let c,a;
+ if(v&&v!=='paste'){[c,a]=v.split(':');c=Number(c);}
+ else{const pq=parseQ(); if(!pq){$('cmsg').innerHTML='<span class="err">Pick a collection, or paste a Liquid collection link or 0x contract address.</span>';return;}
+  a=pq.a;c=pq.c||Number($('chain').value)||null;
+  if(!c){$('cmsg').innerHTML='<span class="err">Choose the chain this contract is on, then press Check on-chain.</span>';return;}}
+ const meta=COLS.find(x=>x.c===c&&x.a.toLowerCase()===a.toLowerCase())||{c,a,n:'',st:0,m:0};
+ $('go').disabled=true;$('cres').innerHTML='';const pr=$('prog');pr.style.display='block';pr.firstChild.style.width='0';
+ try{
+  $('cmsg').textContent=`Reading ${CH[c].n}...`;
+  const [ts,nm,fp,lq]=await calls(c,[[a,S.ts],[a,S.name],[ORACLE,S.price],[a,S.liq+pad(meta.st??0)]]);
+  if(meta.std==='ERC1155') throw new Error('This collection uses the ERC-1155 standard, which this checker cannot read yet. View it on Liquid instead.');
+  if(ts==null) throw new Error(`No NFT contract answered at this address on ${CH[c].n}. Check the chain and the address.`);
+  if(lq==null||big(ts)>100000n) throw new Error(`This contract on ${CH[c].n} does not show Liquid NFTs liquidity, so it does not look like a Liquid NFTs collection. Check the chain and the address.`);
+  const total=Number(big(ts));const name=meta.n||decStr(nm)||a;
+  const toks=[];let id=meta.st??0,miss=0,checked=0,liquid=null;const cap=id+Math.max(12000,(meta.m||0)+50);
+  if(total>0) while(toks.length<total&&id<cap){
+   const ids=[];for(let i=0;i<400&&id<cap;i++) ids.push(id++);
+   const r=await calls(c,ids.flatMap(i=>[[a,S.ownerOf+pad(i)],[a,S.liq+pad(i)]]),p=>{pr.firstChild.style.width=Math.min(99,((toks.length+p*ids.length*0.5)/total)*100)+'%';});
+   ids.forEach((i,k)=>{const o=r[2*k],l=r[2*k+1];const ow=o?'0x'+o.slice(-40):null;if(ow&&!/^0x0{40}$/.test(ow)){toks.push({id:i,owner:ow.toLowerCase(),liq:l?tok(big(l)):null});miss=0;}else miss++;});
+   checked+=ids.length;
+   if(liquid===null&&toks.length){liquid=toks.some(t=>t.liq!==null);if(!liquid) throw new Error('This contract does not show Liquid NFTs liquidity (getFloorPrice), so it does not look like a Liquid NFTs collection.');}
+   $('cmsg').textContent=`Read ${checked} token IDs, found ${toks.length} of ${total} active NFTs...${total>400?' Big collections can take up to a minute.':''}`;
+   pr.firstChild.style.width=Math.min(99,toks.length/total*100)+'%';
+   if(miss>1500) break;
+  }
+  const listed=toks.filter(t=>t.owner===MKT.toLowerCase());
+  if(listed.length){const r=await calls(c,listed.map(t=>[MKT,S.listing+padA(a)+pad(t.id)]));listed.forEach((t,k)=>{const L=decListing(r[k]);if(L&&L.active) t.listing=L;});}
+  pr.firstChild.style.width='100%';
+  CUR={c,a,name,img:meta.img,total,toks,fusd:fp?tok(big(fp)):null,at:when()};SHOW=60;SORT='id';FIND='';
+  history.replaceState(null,'','?c='+c+':'+a);
+  draw();$('cmsg').textContent='';
+ }catch(e){$('cmsg').innerHTML='<span class="err">'+esc(e.message||e)+'</span>';}
+ finally{$('go').disabled=false;setTimeout(()=>pr.style.display='none',600);}
+}
+function draw(){
+ const C=CUR,v=C.toks.map(t=>t.liq).filter(x=>x!=null),pool=v.reduce((s,x)=>s+x,0),mn=v.length?Math.min(...v):null,mx=v.length?Math.max(...v):null,nl=C.toks.filter(t=>t.listing).length;
+ const usd=C.fusd?` <small style="display:block;font:11px Inter,Arial;color:#8f99ad">about $${fmt(pool*C.fusd)}</small>`:'';
+ let L=C.toks.slice(); if(FIND) L=L.filter(t=>String(t.id).includes(FIND));
+ if(SORT==='hi') L.sort((x,y)=>(y.liq??-1)-(x.liq??-1)); else if(SORT==='lo') L.sort((x,y)=>(x.liq??1e30)-(y.liq??1e30)); else if(SORT==='ls') L.sort((x,y)=>(!!y.listing)-(!!x.listing)||x.id-y.id);
+ const shown=L.slice(0,SHOW);
+ $('cres').innerHTML=`
+ <div class="head">${C.img?`<img src="${esc(C.img)}" alt="" loading="lazy" onerror="this.remove()">`:''}<div><h2>${esc(C.name)}</h2><span class="chip">${CH[C.c].n}</span><span style="font-size:11.5px;color:#8f99ad">${C.a.slice(0,6)}...${C.a.slice(-4)}</span></div></div>
+ <div class="sum"><div><b>${C.toks.length}</b><span>Active NFTs</span></div><div><b>${fmt(pool)} FUSD</b>${usd}<span>Liquidity held, all active NFTs</span></div><div><b>${C.toks.length?fmt(mn)+' to '+fmt(mx):'-'}</b><span>Range per NFT (FUSD)</span></div><div><b>${nl}</b><span>Listed on Liquid now</span></div></div>
+ <div class="when">${C.toks.length<C.total?`Found ${C.toks.length} of the ${C.total} active NFTs the contract reports. `:''}Read from ${CH[C.c].n} at ${C.at}${C.fusd?`. FUSD price on-chain: $${C.fusd.toFixed(4)}`:''}. At the time of reading, check it on-chain.</div>
+ <div class="links"><a href="${liqUrl(C.c,C.a)}" target="_blank" rel="noopener">View on Liquid</a><a href="${CH[C.c].addr(C.a)}" target="_blank" rel="noopener">Contract on-chain</a></div>
+ ${C.toks.length?`<div class="seg" id="srt"><button data-s="id" class="${SORT==='id'?'on':''}">By ID</button><button data-s="hi" class="${SORT==='hi'?'on':''}">Most held</button><button data-s="ls" class="${SORT==='ls'?'on':''}">Listed first</button></div>
+ <div class="ctl"><input id="find" type="search" inputmode="numeric" placeholder="Find an NFT by number" value="${esc(FIND)}"></div>
+ <div class="list">${shown.map(t=>`<div class="card noimg"><div class="nm">#${t.id}</div><div class="v"><b>${t.liq==null?'-':fmt(t.liq)+' FUSD'}</b><small>liquidity held</small></div><div class="sub">${t.listing?`Listed on Liquid: ${t.listing.type===1?'auction, reserve ':''}${priceTxt(t.listing)}`:'Not listed on Liquid'}</div><div class="ln"><a href="${CH[C.c].nft(C.a,t.id)}" target="_blank" rel="noopener">Check it on-chain</a><a href="${liqUrl(C.c,C.a)}" target="_blank" rel="noopener">Liquid</a></div></div>`).join('')}</div>
+ ${L.length>SHOW?`<button class="more" id="more">Show more (${L.length-SHOW} left)</button>`:''}`:'<div class="none">No active NFTs in this collection right now.</div>'}`;
+ const s=$('srt');s&&s.addEventListener('click',e=>{const b=e.target.closest('button');if(b){SORT=b.dataset.s;SHOW=60;draw();}});
+ const m=$('more');m&&m.addEventListener('click',()=>{SHOW+=60;draw();});
+ const f=$('find');f&&f.addEventListener('input',()=>{FIND=f.value.replace(/\D/g,'');SHOW=60;draw();const n=$('find');n.focus();n.setSelectionRange(n.value.length,n.value.length);});
+}
+
+/* ---------- listings ---------- */
+function tab(t){$('t-col').classList.toggle('on',t==='col');$('t-lst').classList.toggle('on',t==='lst');$('p-col').classList.toggle('hide',t!=='col');$('p-lst').classList.toggle('hide',t!=='lst');if(t==='lst'&&!LIST) loadListings();}
+$('t-col').addEventListener('click',()=>tab('col'));$('t-lst').addEventListener('click',()=>tab('lst'));
+let LUPD='',LAT='',GONE=0;
+async function loadListings(){
+ LIST=[];$('lmsg').textContent='Loading listings...';
+ try{
+  const d=await (await fetch(base+'listings.json?'+Date.now().toString().slice(0,-5))).json();LUPD=d.updated;
+  const items=d.items||[];const by={};items.forEach(x=>(by[x.c]=by[x.c]||[]).push(x));
+  $('lmsg').textContent=`Checking ${items.length} listings on-chain...`;
+  await Promise.all(Object.keys(by).map(async c=>{c=Number(c);const L=by[c];
+   const r=await calls(c,L.flatMap(x=>[[MKT,S.listing+padA(x.a)+pad(x.id)],[x.a,S.liq+pad(x.id)]]));
+   L.forEach((x,k)=>{const li=decListing(r[2*k]);if(li&&li.active){x.L=li;x.liq=r[2*k+1]?tok(big(r[2*k+1])):null;LIST.push(x);}else GONE++;});}));
+  LAT=when();drawL();
+ }catch(e){LIST=null;$('lmsg').innerHTML='<span class="err">Listings could not be read just now. Please try again in a minute.</span>';}
+}
+function drawL(){
+ const ch=$('lchain').value,q=$('lq').value.trim().toLowerCase(),s=$('lsort').value;
+ let L=LIST.filter(x=>(!ch||x.c==ch)&&(!q||(x.coll||'').toLowerCase().includes(q)));
+ const P=x=>tok(x.L.price);
+ if(s==='pa') L.sort((a,b)=>P(a)-P(b)); else if(s==='pd') L.sort((a,b)=>P(b)-P(a)); else if(s==='ld') L.sort((a,b)=>(b.liq??-1)-(a.liq??-1)); else if(s==='la') L.sort((a,b)=>(a.liq??1e30)-(b.liq??1e30)); else L.sort((a,b)=>(b.at||'').localeCompare(a.at||''));
+ const upd=LUPD?new Date(LUPD).toLocaleString('en-GB',{hour:'2-digit',minute:'2-digit',day:'numeric',month:'short'}):'';
+ $('lmsg').innerHTML=`${LIST.length} NFTs listed on Liquid${L.length!==LIST.length?`, ${L.length} shown`:''}. Asking prices and liquidity read live from the chain at ${LAT}. At the time of reading, check it on-chain.${upd?` <br><small>Listing list refreshed ${upd}${GONE?`; ${GONE} no longer active on-chain and hidden`:''}. New listings can take a few hours to appear here.</small>`:''}`;
+ $('lres').innerHTML=L.length?L.map(x=>`<div class="card"><img src="${esc(x.img)}" alt="" loading="lazy" onerror="this.style.visibility='hidden'"><div class="nm">${esc(x.coll)} #${x.id}</div><div class="v"><span class="chip">${CH[x.c].n}</span></div><div class="sub">${x.L.type===1?'Auction':'Fixed price'}${x.at?' &middot; listed '+new Date(x.at+'Z').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):''}</div>
+ <div class="pair"><div><b>${priceTxt(x.L)}</b><span>${x.L.type===1?'Reserve price':'Asking price'}</span></div><div><b>${x.liq==null?'-':fmt(x.liq)+' FUSD'}</b><span>Liquidity held on-chain</span></div></div>
+ <div class="ln"><a href="${CH[x.c].nft(x.a,x.id)}" target="_blank" rel="noopener">Check it on-chain</a><a href="${liqUrl(x.c,x.a)}" target="_blank" rel="noopener">View on Liquid</a></div></div>`).join(''):'<div class="none">No listings match.</div>';
+}
+['lchain','lsort'].forEach(i=>$(i).addEventListener('change',()=>LIST&&drawL()));$('lq').addEventListener('input',()=>LIST&&drawL());
+})();
+</script>
+</body>
+</html>
