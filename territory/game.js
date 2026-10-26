@@ -114,7 +114,7 @@ function heads() { const al = S.ents.filter(e => e.alive);
   for (let i = 0; i < al.length; i++) for (let j = i + 1; j < al.length; j++) { const a = al[i], b = al[j]; if (a.x !== b.x || a.y !== b.y || !a.alive || !b.alive) continue;
     const ah = S.own[idx(a.x, a.y)] === a.id, bh = S.own[idx(b.x, b.y)] === b.id; if (!ah) die(a, b, 'Head-on crash.'); if (!bh) die(b, a, 'Head-on crash.'); } }
 function step(dt) {
-  if (!S || S.over) return; S.time += dt;
+  if (!S || S.over || S.paused) return; S.time += dt;
   for (const p of S.parts) { p.x += p.vx * dt; p.y += p.vy * dt; p.vx *= .92; p.vy *= .92; p.l -= dt; } S.parts = S.parts.filter(p => p.l > 0);
   for (const f of S.flash) f.t += dt; S.flash = S.flash.filter(f => f.t < .5); if (S.pop) S.pop.t -= dt; if (S.shake) S.shake = Math.max(0, S.shake - dt);
   if (S.dead) { S.dead -= dt; if (S.dead <= 0) end(); return; }
@@ -169,22 +169,22 @@ function draw() {
     const py = (S.pop.y - (1.1 - S.pop.t) * 3) * cs; x.strokeText(S.pop.txt, S.pop.x * cs, py); x.fillStyle = '#f3d77a'; x.fillText(S.pop.txt, S.pop.x * cs, py); x.globalAlpha = 1; }
   x.strokeStyle = '#d4af37'; x.lineWidth = 2; x.strokeRect(1, 1, N * cs - 2, N * cs - 2); x.restore();
 }
-const L = AP.loop(step, draw); L.onHide = () => { if (S && !S.over && !S.dead && S.count <= 0 && !S.clear) S.count = 2; };
+const L = AP.loop(ANONSAVE.safe(step, 'territory'), ANONSAVE.safe(draw, 'territory'));
 // ---------- run ----------
 async function newRun() {
   await Promise.all(ART.map(a => AP.img(a.cover).then(i => IMG[a.id] = i))); show('play'); if (!C) C = AP.canvas($('#cv'), 1, () => { dirty = true; draw(); }); else C.fit();
   S = { time: 0, played: 0, bank: 0, kpts: 0, kills: 0, done: 0, over: false, art: pref.art }; newWorld(1); L.start();
 }
 function end() {
-  S.over = true; L.stop(); draw(); const a = art(S.art), sc = score(), secs = Math.max(1, Math.ceil(S.played)), lv = S.lv, pb = sc > (pref.best || 0);
+  S.over = true; S.paused = false; K.ended(); L.stop(); draw(); const a = art(S.art), sc = score(), secs = Math.max(1, Math.ceil(S.played)), lv = S.lv, pb = sc > (pref.best || 0);
   if (pb) { pref.best = sc; pref.bestLv = lv; ls.set('anonTerritory.pref', pref); }
   ((S) => setTimeout(() => { modal({ art: a.img, title: pb ? 'New best! 🏆' : 'Knocked out! 💥', text: `${S.why}<br><b>${a.name}</b> reached <b>level ${lv}</b> (×${lv}), claimed ${S.dpct || 0}% and knocked out ${S.kills} rival${S.kills === 1 ? '' : 's'}.<br>Score <b>${sc}</b>`, lb: sc >= 10,
-    buttons: [['PLAY AGAIN', () => newRun()], ['Leaderboard', () => openLB(GAME, TITLE, LVN, 'KOs'), 1], ['Change ANON', () => show('setup'), 1]] });
+    buttons: [['PLAY AGAIN', () => newRun()], ['Leaderboard', () => openLB(GAME, TITLE, LVN, 'KOs'), 1], ['Change ANON', () => { show('setup'); K.paint(); }, 1]] });
     if (sc >= 10) post(GAME, sc, secs, S.kills, 'l' + lv); }, 500))(S);
   gameOver();
 }
 // ---------- controls: swipe/drag steers (fires mid-drag, no lift needed), arrows/WASD ----------
-const turn = d => { if (S && !S.over) { const me = S.ents[0]; if (me && me.alive) me.nd = d; } };
+const turn = d => { if (S && !S.over && !S.paused) { const me = S.ents[0]; if (me && me.alive) me.nd = d; } };
 const cv = $('#cv'); let an = null;
 cv.addEventListener('pointerdown', e => { an = { x: e.clientX, y: e.clientY }; cv.setPointerCapture(e.pointerId); });
 cv.addEventListener('pointermove', e => { if (!an) return; const dx = e.clientX - an.x, dy = e.clientY - an.y; if (Math.max(Math.abs(dx), Math.abs(dy)) < 16) return;
@@ -192,7 +192,21 @@ cv.addEventListener('pointermove', e => { if (!an) return; const dx = e.clientX 
 ['pointerup', 'pointercancel'].forEach(t => cv.addEventListener(t, () => an = null));
 AP.keys({ ArrowUp: () => turn('up'), KeyW: () => turn('up'), w: () => turn('up'), ArrowDown: () => turn('down'), KeyS: () => turn('down'), s: () => turn('down'),
   ArrowLeft: () => turn('left'), KeyA: () => turn('left'), a: () => turn('left'), ArrowRight: () => turn('right'), KeyD: () => turn('right'), d: () => turn('right') });
-$('#goBtn').onclick = () => newRun(); $('#againBtn').onclick = () => { L.stop(); newRun(); };
-$('#setBtn').onclick = $('#menuBtn').onclick = () => { L.stop(); if (S) S.over = true; show('setup'); };
-$('#lbBtn').onclick = () => openLB(GAME, TITLE, LVN, 'KOs');
+// ---------- pause + save (shared/gamesave.js): Pause button, P / Esc, auto-pause when hidden, resume later ----------
+const TA = { own: Int8Array, trail: Int8Array, cnt: Int32Array };
+const inPlay = () => !!S && !S.over && !S.dead && $('#play').classList.contains('on');
+const K = ANONSAVE.kit({ game: GAME, kind: 'action', newLabel: 'Restart', stage: $('#cv').parentElement, bar: $('#pzBox'), setupAnchor: $('#goBtn'), art: art(pref.art).img,
+  inProgress: inPlay, paused: () => !!S.paused,
+  pause: () => { S.paused = true; }, resume: () => { S.paused = false; if (!S.clear && S.count <= 0) S.count = 2; },
+  snapshot: () => { const o = {}; for (const k in S) { if (k === 'parts' || k === 'flash' || k === 'pop' || k === 'paused') continue; o[k] = TA[k] ? Array.from(S[k]) : S[k]; } return JSON.parse(JSON.stringify(o)); },
+  restore: d => { show('play'); if (!C) C = AP.canvas($('#cv'), 1, () => { dirty = true; draw(); }); else C.fit();
+    for (const k in TA) d[k] = TA[k].from(d[k]); d.parts = []; d.flash = []; d.paused = true; S = d; dirty = true; hud(); $('#msg').textContent = ''; L.start(); },
+  final: () => { if (!S) return null; const sc = score(); return sc >= 10 ? { score: sc, time: Math.max(1, Math.ceil(S.played)), moves: S.kills, mode: 'l' + S.lv } : null; },
+  endNow: () => { S.why = 'Run ended.'; end(); },
+  newGame: () => { L.stop(); newRun().then(() => K.begin()); }, toMenu: () => { L.stop(); if (S) S.over = true; show('setup'); },
+  describe: (st, f) => { const x = st || S; if (!x) return f ? 'Score ' + f.score : ''; return 'Level ' + x.lv + ' · ' + art(x.art).name; },
+  valid: d => !!d && d.lv >= 1 && d.lv <= 60 && Array.isArray(d.own) && d.own.length === NN && Array.isArray(d.trail) && d.trail.length === NN && Array.isArray(d.ents) && d.ents.length >= 1 && d.ents[0].me === true && !d.over && isFinite(d.played) && d.bank >= 0 && d.kpts >= 0 });
+$('#goBtn').onclick = K.guard(() => newRun().then(() => K.begin()));
+$('#menuBtn').onclick = () => { if (inPlay()) return K.pause('button'); L.stop(); if (S) S.over = true; show('setup'); K.paint(); };
+$('#lbBtn').onclick = () => { if (inPlay()) K.pause('button'); openLB(GAME, TITLE, LVN, 'KOs'); };
 window.G = { state: () => S, newRun, step, draw, turn, L, C: () => C, capture, newWorld, pct, score };
