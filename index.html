@@ -166,6 +166,8 @@ footer a{color:#b9a35c;text-decoration:none}
 .create-card b{display:block;font-family:Georgia,serif;color:var(--gold2);font-size:15px}
 .create-card span{display:block;font-size:12px;color:#c3cad6;margin-top:2px;line-height:1.35}
 .create-card i{margin-left:auto;flex:none;font-style:normal;font-weight:800;font-size:12px;color:#0B1426;background:#D4AF37;border-radius:999px;padding:7px 12px;white-space:nowrap}
+.meet-card{margin-top:16px;background:linear-gradient(160deg,#1a1508 0%,#0B1426 75%)}
+.meet-card img{object-fit:cover}
 @media (prefers-reduced-motion:reduce){.logo{animation:none}.tile{transition:none}}
 </style>
 </head>
@@ -195,6 +197,7 @@ footer a{color:#b9a35c;text-decoration:none}
     <a class="create-card" id="createCard" href="create/?hub=1"><img src="create/thumb.webp" alt="" width="84" height="63" loading="lazy"><div><b>New: ANON Avatar Maker</b><span>Make your own ANON profile picture or phone wallpaper. Free.</span></div><i>CREATE</i></a>
     <div class="grid" id="grid"></div>
     <div class="empty" id="empty">No games match. Try another word, ANON.</div>
+    <a class="create-card meet-card" id="meetCard" href="https://anonnfts.com/collections" target="_blank" rel="noopener" aria-label="Meet the ANONs: see the ANON NFT collections on anonnfts.com (opens in a new tab)"><img src="assets/nft/c-apes.webp" alt="" width="84" height="63" loading="lazy"><div><b>Meet the ANONs</b><span>The characters in these games come from ANON NFT collections. See them all, with figures you can check on-chain.</span></div><i>MEET</i></a>
   </section>
 
   <section class="view" id="viewLb" aria-label="Leaderboards">
@@ -220,7 +223,7 @@ footer a{color:#b9a35c;text-decoration:none}
     <p class="ak-note">We'll send a quick email to confirm your sign-up. No spam, ever.</p>
   </section>
 
-  <footer>ANON NFTs · <a href="https://anonnfts.com" target="_blank" rel="noopener">anonnfts.com</a> · <a href="https://anonnfts.com/privacy-notice" target="_blank" rel="noopener">Privacy</a> · Art CC0</footer>
+  <footer>ANON NFTs · <a href="https://anonnfts.com" target="_blank" rel="noopener">anonnfts.com</a> · <a href="https://anonnfts.com/collections" target="_blank" rel="noopener">Meet the ANONs</a> · <a href="https://anonnfts.com/privacy-notice" target="_blank" rel="noopener">Privacy</a> · Art CC0</footer>
 </div>
 <div id="toast" role="status" aria-live="polite"></div>
 <script src="shared/leaderboard.js?v=1.9.0"></script>

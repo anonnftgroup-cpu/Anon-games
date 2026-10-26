@@ -7,6 +7,7 @@
    - never in the same game over as a leaderboard name prompt
    - email box posts straight to Kit (form 10062464) with fetch; on success it never shows again on this device
      (a sign-up from the Arcade hub's box counts too). "Open sign-up page" link is the fallback (snoozes 30 days)
+   - also adds a small "Meet the ANONs" link (anonnfts.com/collections) to every game-over screen
    ===================================================================== */
 (function () {
   'use strict';
@@ -93,9 +94,74 @@
     setTimeout(() => { try { ov.querySelector('.anw-later').focus({ preventScroll: true }); } catch (e) {} }, 60);   // no auto-focus on the email box: the phone keyboard would pop up
     return true;
   }
+
+  /* ---------- "Meet the ANONs": a small link to the ANON NFT collections on every game-over screen ----------
+     Goes inside the game's own result card (kit modal #kmodal, or next to #lbMsg / #wLB). If a game has no
+     such card, a small pill shows in the bottom-right corner for 12 s (at most once every 5 minutes) and
+     goes away on the next tap or key. Opens anonnfts.com/collections in a new tab. ANON_MEET_OFF: test hook. */
+  const URL_MEET = 'https://anonnfts.com/collections';
+  let meetTimer = 0, meetPill = null, meetPillAt = 0;
+  function meetCSS() {
+    if (document.getElementById('anm-css')) return;
+    const s = document.createElement('style'); s.id = 'anm-css';
+    s.textContent = `
+.anm-row{display:block;width:100%;text-align:center;margin:10px 0 0;clear:both}
+.anm-a{display:inline-block;padding:6px 12px;border-radius:999px;border:1px solid rgba(212,175,55,.55);background:rgba(5,7,10,.55);color:#f3d77a;font:700 12.5px system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;letter-spacing:.04em;text-decoration:none;line-height:1.3}
+.anm-a:hover{border-color:#f3d77a}.anm-a:focus-visible{outline:3px solid #ff8cc4;outline-offset:2px}
+.anm-pill{position:fixed;right:10px;bottom:calc(10px + env(safe-area-inset-bottom));z-index:4700;box-shadow:0 0 12px rgba(212,175,55,.25);background:rgba(5,7,10,.92);animation:anw-fade .25s ease}
+html.anon-home-on .anm-pill{bottom:calc(44px + env(safe-area-inset-bottom))}
+@keyframes anw-fade{from{opacity:0}to{opacity:1}}`;
+    document.head.appendChild(s);
+  }
+  function meetLink(extra) {
+    const a = document.createElement('a'); a.className = 'anm-a' + (extra ? ' ' + extra : '');
+    a.href = URL_MEET; a.target = '_blank'; a.rel = 'noopener'; a.textContent = 'Meet the ANONs \u2192';
+    a.setAttribute('aria-label', 'Meet the ANONs: see the ANON NFT collections on anonnfts.com (opens in a new tab)');
+    return a;
+  }
+  const shown = n => !!(n && n.isConnected && (n.offsetParent !== null || getComputedStyle(n).position === 'fixed') && getComputedStyle(n).visibility !== 'hidden');
+  function meetHost() {
+    const km = document.querySelector('#kmodal.show .mcard');
+    if (km && shown(km)) return { card: km };
+    const lb = document.getElementById('lbMsg') || document.getElementById('wLB');
+    if (lb && shown(lb) && lb.parentNode) return { after: lb };
+    return null;
+  }
+  function meetInCard(h) {
+    const box = h.card || h.after.parentNode;
+    if (box.querySelector('.anm-row')) return true;
+    meetCSS();
+    const row = document.createElement('div'); row.className = 'anm-row'; row.appendChild(meetLink());
+    if (h.card) h.card.appendChild(row); else box.appendChild(row);
+    return true;
+  }
+  function meetFloat() {
+    if (meetPill || Date.now() - meetPillAt < 300000) return;
+    meetCSS(); meetPillAt = Date.now();
+    const a = meetLink('anm-pill'); document.body.appendChild(a); meetPill = a;
+    const t0 = Date.now();
+    const gone = () => { if (!meetPill) return; meetPill.remove(); meetPill = null; clearTimeout(tm);
+      document.removeEventListener('pointerdown', onDown, true); document.removeEventListener('keydown', onDown, true); };
+    const onDown = e => { if (e.target === a || Date.now() - t0 < 1200) return; gone(); };
+    const tm = setTimeout(gone, 12000);
+    document.addEventListener('pointerdown', onDown, true); document.addEventListener('keydown', onDown, true);
+  }
+  function meet() {
+    try {
+      if (window.ANON_MEET_OFF) return;
+      clearTimeout(meetTimer);
+      const until = Date.now() + 6000;
+      const tick = () => {
+        try { const h = meetHost(); if (h) { meetInCard(h); return; } } catch (e) {}
+        if (Date.now() < until) meetTimer = setTimeout(tick, 400); else { try { meetFloat(); } catch (e) {} }
+      };
+      meetTimer = setTimeout(tick, 250);
+    } catch (e) {}
+  }
   // call when a game ends. opts.delay = ms after the end (default 2600)
   function gameOver(opts) {
     opts = opts || {};
+    meet();                                                    // "Meet the ANONs" link on the result screen
     if (window.ANON_NEWS_OFF) return;                          // ANON_NEWS_OFF: test hook
     const now = Date.now(), last = st().lastOver || 0, n = (st().overs || 0) + (now - last > 5000 ? 1 : 0);
     put({ overs: n, lastOver: now });                          // count game overs per device (double calls within 5 s count once)
@@ -112,5 +178,5 @@
     };
     timer = setTimeout(tryShow, window.ANON_NEWS_DELAY != null ? window.ANON_NEWS_DELAY : opts.delay == null ? 2600 : opts.delay);
   }
-  window.ANONNews = { gameOver, show, allowed, close: () => open && open.querySelector('.anw-later').click(), isOpen: () => !!open, url: URL_SUB, _key: K };
+  window.ANONNews = { gameOver, meet, show, allowed, close: () => open && open.querySelector('.anw-later').click(), isOpen: () => !!open, url: URL_SUB, _key: K };
 })();
