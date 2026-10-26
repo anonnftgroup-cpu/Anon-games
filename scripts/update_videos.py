@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Builds videos.json (latest ANON NFTs YouTube videos) from the channel's public RSS feed.
 Stdlib only. Run by .github/workflows/videos.yml every 6 hours, or by hand: python3 scripts/update_videos.py
-If YouTube can't be reached, the old videos.json is left alone (exit 0, no commit)."""
+If YouTube can't be reached, the old videos.json is left alone (exit 0, no commit).
+Also refreshes boosts.json via scripts/update_boosts.py, so commit both files."""
 import json, os, re, sys, time, urllib.request, xml.etree.ElementTree as ET
 
 CHANNEL_ID = 'UCkyTtKuxLc6LHWSgt2VtvWQ'          # youtube.com/@AnonNft
@@ -31,7 +32,18 @@ def entries(xml):
         out.append({'id': vid, 'title': (e.findtext('a:title', '', NS) or '').strip(), 'published': e.findtext('a:published', '', NS)})
     return out
 
+def boosts():
+    """Also refresh boosts.json (every boost video, for the anonnfts.com Liquidity Boosts page). Never blocks videos.json."""
+    try:
+        sys.dont_write_bytecode = True
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        import update_boosts
+        update_boosts.main()
+    except Exception as e:
+        print('boosts.json update failed, kept old file:', e)
+
 def main():
+    boosts()
     try:
         feed = entries(get('https://www.youtube.com/feeds/videos.xml?channel_id=' + CHANNEL_ID))
     except Exception as e:

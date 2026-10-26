@@ -111,3 +111,7 @@ Supabase requests against a mock server.
 - **Email sign-up**: the box at the bottom of the hub and the end-of-game pop-up (`shared/newsletter.js`) post straight to Kit form 10062464.
 - **Latest videos**: `videos.json` is rebuilt from the YouTube RSS feed by `scripts/update_videos.py`
   (GitHub Action `.github/workflows/videos.yml`, every 6 hours). The hub and the anonnfts.com homepage strip read it.
+- **Boost videos**: `boosts.json` lists every daily liquidity boost video (Day N, boost date, amount, collection, cleaned
+  summary). `scripts/update_boosts.py` adds new ones from the YouTube RSS feeds and never drops old ones (RSS only has the
+  latest 15). `update_videos.py` runs it too, so commit `videos.json` and `boosts.json` together. The anonnfts.com
+  Liquidity Boosts page block reads it from GitHub Pages.
