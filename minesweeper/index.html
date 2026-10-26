@@ -61,6 +61,7 @@
 <script src="../shared/leaderboard.js?v=1.7.0"></script>
 <script src="../shared/newsletter.js"></script>
 <script src="../assets/nft/kit.js"></script>
+<script src="../shared/gamesave.js?v=1.3.0"></script>
 <script>
 'use strict';
 const { $, el, ls, toast, modal, post, openLB, gameOver, art } = AK;
@@ -95,7 +96,7 @@ function place(safe) {
 const count = i => nb(i).reduce((a, j) => a + S.mine[j], 0);
 const T = i => $('#board').children[i];
 function hud() { const f = S.flag.reduce((a, b) => a + b, 0); $('#mines').textContent = '👑 ' + (S.n - f); $('#clock').textContent = '⏱ ' + secs(); }
-const secs = () => S.start ? Math.min(999, Math.ceil(((S.end || Date.now()) - S.start) / 1000)) : 0;
+const secs = () => S.start ? Math.min(999, Math.ceil(((S.end || S.pz || Date.now()) - S.start) / 1000)) : 0;
 function reveal(i) {
   if (S.over || S.flag[i]) return;
   if (!S.mine) place(i);
@@ -103,7 +104,7 @@ function reveal(i) {
   if (S.open[i]) return chord(i);
   S.moves++;
   if (S.mine[i]) return lose(i);
-  flood(i); check();
+  flood(i); check(); if (!S.over) K.saveNow();
 }
 function flood(i) {
   const st = [i];
@@ -117,21 +118,21 @@ function chord(i) {
 }
 function flag(i) { if (S.over || S.open[i]) return; S.flag[i] ^= 1; const t = T(i); t.className = 't c' + (S.flag[i] ? ' f' : ''); t.textContent = S.flag[i] ? '👑' : ''; if (navigator.vibrate) navigator.vibrate(15); hud(); }
 function lose(i) {
-  S.over = true; S.end = Date.now(); clearInterval(tick); hud();
+  S.over = true; S.end = Date.now(); clearInterval(tick); hud(); K.ended();
   for (let k = 0; k < S.w * S.h; k++) { const t = T(k); if (S.mine[k] && !S.flag[k]) { t.className = 't m' + (k === i ? ' boom' : ''); t.textContent = '💀'; } else if (!S.mine[k] && S.flag[k]) t.className = 't bad'; }
   if (navigator.vibrate) navigator.vibrate([60, 40, 90]);
-  setTimeout(() => modal({ art: art(pref.art).img, title: 'Boom! 💀', text: 'You hit a skull gem. The ANON art stays hidden… for now.', buttons: [['TRY AGAIN', () => newGame()], ['Settings', () => show('setup'), 1]] }), 900);
+  setTimeout(() => modal({ art: art(pref.art).img, title: 'Boom! 💀', text: 'You hit a skull gem. The ANON art stays hidden… for now.', buttons: [['TRY AGAIN', () => newGame()], ['Settings', () => { show('setup'); K.paint(); }, 1]] }), 900);
   gameOver();
 }
 function check() {
   if (S.opened !== S.w * S.h - S.n) return;
-  S.over = true; S.end = Date.now(); clearInterval(tick);
+  S.over = true; S.end = Date.now(); clearInterval(tick); K.ended();
   for (let k = 0; k < S.w * S.h; k++) if (S.mine[k] && !S.flag[k]) { S.flag[k] = 1; T(k).className = 't c f'; T(k).textContent = '👑'; }
   hud(); $('#board').classList.add('won');
   const t = Math.max(1, secs()), ok = t >= LV[S.diff].min, sc = score(S.diff, t);
   const a = art(pref.art);
   setTimeout(() => { modal({ art: a.img, title: 'Field cleared! 👑', text: `${NAMES[S.diff]} in <b>${t}s</b>. You uncovered <b>${a.name}</b>.`, lb: true,
-    buttons: [['PLAY AGAIN', () => newGame()], ['Leaderboard', () => openLB(GAME, TITLE, NAMES, 'clicks'), 1], ['Settings', () => show('setup'), 1]] });
+    buttons: [['PLAY AGAIN', () => newGame()], ['Leaderboard', () => openLB(GAME, TITLE, NAMES, 'clicks'), 1], ['Settings', () => { show('setup'); K.paint(); }, 1]] });
     if (ok) post(GAME, sc, t, S.moves, S.diff); else { const b = $('#lbMsg'); if (b) b.textContent = 'Too quick to verify, so this time is not posted.'; } }, 1600);
   gameOver();
 }
@@ -142,10 +143,26 @@ board.addEventListener('pointerdown', e => { const t = e.target.closest('.t'); i
 board.addEventListener('pointermove', e => { if (Math.abs(e.clientX - sx) + Math.abs(e.clientY - sy) > 12) clearTimeout(lp); });
 board.addEventListener('pointerup', () => clearTimeout(lp));
 board.addEventListener('pointercancel', () => clearTimeout(lp));
-board.addEventListener('click', e => { const t = e.target.closest('.t'); if (!t || lpFired) { lpFired = false; return; } const i = +t.dataset.i; if (flagMode && !S.open[i]) flag(i); else reveal(i); });
+board.addEventListener('click', e => { if (S && S.pz) return; const t = e.target.closest('.t'); if (!t || lpFired) { lpFired = false; return; } const i = +t.dataset.i; if (flagMode && !S.open[i]) flag(i); else reveal(i); });
 board.addEventListener('contextmenu', e => { e.preventDefault(); const t = e.target.closest('.t'); if (t && !lpFired) flag(+t.dataset.i); lpFired = false; });
 $('#flagBtn').onclick = () => { flagMode = !flagMode; $('#flagBtn').classList.toggle('on', flagMode); toast(flagMode ? 'Flag mode on: taps plant crowns' : 'Flag mode off: taps reveal'); };
-$('#goBtn').onclick = () => newGame(); $('#newBtn').onclick = () => newGame(); $('#setBtn').onclick = $('#menuBtn').onclick = () => { clearInterval(tick); show('setup'); };
+// ---- pause + save (shared/gamesave.js): the clock stops while paused, the game is kept on this device ----
+const inPlay = () => !!S && !S.over && !!S.start && $('#play').classList.contains('on');
+const K = ANONSAVE.kit({ game: GAME, kind: 'puzzle', newLabel: 'New game', stage: $('#play'), bar: $('#flagBtn').parentElement, setupAnchor: $('#goBtn'), art: art(pref.art).img,
+  inProgress: inPlay, paused: () => !!S.pz,
+  pause: () => { if (!S.pz) S.pz = Date.now(); clearInterval(tick); hud(); },
+  resume: () => { if (S.pz) { S.start += Date.now() - S.pz; S.pz = 0; } clearInterval(tick); tick = setInterval(hud, 250); hud(); },
+  snapshot: () => ({ diff: S.diff, n: S.n, mine: S.mine ? Array.from(S.mine) : null, open: Array.from(S.open), flag: Array.from(S.flag), moves: S.moves, el: (S.pz || Date.now()) - S.start, art: pref.art }),
+  restore: d => { pref.diff = d.diff; newGame(); S.n = d.n; S.mine = d.mine ? Uint8Array.from(d.mine) : null; S.moves = d.moves;
+    d.flag.forEach((f, i) => { if (f) { S.flag[i] = 1; T(i).className = 't c f'; T(i).textContent = '👑'; } });
+    d.open.forEach((o, i) => { if (o && !S.open[i]) { S.open[i] = 1; S.opened++; const c = count(i), t = T(i); t.className = 't' + (c ? ' n' + c : ''); t.textContent = c || ''; } });
+    S.start = Date.now() - d.el; S.pz = Date.now(); hud(); },
+  final: null, endNow: null,
+  newGame: () => { newGame(); K.begin(); }, toMenu: () => { clearInterval(tick); show('setup'); },
+  describe: (st, f) => { const x = st || S; if (!x) return ''; return NAMES[x.diff] + ' · ⏱ ' + Math.min(999, Math.ceil((st ? st.el : (S.pz || Date.now()) - S.start) / 1000)) + 's'; },
+  valid: d => !!d && !!LV[d.diff] && Array.isArray(d.open) && d.open.length === LV[d.diff].w * LV[d.diff].h && Array.isArray(d.flag) && d.flag.length === d.open.length && (!d.mine || d.mine.length === d.open.length) && typeof d.el === 'number' && d.el >= 0 });
+$('#goBtn').onclick = $('#newBtn').onclick = K.guard(() => { newGame(); K.begin(); });
+$('#setBtn').onclick = $('#menuBtn').onclick = () => { if (inPlay()) return K.pause('button'); clearInterval(tick); show('setup'); K.paint(); };
 $('#lbBtn').onclick = () => openLB(GAME, TITLE, NAMES, 'clicks');
 window.ANON_MS = { state: () => S, newGame, reveal, flag, score, LV, setDiff: d => { pref.diff = d; } };
 </script>

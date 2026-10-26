@@ -56,6 +56,7 @@
 .gs-ov .go{width:100%;max-width:300px;min-height:52px}.gs-ov .go.alt{min-height:46px}
 .gs-pause{min-width:64px;min-height:44px!important;font-size:15px!important;border-color:#ff8cc4!important}
 .gs-save{display:none;margin:14px 0 0;padding:12px;border:1px solid rgba(212,175,55,.5);border-radius:14px;background:rgba(0,0,0,.45);text-align:center}
+.gs-ov.solid{background:#07090d}.gs-lock button:not(.gs-pause):not(.gs-keep){pointer-events:none;opacity:.45}
 .gs-save.on{display:block}.gs-save p{margin:0;color:var(--gold2,#f3d77a);font-weight:700}.gs-save .go{margin-top:10px}`;
     document.head.appendChild(s);
   }
@@ -68,7 +69,8 @@
     // paused card
     const ov = el('div', 'gs-ov'); ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-label', 'Paused');
     const h = el('h2', '', 'PAUSED'), info = el('p'), bRes = el('button', 'go', 'RESUME'), bEnd = el('button', 'go alt', 'End game and post score'), bMenu = el('button', 'go alt', 'Menu (keeps your save)'), bNew = el('button', 'go alt', o.newLabel || 'New game');
-    [bRes, bEnd, bNew, bMenu].forEach(b => b.type = 'button'); ov.append(h, info, bRes, bEnd, bNew, bMenu); bNew.style.display = o.newLabel && o.newGame ? '' : 'none';
+    [bRes, bEnd, bNew, bMenu].forEach(b => { b.type = 'button'; b.classList.add('gs-keep'); }); if (!action) ov.classList.add('solid'); // puzzles: the clock stops, so the board is hidden too
+    const host = o.host || (o.stage.closest && o.stage.closest('section')) || o.stage.parentElement; ov.append(h, info, bRes, bEnd, bNew, bMenu); bNew.style.display = o.newLabel && o.newGame ? '' : 'none';
     if (getComputedStyle(o.stage).position === 'static') o.stage.style.position = 'relative'; o.stage.appendChild(ov);
     // pause button
     let pb = o.pauseBtn || null;
@@ -86,12 +88,12 @@
     function show(why) {
       const f = fin(); info.textContent = (why === 'resume' ? 'Saved game loaded. ' : '') + (o.describe ? o.describe(null, f) + '.' : (f ? 'Score ' + f.score + '.' : '')) + ' Your game is saved on this device.';
       bRes.textContent = why === 'resume' ? 'CARRY ON' : 'RESUME'; bEnd.style.display = action && f && o.endNow ? '' : 'none';
-      ov.classList.add('on'); if (pb) pb.textContent = '▶ Play';
+      ov.classList.add('on'); if (host) host.classList.add('gs-lock'); if (pb) pb.textContent = '▶ Play';
     }
     const K = {
       pause(why) { if (!o.inProgress() || isPaused()) return; if (!o.paused()) o.pause(why); show(why); saver.saveNow(); },
-      resume() { if (!isPaused()) return; ov.classList.remove('on'); if (pb) pb.textContent = '⏸ Pause'; if (o.inProgress()) o.resume(); },
-      hide() { ov.classList.remove('on'); if (pb) pb.textContent = '⏸ Pause'; },
+      resume() { if (!isPaused()) return; ov.classList.remove('on'); if (host) host.classList.remove('gs-lock'); if (pb) pb.textContent = '⏸ Pause'; if (o.inProgress()) o.resume(); },
+      hide() { ov.classList.remove('on'); if (host) host.classList.remove('gs-lock'); if (pb) pb.textContent = '⏸ Pause'; },
       get paused() { return isPaused(); },
       begin(id) { runId = id || newId(); K.hide(); },
       saveNow() { return saver.saveNow(); },

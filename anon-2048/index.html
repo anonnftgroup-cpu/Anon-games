@@ -53,6 +53,7 @@
 <script src="../shared/newsletter.js"></script>
 <script src="../assets/nft/kit.js"></script>
 <script src="../assets/play/play.js"></script>
+<script src="../shared/gamesave.js?v=1.3.0"></script>
 <script>
 'use strict';
 const { $, el, ls, modal, post, openLB, gameOver, art, B } = AK;
@@ -76,7 +77,7 @@ function size() { const st = $('#stage'); const s = Math.floor(Math.min(st.clien
 const at = (r, c) => S.tiles.find(t => t.r === r && t.c === c && !t.dead);
 function spawn() { const f = []; for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) if (!at(r, c)) f.push([r, c]); if (!f.length) return; const [r, c] = AP.pick(f); S.tiles.push({ id: ++uid, v: AP.rnd() < .9 ? 2 : 4, r, c, n: true }); }
 function move(dir) {
-  if (!S || S.over) return false;
+  if (!S || S.over || S.pz) return false;
   const snap = JSON.stringify({ t: S.tiles.filter(t => !t.dead).map(t => [t.v, t.r, t.c]), s: S.score, m: S.moves });
   S.tiles = S.tiles.filter(t => !t.dead); S.tiles.forEach(t => { t.n = false; t.pop = false; });
   const vec = { left: [0, -1], right: [0, 1], up: [-1, 0], down: [1, 0] }[dir]; let moved = false, gain = 0;
@@ -92,7 +93,7 @@ function move(dir) {
   S.undo = snap; S.score += gain; S.moves++; spawn(); render(); hud(); setTimeout(() => { S.tiles = S.tiles.filter(t => !t.dead); render(); }, 110);
   const top = Math.max(...S.tiles.filter(t => !t.dead).map(t => t.v));
   if (top >= 2048 && !S.won) { S.won = true; setTimeout(() => modal({ art: '../assets/logo.webp', title: 'The crowned ANON! 👑', text: 'You reached <b>2048</b>. Keep going for an even higher score!', buttons: [['KEEP GOING']] }), 250); }
-  if (!canMove()) setTimeout(end, 350);
+  if (!canMove()) setTimeout(end, 350); else K.saveNow();
   return true;
 }
 function canMove() { const live = S.tiles.filter(t => !t.dead); if (live.length < N * N) return true; for (const t of live) { const r = at(t.r, t.c + 1), d = at(t.r + 1, t.c); if (r && r.v === t.v || d && d.v === t.v) return true; } return false; }
@@ -105,20 +106,38 @@ function render() {
   have.forEach(e => e.remove());
 }
 function hud() { $('#sc').textContent = '⭐ ' + S.score; $('#mv').textContent = '↔ ' + S.moves; $('#best').textContent = '🏆 ' + Math.max(S.score, ls.get('anon2048.best', 0)); $('#undoBtn').textContent = '↶ Undo (' + S.undos + ')'; $('#undoBtn').disabled = !S.undo || !S.undos; }
-function undo() { if (!S || !S.undo || !S.undos || S.over) return; const u = JSON.parse(S.undo); S.tiles = u.t.map(([v, r, c]) => ({ id: ++uid, v, r, c })); S.score = u.s; S.moves = u.m; S.undo = null; S.undos--; $('#board').querySelectorAll('.tile').forEach(e => e.remove()); render(); hud(); }
+function undo() { if (!S || !S.undo || !S.undos || S.over || S.pz) return; const u = JSON.parse(S.undo); S.tiles = u.t.map(([v, r, c]) => ({ id: ++uid, v, r, c })); S.score = u.s; S.moves = u.m; S.undo = null; S.undos--; $('#board').querySelectorAll('.tile').forEach(e => e.remove()); render(); hud(); K.saveNow(); }
 function end() {
-  if (S.over) return; S.over = true; const top = Math.max(...S.tiles.filter(t => !t.dead).map(t => t.v)), t = Math.max(1, Math.ceil((Date.now() - S.start) / 1000));
+  if (S.over) return; S.over = true; S.pz = 0; const top = Math.max(...S.tiles.filter(t => !t.dead).map(t => t.v)), t = Math.max(1, Math.ceil((Date.now() - S.start) / 1000)); K.ended();
   const best = ls.get('anon2048.best', 0); if (S.score > best) ls.set('anon2048.best', S.score);
   modal({ art: artFor(top), title: 'No moves left!', text: `Top tile <b>${top}</b>: ${nameFor(top)}.<br>${S.moves} swipes.`, lb: S.score > 0,
-    buttons: [['PLAY AGAIN', () => newGame()], ['Leaderboard', () => openLB(GAME, TITLE, null, 'swipes'), 1], ['Menu', () => show('setup'), 1]] });
+    buttons: [['PLAY AGAIN', () => newGame()], ['Leaderboard', () => openLB(GAME, TITLE, null, 'swipes'), 1], ['Menu', () => { show('setup'); K.paint(); }, 1]] });
   if (S.score > 0) post(GAME, S.score, Math.max(t, Math.ceil(S.moves / 5)), S.moves, null);
   gameOver();
 }
 AP.swipe($('#board'), d => { if (d !== 'tap') move(d); }, 20);
 AP.keys({ ArrowUp: () => move('up'), ArrowDown: () => move('down'), ArrowLeft: () => move('left'), ArrowRight: () => move('right'), w: () => move('up'), s: () => move('down'), a: () => move('left'), d: () => move('right') });
-$('#goBtn').onclick = () => newGame(); $('#newBtn').onclick = () => { if (S && S.score > 0 && !S.over) end(); else newGame(); };
+// ---- pause + save (shared/gamesave.js): your board is kept on this device; the clock stops while paused ----
+const inPlay = () => !!S && !S.over && S.moves > 0 && $('#play').classList.contains('on');
+const live = () => S.tiles.filter(t => !t.dead);
+const K = ANONSAVE.kit({ game: GAME, kind: 'action', stage: $('#stage'), bar: $('#newBtn').parentElement, setupAnchor: $('#goBtn'), art: '../assets/logo.webp',
+  inProgress: inPlay, paused: () => !!S.pz,
+  pause: () => { if (!S.pz) S.pz = Date.now(); },
+  resume: () => { if (S.pz) { S.start += Date.now() - S.pz; S.pz = 0; } },
+  snapshot: () => ({ g: live().map(t => [t.v, t.r, t.c]), score: S.score, moves: S.moves, el: (S.pz || Date.now()) - S.start, won: S.won, undo: S.undo, undos: S.undos }),
+  restore: d => { newGame(Array(N * N).fill(0)); S.tiles = d.g.map(([v, r, c]) => ({ id: ++uid, v, r, c })); S.score = d.score; S.moves = d.moves; S.won = d.won; S.undo = d.undo; S.undos = d.undos;
+    S.start = Date.now() - d.el; S.pz = Date.now(); render(); hud(); },
+  final: () => S && S.score > 0 ? { score: S.score, time: Math.max(Math.max(1, Math.ceil(((S.pz || Date.now()) - S.start) / 1000)), Math.ceil(S.moves / 5)), moves: S.moves, mode: null } : null,
+  endNow: () => { S.pz = 0; end(); },
+  newGame: () => { newGame(); K.begin(); }, toMenu: () => show('setup'),
+  describe: (st, f) => { const x = st || S; if (!x) return f ? '⭐ ' + f.score : ''; const g = st ? st.g.map(a => a[0]) : live().map(t => t.v); return '⭐ ' + x.score + ' · top tile ' + Math.max(0, ...g) + ' · ' + x.moves + ' swipes'; },
+  valid: d => !!d && Array.isArray(d.g) && d.g.length <= N * N && d.g.every(a => Array.isArray(a) && a.length === 3 && a[0] >= 2 && (a[0] & (a[0] - 1)) === 0 && a[1] >= 0 && a[1] < N && a[2] >= 0 && a[2] < N)
+    && new Set(d.g.map(a => a[1] * N + a[2])).size === d.g.length && d.score >= 0 && d.score % 2 === 0 && d.moves >= 1 && typeof d.el === 'number' && d.el >= 0 });
+$('#goBtn').onclick = K.guard(() => { newGame(); K.begin(); });
+// "New game" mid-run still ends the run and posts its score first (unchanged), so a stray tap never loses a score
+$('#newBtn').onclick = () => { if (S && S.pz) return; if (S && S.score > 0 && !S.over) end(); else { newGame(); K.begin(); } };
 $('#undoBtn').onclick = undo;
-$('#setBtn').onclick = $('#menuBtn').onclick = () => show('setup');
+$('#setBtn').onclick = $('#menuBtn').onclick = () => { if (inPlay()) return K.pause('button'); show('setup'); K.paint(); };
 $('#lbBtn').onclick = () => openLB(GAME, TITLE, null, 'swipes');
 window.addEventListener('resize', () => { if (S && $('#play').classList.contains('on')) { size(); render(); } });
 window.G = { state: () => S, newGame, move, canMove, end, undo, grid: () => { const g = Array(16).fill(0); S.tiles.filter(t => !t.dead).forEach(t => g[t.r * 4 + t.c] = t.v); return g; } };

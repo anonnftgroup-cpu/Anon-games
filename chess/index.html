@@ -75,6 +75,7 @@
 <script src="../shared/leaderboard.js?v=1.7.0"></script>
 <script src="../shared/newsletter.js"></script>
 <script src="../assets/nft/kit.js"></script>
+<script src="../shared/gamesave.js?v=1.3.0"></script>
 <script src="vendor/chess.js"></script>
 <script src="glyphs.js"></script>
 <script src="engine.js"></script>
@@ -117,7 +118,7 @@ function newGame() {
   show('play'); render();
 }
 const myMoves = () => G.history({ verbose: true }).filter(m => m.color === 'w').length;
-const humanTurn = () => S && !S.over && !busy && (S.mode === '2p' || G.turn() === 'w');
+const humanTurn = () => S && !S.over && !S.pz && !busy && (S.mode === '2p' || G.turn() === 'w');
 function render() {
   const bd = $('#board'); bd.innerHTML = ''; const b = G.board();
   const tg = sel ? G.moves({ square: sel, verbose: true }) : [];
@@ -152,6 +153,7 @@ function doMove(mv) {
   let r; try { r = G.move(mv); } catch (e) { r = null; } if (!r) return;
   S.last = r; sel = null; render();
   if (G.isGameOver()) return finish();
+  K.saveNow();
   if (S.mode === 'cpu' && G.turn() === 'b') cpu();
 }
 function cpu() {
@@ -159,7 +161,7 @@ function cpu() {
   setTimeout(() => { const t0 = Date.now(); const m = CHE.best(G.fen(), S.diff); setTimeout(() => { busy = false; if (S.over || !m) return; doMove(m); }, Math.max(0, 300 - (Date.now() - t0))); }, 40);
 }
 function finish(resigned) {
-  S.over = true; S.end = Date.now(); render();
+  S.over = true; S.end = Date.now(); render(); K.ended();
   let w = 0, why = '';
   if (resigned) { w = resigned === 'w' ? -1 : 1; why = (resigned === 'w' ? 'White' : 'Black') + ' resigned.'; }
   else if (G.isCheckmate()) { w = G.turn() === 'w' ? -1 : 1; why = 'Checkmate!'; }
@@ -172,14 +174,27 @@ function finish(resigned) {
   else { title = 'The computer wins'; a = art(pref.p2).img; }
   $('#status').textContent = title;
   const win = S.mode === 'cpu' && w === 1 && !resigned;
-  setTimeout(() => { modal({ art: a, title, text: why, lb: true, buttons: [['PLAY AGAIN', newGame], ['Leaderboard', () => openLB(GAME, TITLE, DN), 1], ['Settings', () => show('setup'), 1]] });
+  setTimeout(() => { modal({ art: a, title, text: why, lb: true, buttons: [['PLAY AGAIN', newGame], ['Leaderboard', () => openLB(GAME, TITLE, DN), 1], ['Settings', () => { show('setup'); K.paint(); }, 1]] });
     const b = $('#lbMsg'); if (win) post(GAME, score(S.diff, n), t, n, S.diff); else if (b) b.textContent = S.mode === 'cpu' ? 'Checkmate the computer to get on the leaderboard.' : '2-player games are just for fun.'; }, 900);
   gameOver();
 }
 $('#board').addEventListener('click', e => { const q = e.target.closest('.sq'); if (q) tap(q.dataset.sq); });
-$('#undoBtn').onclick = () => { if (busy || !G || S.over) return; G.undo(); if (S.mode === 'cpu' && G.turn() === 'b') G.undo(); const h = G.history({ verbose: true }); S.last = h[h.length - 1] || null; sel = null; render(); };
+$('#undoBtn').onclick = () => { if (busy || !G || S.over) return; G.undo(); if (S.mode === 'cpu' && G.turn() === 'b') G.undo(); const h = G.history({ verbose: true }); S.last = h[h.length - 1] || null; sel = null; render(); K.saveNow(); };
 $('#resignBtn').onclick = () => { if (!G || S.over || busy) return; modal({ title: 'Resign this game?', buttons: [['Resign', () => finish(S.mode === 'cpu' ? 'w' : G.turn())], ['Keep playing', null, 1]] }); };
-$('#goBtn').onclick = newGame; $('#newBtn').onclick = newGame; $('#setBtn').onclick = $('#menuBtn').onclick = () => show('setup');
+// ---- save (shared/gamesave.js): an unfinished game is kept on this device and can be resumed from the start screen ----
+const inPlay = () => !!S && !S.over && !!G && G.history().length > 0 && $('#play').classList.contains('on');
+const K = ANONSAVE.kit({ game: GAME, kind: 'puzzle', newLabel: 'New game', stage: $('#board').parentElement, setupAnchor: $('#goBtn'), art: art(pref.p1).img,
+  inProgress: inPlay, paused: () => !!S.pz,
+  pause: () => { if (!S.pz) S.pz = Date.now(); }, resume: () => { if (S.pz) { S.start += Date.now() - S.pz; S.pz = 0; } },
+  snapshot: () => ({ pgn: G.pgn(), mode: S.mode, diff: S.diff, p1: pref.p1, p2: pref.p2, el: (S.pz || Date.now()) - S.start }),
+  restore: d => { Object.assign(pref, { mode: d.mode, diff: d.diff, p1: d.p1, p2: d.p2 }); newGame(); G.loadPgn(d.pgn);
+    const h = G.history({ verbose: true }); S.last = h[h.length - 1] || null; S.start = Date.now() - d.el; S.pz = Date.now(); render(); if (S.mode === 'cpu' && G.turn() === 'b') cpu(); },
+  final: null, endNow: null,
+  newGame: () => { newGame(); K.begin(); }, toMenu: () => show('setup'),
+  describe: (st, f) => { const x = st || S; if (!x) return ''; const n = st ? (st.pgn.match(/\d+\./g) || []).length : Math.ceil(G.history().length / 2); return (x.mode === 'cpu' ? 'vs computer (' + DN[x.diff] + ')' : '2 players') + ' · move ' + Math.max(1, n); },
+  valid: d => { if (!d || typeof d.pgn !== 'string' || (d.mode !== 'cpu' && d.mode !== '2p') || !DN[d.diff] || typeof d.el !== 'number' || d.el < 0) return false; try { const g = new Chess(); g.loadPgn(d.pgn); return !g.isGameOver(); } catch (e) { return false; } } });
+$('#goBtn').onclick = $('#newBtn').onclick = K.guard(() => { newGame(); K.begin(); });
+$('#setBtn').onclick = $('#menuBtn').onclick = () => { if (inPlay()) K.saveNow(); show('setup'); K.paint(); };
 $('#lbBtn').onclick = () => openLB(GAME, TITLE, DN);
 window.ANON_CH = { game: () => G, state: () => S, newGame, tap, score, busy: () => busy, setPref: o => Object.assign(pref, o), load: fen => { G.load(fen); S.last = null; S.over = false; sel = null; AK.closeModal(); render(); }, doMove };
 </script>

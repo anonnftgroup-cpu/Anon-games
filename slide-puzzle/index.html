@@ -53,6 +53,7 @@
 <script src="../shared/newsletter.js"></script>
 <script src="../assets/nft/kit.js"></script>
 <script src="../assets/play/play.js"></script>
+<script src="../shared/gamesave.js?v=1.3.0"></script>
 <script>
 'use strict';
 const { $, el, ls, toast, modal, post, openLB, gameOver, art } = AK;
@@ -90,14 +91,14 @@ function build() {
 }
 function place() { const b = $('#board'); S.a.forEach((v, i) => { if (!v) return; const t = b.querySelector(`[data-v="${v}"]`); t.style.left = '1px'; t.style.top = '1px'; t.style.transform = `translate(${(i % S.n) * T}px,${((i / S.n) | 0) * T}px)`; }); }
 function hud() { if (!S) return; $('#mv').textContent = '↔ ' + S.moves; $('#clock').textContent = '⏱ ' + secs(); }
-const secs = () => S.start ? Math.ceil(((S.end || Date.now()) - S.start) / 1000) : 0;
+const secs = () => S.start ? Math.ceil(((S.end || S.pz || Date.now()) - S.start) / 1000) : 0;
 function tapIndex(i) { // slide the run of tiles between i and the gap
-  if (!S || S.over) return false; const n = S.n, g = S.a.indexOf(0), gc = g % n, gr = (g / n) | 0, c = i % n, r = (i / n) | 0;
+  if (!S || S.over || S.pz) return false; const n = S.n, g = S.a.indexOf(0), gc = g % n, gr = (g / n) | 0, c = i % n, r = (i / n) | 0;
   if (i === g || (c !== gc && r !== gr)) return false;
   if (!S.start) S.start = Date.now();
   const step = c === gc ? (r < gr ? -n : n) : (c < gc ? -1 : 1);
   for (let k = g; k !== i; k += step) { S.a[k] = S.a[k + step]; S.a[k + step] = 0; S.moves++; }
-  place(); hud(); check(); return true;
+  place(); hud(); check(); if (!S.over) K.saveNow(); return true;
 }
 function key(dir) { // arrow moves the tile on that side of the gap INTO the gap
   if (!S) return; const n = S.n, g = S.a.indexOf(0), c = g % n, r = (g / n) | 0;
@@ -106,12 +107,12 @@ function key(dir) { // arrow moves the tile on that side of the gap INTO the gap
 }
 function check() {
   if (!S.a.every((v, i) => i === S.a.length - 1 ? v === 0 : v === i + 1)) return;
-  S.over = true; S.end = Date.now(); clearInterval(tick); hud();
+  S.over = true; S.end = Date.now(); clearInterval(tick); hud(); K.ended();
   const b = $('#board'), last = el('div', 'tl'); last.style.cssText = `left:1px;top:1px;width:${T - 2}px;height:${T - 2}px;background-image:url(${art(S.art).cover});background-size:${T * S.n}px;background-position:${-(S.n - 1) * T}px ${-(S.n - 1) * T}px;transform:translate(${(S.n - 1) * T}px,${(S.n - 1) * T}px)`;
   b.appendChild(last); b.classList.add('won');
   const t = Math.max(1, secs()), ok = S.moves >= LV[S.diff].minMoves && t * 4 >= S.moves && t >= 5, sc = score(S.diff, S.moves, t), a = art(S.art);
   ((S) => setTimeout(() => { modal({ art: a.cover, title: 'Artwork restored! 🧩', text: `${NAMES[S.diff]} in <b>${S.moves}</b> moves and <b>${t}s</b>. You rebuilt <b>${a.name}</b>.`, lb: true,
-    buttons: [['PLAY AGAIN', () => newGame()], ['Leaderboard', () => openLB(GAME, TITLE, NAMES, 'moves'), 1], ['Settings', () => show('setup'), 1]] });
+    buttons: [['PLAY AGAIN', () => newGame()], ['Leaderboard', () => openLB(GAME, TITLE, NAMES, 'moves'), 1], ['Settings', () => { show('setup'); K.paint(); }, 1]] });
     if (ok) post(GAME, sc, t, S.moves, S.diff); else { const m = $('#lbMsg'); if (m) m.textContent = 'Too quick to verify, so this one is not posted.'; } }, 1100))(S); // snapshot: a quick new game must not change this post
   gameOver();
 }
@@ -120,8 +121,20 @@ AP.keys({ ArrowLeft: () => key('left'), ArrowRight: () => key('right'), ArrowUp:
 $('#numBtn').onclick = () => { pref.nums = !pref.nums; ls.set('anonSlide.pref', pref); $('#board').classList.toggle('nums', pref.nums); $('#numBtn').classList.toggle('on', pref.nums); };
 $('#numBtn').classList.toggle('on', !!pref.nums);
 $('#peekBtn').onclick = () => modal({ art: art(S ? S.art : pref.art).cover, title: art(S ? S.art : pref.art).name, buttons: [['Back to puzzle']] });
-$('#goBtn').onclick = () => newGame(); $('#newBtn').onclick = () => newGame();
-$('#setBtn').onclick = $('#menuBtn').onclick = () => { clearInterval(tick); show('setup'); };
+// ---- pause + save (shared/gamesave.js): the clock stops while paused, the game is kept on this device ----
+const inPlay = () => !!S && !S.over && !!S.start && $('#play').classList.contains('on');
+const K = ANONSAVE.kit({ game: GAME, kind: 'puzzle', newLabel: 'Shuffle (new puzzle)', stage: $('#stage'), bar: $('#newBtn').parentElement, setupAnchor: $('#goBtn'), art: art(pref.art).cover,
+  inProgress: inPlay, paused: () => !!S.pz,
+  pause: () => { if (!S.pz) S.pz = Date.now(); clearInterval(tick); hud(); },
+  resume: () => { if (S.pz) { S.start += Date.now() - S.pz; S.pz = 0; } clearInterval(tick); tick = setInterval(hud, 300); hud(); },
+  snapshot: () => ({ diff: S.diff, art: S.art, a: S.a.slice(), moves: S.moves, el: (S.pz || Date.now()) - S.start }),
+  restore: d => { pref.diff = d.diff; const keep = pref.art; pref.art = d.art; newGame(d.a.slice()); pref.art = keep; S.moves = d.moves; S.start = Date.now() - d.el; S.pz = Date.now(); hud(); },
+  final: null, endNow: null,
+  newGame: () => { newGame(); K.begin(); }, toMenu: () => { clearInterval(tick); show('setup'); },
+  describe: (st, f) => { const x = st || S; if (!x) return ''; return NAMES[x.diff] + ' · ↔ ' + x.moves + ' · ⏱ ' + Math.ceil((st ? st.el : (S.pz || Date.now()) - S.start) / 1000) + 's'; },
+  valid: d => !!d && !!LV[d.diff] && Array.isArray(d.a) && d.a.length === LV[d.diff].n ** 2 && [...d.a].sort((p, q) => p - q).every((v, i) => v === i) && solvable(d.a, LV[d.diff].n) && typeof d.el === 'number' && d.el >= 0 && d.moves >= 0 });
+$('#goBtn').onclick = $('#newBtn').onclick = K.guard(() => { newGame(); K.begin(); });
+$('#setBtn').onclick = $('#menuBtn').onclick = () => { if (inPlay()) return K.pause('button'); clearInterval(tick); show('setup'); K.paint(); };
 $('#lbBtn').onclick = () => openLB(GAME, TITLE, NAMES, 'moves');
 window.addEventListener('resize', () => { if (S && $('#play').classList.contains('on')) { size(); build(); } });
 window.G = { state: () => S, newGame, tapIndex, key, score, shuffled, solvable, manh, inv, LV, setDiff: d => { pref.diff = d; } };
