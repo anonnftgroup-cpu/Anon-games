@@ -2,9 +2,41 @@
  "channel": "https://www.youtube.com/@AnonNft",
  "start": "2026-08-10",
  "activity": "https://liquidnfts.finance/activities",
- "count": 110,
- "days": 58,
+ "count": 112,
+ "days": 59,
  "videos": [
+  {
+   "id": "W9Tie9atoIY",
+   "title": "From $7,370.42 to $7,372.57: Tracking NFT Liquidity in Public on Liquid NFTs (Polygon), Day 79/365",
+   "published": "2026-10-27T08:53:28+00:00",
+   "short": false,
+   "day": 79,
+   "boost_date": "2026-10-27",
+   "collection": "ANON Revenue Share NFTs",
+   "amount": "1 FUSD",
+   "amount_usd": null,
+   "amount_fusd": 1.0,
+   "url": "https://www.youtube.com/watch?v=W9Tie9atoIY",
+   "thumb": "https://i.ytimg.com/vi/W9Tie9atoIY/mqdefault.jpg",
+   "summary": "Running total: how the liquidity on one collection has changed from yesterday's recording to today's, at the time of writing. Day 79 of 365 daily liquidity boosts, not one day skipped.\nYesterday's (Day 78) recording: liquidity of $7,370.42 before the boost\nDonate liquidity: 1 FUSD entered, then Donate tapped\nResult: \"Liquidity donated successfully!\"\nAfter the boost: $7,372.57\nAll figures are as shown on screen at the time of writing. Wallet approval, signing and Face ID screens, the keypad and the loading time are cut out for privacy.\nWhich Liquid NFTs collection should we track next? Tell us in the comments.\nNot financial advice. Figures are as shown at the time of writing. Always check it…",
+   "description": "Running total: how the liquidity on one collection has changed from yesterday's recording to today's, at the time of writing. Day 79 of 365 daily liquidity boosts, not one day skipped.\n\nToday's boost for the ANON Revenue Share NFTs collection on Liquid NFTs, on Polygon:\n- Yesterday's (Day 78) recording: liquidity of $7,370.42 before the boost\n- Today, before the boost: $7,371.49 (6867.4009 FUSD), with 40 of 100 minted and a floor of $250.79\n- Donate liquidity: 1 FUSD entered, then Donate tapped\n- Result: \"Liquidity donated successfully!\"\n- After the boost: $7,372.57\n\nAll figures are as shown on screen at the time of writing. Wallet approval, signing and Face ID screens, the keypad and the loading time are cut out for privacy.\n\nWhich Liquid NFTs collection should we track next? Tell us in the comments.\n\nEvery boost, dated and logged: https://anonnfts.com/proof-of-work\nCheck the backing on-chain: https://anonnfts.com/check-backing-on-chain-1\nANON NFTs: https://anonnfts.com\nJoin the ANON NFTs Telegram: https://t.me/+1HQa39STOkhjNTJk\n\nNot financial advice. Figures are as shown at the time of writing. Always check it on-chain yourself.\n\n#NFT #LiquidNFTs #Polygon #Web3 #ANONNFTs #DailyBoost\n\nMint a Grumpy Cat on Liquid: https://liquidnfts.finance/polygon/collection/0xc12527361B9561198514b9bA4b1EBe3c0f968c60/mint"
+  },
+  {
+   "id": "UJFL_8IJnNw",
+   "title": "From $7,370.42 to $7,372.57: Tracking It in Public",
+   "published": "2026-10-27T08:51:55+00:00",
+   "short": true,
+   "day": 79,
+   "boost_date": "2026-10-27",
+   "collection": "ANON Revenue Share NFTs",
+   "amount": "1 FUSD",
+   "amount_usd": null,
+   "amount_fusd": 1.0,
+   "url": "https://www.youtube.com/shorts/UJFL_8IJnNw",
+   "thumb": "https://i.ytimg.com/vi/UJFL_8IJnNw/mqdefault.jpg",
+   "summary": "Running total, Day 79 of 365 daily liquidity boosts. In yesterday's recording, liquidity on ANON Revenue Share NFTs (Liquid NFTs, Polygon) showed $7,370.42. Today we donated 1 FUSD, and the page now shows $7,372.57, at the time of writing. Check it on-chain.\nNot financial advice.\nMint a Grumpy Cat on Liquid",
+   "description": "Running total, Day 79 of 365 daily liquidity boosts. In yesterday's recording, liquidity on ANON Revenue Share NFTs (Liquid NFTs, Polygon) showed $7,370.42. Today we donated 1 FUSD, and the page now shows $7,372.57, at the time of writing. Check it on-chain.\n\nEvery boost, dated and logged: https://anonnfts.com/proof-of-work\nCheck the backing on-chain: https://anonnfts.com/check-backing-on-chain-1\nJoin the ANON NFTs Telegram: https://t.me/+1HQa39STOkhjNTJk\nNot financial advice.\n#NFT #Polygon #Web3\n\nMint a Grumpy Cat on Liquid: https://liquidnfts.finance/polygon/collection/0xc12527361B9561198514b9bA4b1EBe3c0f968c60/mint"
+  },
   {
    "id": "SZI2_qJtgfg",
    "title": "Did It Go Through? 1 FUSD NFT Liquidity Boost on Liquid NFTs (Polygon), Day 78/365 Step by Step",
@@ -1874,5 +1906,5 @@
    "locked": true
   }
  ],
- "updated": "2026-10-26T20:03:14Z"
+ "updated": "2026-10-27T12:08:58Z"
 }
