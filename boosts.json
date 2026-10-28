@@ -2,9 +2,41 @@
  "channel": "https://www.youtube.com/@AnonNft",
  "start": "2026-08-10",
  "activity": "https://liquidnfts.finance/activities",
- "count": 112,
- "days": 59,
+ "count": 114,
+ "days": 60,
  "videos": [
+  {
+   "id": "XudfjF_UpX8",
+   "title": "80 Days of Daily Liquidity Boosts, Not One Skipped: The Road to Day 80 on Liquid NFTs (Polygon)",
+   "published": "2026-10-28T10:35:26+00:00",
+   "short": false,
+   "day": 80,
+   "boost_date": "2026-10-28",
+   "collection": "ANON Revenue Share NFTs",
+   "amount": "$1.08",
+   "amount_usd": 1.08,
+   "amount_fusd": null,
+   "url": "https://www.youtube.com/watch?v=XudfjF_UpX8",
+   "thumb": "https://i.ytimg.com/vi/XudfjF_UpX8/mqdefault.jpg",
+   "summary": "Milestone day: 80 consecutive days of liquidity boosts, out of 365. We count up to 80, look back at the last week of boosts (Day 73 to Day 79), walk the lantern path, then show today's boost from start to finish.\nBefore the boost, the page showed liquidity of $7,372.57 (6868.4009 FUSD), with 40 of 100 minted.\nWe entered 1 FUSD and tapped Donate.\nThe page confirmed \"Liquidity donated successfully!\" and then showed liquidity of $7,373.64.\nAt the time of writing, the ANON Proof of Work page shows $5,290.72 in total liquidity added across 79 logged days. Today's $1.08 boost takes the record to $5,291.80 once Day 80 is logged.\nAll figures are as shown on screen at the time of writing. Wallet…",
+   "description": "Milestone day: 80 consecutive days of liquidity boosts, out of 365. We count up to 80, look back at the last week of boosts (Day 73 to Day 79), walk the lantern path, then show today's boost from start to finish.\n\nToday's boost for ANON Revenue Share NFTs on Liquid NFTs, on Polygon:\nBefore the boost, the page showed liquidity of $7,372.57 (6868.4009 FUSD), with 40 of 100 minted.\nWe entered 1 FUSD and tapped Donate.\nThe page confirmed \"Liquidity donated successfully!\" and then showed liquidity of $7,373.64.\n\nAt the time of writing, the ANON Proof of Work page shows $5,290.72 in total liquidity added across 79 logged days. Today's $1.08 boost takes the record to $5,291.80 once Day 80 is logged.\n\nAll figures are as shown on screen at the time of writing. Wallet approval, signing and Face ID screens are cut out, and the wallet address is blurred, for privacy.\n\nWhat day did you first find ANON? Tell us in the comments.\n\nEvery boost, dated and logged: https://anonnfts.com/proof-of-work\nCheck the backing on-chain: https://anonnfts.com/check-backing-on-chain-1\nANON NFTs: https://anonnfts.com\nJoin the ANON NFTs Telegram: https://t.me/+vycArguzIHM0Y2Fk\n\nNot financial advice. Figures are as shown at the time of writing. Always check it on-chain yourself.\n\n#NFT #LiquidNFTs #Polygon #Web3 #ANONNFTs #DailyBoost\n\nMint the first ANON collection on Liquid (60 of 100 left at 233.64 FUSD, at the time of writing): https://liquidnfts.finance/polygon/collection/0xF220a2b73d9549BaEE2655Cf5707cCCC35212144/mint"
+  },
+  {
+   "id": "YXwYQac8h6I",
+   "title": "80 Days and Not One Skipped? Here's the Proof",
+   "published": "2026-10-28T10:34:08+00:00",
+   "short": true,
+   "day": 80,
+   "boost_date": "2026-10-28",
+   "collection": "ANON Revenue Share NFTs",
+   "amount": "1 FUSD",
+   "amount_usd": null,
+   "amount_fusd": 1.0,
+   "url": "https://www.youtube.com/shorts/YXwYQac8h6I",
+   "thumb": "https://i.ytimg.com/vi/YXwYQac8h6I/mqdefault.jpg",
+   "summary": "The road to 80: a quick look back at the last week of daily liquidity boosts, then today's. Day 80 of 365, not one day skipped.\nToday we donated 1 FUSD to ANON Revenue Share NFTs on Liquid NFTs (Polygon). Liquidity on the page went from $7,372.57 to $7,373.64, at the time of writing. Check it on-chain.\nNot financial advice.\nMint the first ANON collection on Liquid (60 of 100 left at 233.64 FUSD, at the time of writing)",
+   "description": "The road to 80: a quick look back at the last week of daily liquidity boosts, then today's. Day 80 of 365, not one day skipped.\n\nToday we donated 1 FUSD to ANON Revenue Share NFTs on Liquid NFTs (Polygon). Liquidity on the page went from $7,372.57 to $7,373.64, at the time of writing. Check it on-chain.\n\nEvery boost, dated and logged: https://anonnfts.com/proof-of-work\nCheck the backing on-chain: https://anonnfts.com/check-backing-on-chain-1\nJoin the ANON NFTs Telegram: https://t.me/+vycArguzIHM0Y2Fk\nNot financial advice.\n#NFT #Polygon #Web3\n\nMint the first ANON collection on Liquid (60 of 100 left at 233.64 FUSD, at the time of writing): https://liquidnfts.finance/polygon/collection/0xF220a2b73d9549BaEE2655Cf5707cCCC35212144/mint"
+  },
   {
    "id": "W9Tie9atoIY",
    "title": "From $7,370.42 to $7,372.57: Tracking NFT Liquidity in Public on Liquid NFTs (Polygon), Day 79/365",
@@ -1906,5 +1938,5 @@
    "locked": true
   }
  ],
- "updated": "2026-10-27T12:08:58Z"
+ "updated": "2026-10-28T12:05:21Z"
 }
