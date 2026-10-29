@@ -2,9 +2,41 @@
  "channel": "https://www.youtube.com/@AnonNft",
  "start": "2026-08-10",
  "activity": "https://liquidnfts.finance/activities",
- "count": 114,
- "days": 60,
+ "count": 116,
+ "days": 61,
  "videos": [
+  {
+   "id": "vHfcRm8dk5g",
+   "title": "NFT Liquidity for Beginners in 3 Steps: A Live Liquidity Boost on Liquid NFTs (Polygon)",
+   "published": "2026-10-29T13:50:39+00:00",
+   "short": false,
+   "day": 81,
+   "boost_date": "2026-10-29",
+   "collection": "ANON Revenue Share NFTs",
+   "amount": null,
+   "amount_usd": null,
+   "amount_fusd": null,
+   "url": "https://www.youtube.com/watch?v=vHfcRm8dk5g",
+   "thumb": "https://i.ytimg.com/vi/vHfcRm8dk5g/mqdefault.jpg",
+   "summary": "New to NFT liquidity?\nStep 1: On Liquid NFTs, part of every mint is held as liquidity inside the NFT. Before today's boost, ANON Revenue Share NFTs on Polygon showed liquidity of $7,373.64 (6869.4009 FUSD), with 40 minted.\nStep 2: Anyone can donate extra liquidity to a collection. We entered 1 FUSD and tapped Donate.\nStep 3: Check the number. The page confirmed \"Liquidity donated successfully!\" and then showed $7,374.71, at the time of writing.\nAt the time of writing, the ANON Proof of Work record shows $5,292.88 in total liquidity added across 81 days.\nAll figures are as shown on screen at the time of writing. Wallet approval, signing and Face ID screens are cut out, and wallet addresses…",
+   "description": "New to NFT liquidity? Here is a beginner's guide in three simple steps, using today's boost (Day 81 of 365) as the example.\n\nStep 1: On Liquid NFTs, part of every mint is held as liquidity inside the NFT. Before today's boost, ANON Revenue Share NFTs on Polygon showed liquidity of $7,373.64 (6869.4009 FUSD), with 40 minted.\nStep 2: Anyone can donate extra liquidity to a collection. We entered 1 FUSD and tapped Donate.\nStep 3: Check the number. The page confirmed \"Liquidity donated successfully!\" and then showed $7,374.71, at the time of writing.\n\nAt the time of writing, the ANON Proof of Work record shows $5,292.88 in total liquidity added across 81 days.\n\nAll figures are as shown on screen at the time of writing. Wallet approval, signing and Face ID screens are cut out, and wallet addresses are blurred, for privacy.\n\nWhich step was new to you? Tell us in the comments.\n\nHow liquidity backing works: https://anonnfts.com/liquidity-backing\nCheck the backing on-chain: https://anonnfts.com/check-backing-on-chain-1\nEvery boost, dated and logged: https://anonnfts.com/proof-of-work\nAll ANON collections: https://anonnfts.com/collections\nANON NFTs: https://anonnfts.com\nJoin the ANON NFTs Telegram: https://t.me/+vycArguzIHM0Y2Fk\n\nNot financial advice. Figures are as shown at the time of writing. Always check it on-chain yourself.\n\n#NFT #LiquidNFTs #Polygon #Web3 #ANONNFTs #DailyBoost\n\nMint an Anon Ape on Liquid (233 of 250 left at 100 FUSD when last checked on 26 Oct): https://liquidnfts.finance/besc/collection/0xc75BE8C4b4F5C61C499d83A1aDfc800Cc040cB95/mint"
+  },
+  {
+   "id": "sN-ksipxkwI",
+   "title": "New to NFT Liquidity? Here's How It Works in 3 Steps",
+   "published": "2026-10-29T13:49:23+00:00",
+   "short": true,
+   "day": 81,
+   "boost_date": "2026-10-29",
+   "collection": "ANON Revenue Share NFTs",
+   "amount": "1 FUSD",
+   "amount_usd": null,
+   "amount_fusd": 1.0,
+   "url": "https://www.youtube.com/shorts/sN-ksipxkwI",
+   "thumb": "https://i.ytimg.com/vi/sN-ksipxkwI/mqdefault.jpg",
+   "summary": "Beginner in 15 seconds. Step 1: on Liquid NFTs, part of every mint is held as liquidity inside the NFT. Step 2: anyone can donate more. Step 3: check the number on-chain.\nDay 81 of 365: we donated 1 FUSD to ANON Revenue Share NFTs on Liquid NFTs (Polygon). Liquidity on the page went from $7,373.64 to $7,374.71, at the time of writing. Check it on-chain.\nNot financial advice.\nMint an Anon Ape on Liquid (233 of 250 left at 100 FUSD when last checked on 26 Oct)",
+   "description": "Beginner in 15 seconds. Step 1: on Liquid NFTs, part of every mint is held as liquidity inside the NFT. Step 2: anyone can donate more. Step 3: check the number on-chain.\n\nDay 81 of 365: we donated 1 FUSD to ANON Revenue Share NFTs on Liquid NFTs (Polygon). Liquidity on the page went from $7,373.64 to $7,374.71, at the time of writing. Check it on-chain.\n\nHow liquidity backing works: https://anonnfts.com/liquidity-backing\nEvery boost, dated and logged: https://anonnfts.com/proof-of-work\nJoin the ANON NFTs Telegram: https://t.me/+vycArguzIHM0Y2Fk\nNot financial advice.\n#NFT #Polygon #Web3\n\nMint an Anon Ape on Liquid (233 of 250 left at 100 FUSD when last checked on 26 Oct): https://liquidnfts.finance/besc/collection/0xc75BE8C4b4F5C61C499d83A1aDfc800Cc040cB95/mint"
+  },
   {
    "id": "XudfjF_UpX8",
    "title": "80 Days of Daily Liquidity Boosts, Not One Skipped: The Road to Day 80 on Liquid NFTs (Polygon)",
@@ -1938,5 +1970,5 @@
    "locked": true
   }
  ],
- "updated": "2026-10-28T12:05:21Z"
+ "updated": "2026-10-29T20:02:58Z"
 }
