@@ -2,9 +2,41 @@
  "channel": "https://www.youtube.com/@AnonNft",
  "start": "2026-08-10",
  "activity": "https://liquidnfts.finance/activities",
- "count": 116,
- "days": 61,
+ "count": 118,
+ "days": 62,
  "videos": [
+  {
+   "id": "QH25R_1f0wk",
+   "title": "Community Shout-Out and a Live Liquidity Boost on Liquid NFTs (Day 82/365)",
+   "published": "2026-10-30T12:54:18+00:00",
+   "short": false,
+   "day": 82,
+   "boost_date": "2026-10-30",
+   "collection": "ANON Revenue Share NFTs",
+   "amount": "1 FUSD",
+   "amount_usd": null,
+   "amount_fusd": 1.0,
+   "url": "https://www.youtube.com/watch?v=QH25R_1f0wk",
+   "thumb": "https://i.ytimg.com/vi/QH25R_1f0wk/mqdefault.jpg",
+   "summary": "It's Friday, so it's community shout-out day. A shout-out to every collection building on Liquid NFTs, including our friends at BESC and their Ghost Dead Hand Aces, the lost branch of the Aces deck.\nToday's boost: 1 FUSD donated to ANON Revenue Share NFTs on Polygon. Liquidity on the page went from $7,374.71 to $7,375.79 at the time of writing, and the page confirmed \"Liquidity donated successfully!\". Wallet screens are cut out for privacy.\nThe ANON Proof of Work record now shows $5,293.96 in total liquidity added across 82 days. Figures are at the time of writing, so check it on-chain.\nLinks\nMint a Vengeance name on Liquid\nNot financial advice.",
+   "description": "It's Friday, so it's community shout-out day. A shout-out to every collection building on Liquid NFTs, including our friends at BESC and their Ghost Dead Hand Aces, the lost branch of the Aces deck.\n\nToday's boost: 1 FUSD donated to ANON Revenue Share NFTs on Polygon. Liquidity on the page went from $7,374.71 to $7,375.79 at the time of writing, and the page confirmed \"Liquidity donated successfully!\". Wallet screens are cut out for privacy.\n\nThe ANON Proof of Work record now shows $5,293.96 in total liquidity added across 82 days. Figures are at the time of writing, so check it on-chain.\n\nLinks\nProof of Work: https://anonnfts.com/proof-of-work\nANON NFTs home: https://anonnfts.com\nAll ANON collections: https://anonnfts.com/collections\nPlay free games in ANON Arcade: https://anonnfts.com/arcade\nMint a Vengeance name on Liquid: https://liquidnfts.finance/polygon/collection/0x55Ad83e37bb61AE56AA5E8bb5f174B995C04d7b2/mint\n\nNot financial advice. NFTs and crypto assets are high-risk and may lose some or all of their value. Liquidity backing does not guarantee returns or the ability to sell at a particular price."
+  },
+  {
+   "id": "riegWs2cIHY",
+   "title": "Did today's boost go through? Friday shout-out to every Liquid collection",
+   "published": "2026-10-30T12:51:42+00:00",
+   "short": true,
+   "day": 82,
+   "boost_date": "2026-10-30",
+   "collection": "ANON Revenue Share NFTs",
+   "amount": "1 FUSD",
+   "amount_usd": null,
+   "amount_fusd": 1.0,
+   "url": "https://www.youtube.com/shorts/riegWs2cIHY",
+   "thumb": "https://i.ytimg.com/vi/riegWs2cIHY/mqdefault.jpg",
+   "summary": "Day 82/365 of the ANON Daily Boost. 1 FUSD donated to ANON Revenue Share NFTs on Liquid NFTs, and liquidity on the page went from $7,374.71 to $7,375.79 at the time of writing. The Proof of Work record now shows $5,293.96 across 82 days. Check it on-chain.\nFriday shout-out to every collection building on Liquid NFTs.\nMint a Vengeance name on Liquid\nNot financial advice.",
+   "description": "Day 82/365 of the ANON Daily Boost. 1 FUSD donated to ANON Revenue Share NFTs on Liquid NFTs, and liquidity on the page went from $7,374.71 to $7,375.79 at the time of writing. The Proof of Work record now shows $5,293.96 across 82 days. Check it on-chain.\n\nFriday shout-out to every collection building on Liquid NFTs.\n\nProof of Work: https://anonnfts.com/proof-of-work\nAll ANON collections: https://anonnfts.com/collections\nMint a Vengeance name on Liquid: https://liquidnfts.finance/polygon/collection/0x55Ad83e37bb61AE56AA5E8bb5f174B995C04d7b2/mint\n\nNot financial advice."
+  },
   {
    "id": "vHfcRm8dk5g",
    "title": "NFT Liquidity for Beginners in 3 Steps: A Live Liquidity Boost on Liquid NFTs (Polygon)",
@@ -1970,5 +2002,5 @@
    "locked": true
   }
  ],
- "updated": "2026-10-29T20:02:58Z"
+ "updated": "2026-10-30T16:20:03Z"
 }
