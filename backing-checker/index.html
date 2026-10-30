@@ -159,7 +159,7 @@ function priceTxt(L){ if(!L) return '-'; const p=fmt(tok(L.price)); return L.cur
 /* ---------- collection list ---------- */
 let COLS=[],LIST=null;
 const base=new URL('.',location.href).href;
-fetch(base+'collections.json?'+Date.now().toString().slice(0,-5)).then(r=>r.json()).then(d=>{COLS=d.items||[];fill();$('cmsg').textContent=`${COLS.length} Liquid collections in the list. Pick one, or paste any Liquid collection link or contract address.`;
+fetch(base+'collections.json?'+Date.now().toString().slice(0,-5)).then(r=>r.json()).then(d=>{const BLOCK=/\b(fuck|shit|cunt|bitch|twat|wank)/i;COLS=(d.items||[]).filter(x=>!BLOCK.test(x.name||''));fill();$('cmsg').textContent=`${COLS.length} Liquid collections in the list. Pick one, or paste any Liquid collection link or contract address.`;
  const p=new URLSearchParams(location.search); if(p.get('tab')==='listings') tab('lst'); const c=p.get('c'); if(c){$('q').value=c;fill();run();} }).catch(()=>{$('cmsg').textContent='The collection list could not load. You can still paste a Liquid collection link or contract address.';});
 function parseQ(){const v=$('q').value.trim();const m=v.match(/0x[a-fA-F0-9]{40}/);if(!m) return null;
  let c=null;const s=v.match(/liquidnfts\.finance\/([a-z]+)\//i)||v.match(/^(\d+):/);if(s) c=SLUG[s[1].toLowerCase()]||(CH[s[1]]?Number(s[1]):null);
