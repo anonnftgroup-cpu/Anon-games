@@ -3,6 +3,24 @@
  "subscribe": "https://www.youtube.com/@AnonNft?sub_confirmation=1",
  "videos": [
   {
+   "id": "KY1CD0k4mUA",
+   "title": "What's Actually Underneath Your NFT?",
+   "date": "2026-10-31",
+   "published": "2026-10-31T13:32:48+00:00",
+   "short": true,
+   "url": "https://www.youtube.com/shorts/KY1CD0k4mUA",
+   "thumb": "https://i.ytimg.com/vi/KY1CD0k4mUA/mqdefault.jpg"
+  },
+  {
+   "id": "hk0a79NeJhs",
+   "title": "What Is NFT Liquidity Backing? Explained in Plain English",
+   "date": "2026-10-31",
+   "published": "2026-10-31T13:26:55+00:00",
+   "short": false,
+   "url": "https://www.youtube.com/watch?v=hk0a79NeJhs",
+   "thumb": "https://i.ytimg.com/vi/hk0a79NeJhs/mqdefault.jpg"
+  },
+  {
    "id": "JMfWGbp5OzQ",
    "title": "ANON Week in Review: 7 Boosts in 7 Days, All On-Chain",
    "date": "2026-10-31",
@@ -55,25 +73,7 @@
    "short": false,
    "url": "https://www.youtube.com/watch?v=IeNpsJujA2Y",
    "thumb": "https://i.ytimg.com/vi/IeNpsJujA2Y/mqdefault.jpg"
-  },
-  {
-   "id": "YgOmPTvAluo",
-   "title": "Closest call yet: the rug drops right past me | ANON Rug Pull Runner",
-   "date": "2026-10-30",
-   "published": "2026-10-30T16:11:24+00:00",
-   "short": true,
-   "url": "https://www.youtube.com/shorts/YgOmPTvAluo",
-   "thumb": "https://i.ytimg.com/vi/YgOmPTvAluo/mqdefault.jpg"
-  },
-  {
-   "id": "QH25R_1f0wk",
-   "title": "Community Shout-Out and a Live Liquidity Boost on Liquid NFTs (Day 82/365)",
-   "date": "2026-10-30",
-   "published": "2026-10-30T12:54:18+00:00",
-   "short": false,
-   "url": "https://www.youtube.com/watch?v=QH25R_1f0wk",
-   "thumb": "https://i.ytimg.com/vi/QH25R_1f0wk/mqdefault.jpg"
   }
  ],
- "updated": "2026-10-31T13:04:35Z"
+ "updated": "2026-10-31T13:33:53Z"
 }
