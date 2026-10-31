@@ -3,6 +3,15 @@
  "subscribe": "https://www.youtube.com/@AnonNft?sub_confirmation=1",
  "videos": [
   {
+   "id": "CTbJ6hxqUSQ",
+   "title": "Buying an NFT is just clicking buy? Who told you that?",
+   "date": "2026-10-31",
+   "published": "2026-10-31T17:58:13+00:00",
+   "short": true,
+   "url": "https://www.youtube.com/shorts/CTbJ6hxqUSQ",
+   "thumb": "https://i.ytimg.com/vi/CTbJ6hxqUSQ/mqdefault.jpg"
+  },
+  {
    "id": "9Oz1CaiMglo",
    "title": "68 Gaps on a Grumpy Cat: ANON Flutter Full Run | Free Browser Game",
    "date": "2026-10-31",
@@ -64,16 +73,7 @@
    "short": true,
    "url": "https://www.youtube.com/shorts/tL7cGNe-ZzU",
    "thumb": "https://i.ytimg.com/vi/tL7cGNe-ZzU/mqdefault.jpg"
-  },
-  {
-   "id": "n_OGI4xcJog",
-   "title": "10% Back for ANON Holders - Today Only",
-   "date": "2026-10-31",
-   "published": "2026-10-31T02:21:21+00:00",
-   "short": true,
-   "url": "https://www.youtube.com/shorts/n_OGI4xcJog",
-   "thumb": "https://i.ytimg.com/vi/n_OGI4xcJog/mqdefault.jpg"
   }
  ],
- "updated": "2026-10-31T16:20:46Z"
+ "updated": "2026-10-31T17:59:28Z"
 }
