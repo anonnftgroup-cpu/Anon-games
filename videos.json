@@ -3,6 +3,24 @@
  "subscribe": "https://www.youtube.com/@AnonNft?sub_confirmation=1",
  "videos": [
   {
+   "id": "JMfWGbp5OzQ",
+   "title": "ANON Week in Review: 7 Boosts in 7 Days, All On-Chain",
+   "date": "2026-10-31",
+   "published": "2026-10-31T13:01:27+00:00",
+   "short": false,
+   "url": "https://www.youtube.com/watch?v=JMfWGbp5OzQ",
+   "thumb": "https://i.ytimg.com/vi/JMfWGbp5OzQ/mqdefault.jpg"
+  },
+  {
+   "id": "_5GbKcwha1k",
+   "title": "Did we really boost every day this week?",
+   "date": "2026-10-31",
+   "published": "2026-10-31T12:56:43+00:00",
+   "short": true,
+   "url": "https://www.youtube.com/shorts/_5GbKcwha1k",
+   "thumb": "https://i.ytimg.com/vi/_5GbKcwha1k/mqdefault.jpg"
+  },
+  {
    "id": "tL7cGNe-ZzU",
    "title": "ANON Holders: 10% Back on Any New Mint - Today Only",
    "date": "2026-10-31",
@@ -55,25 +73,7 @@
    "short": false,
    "url": "https://www.youtube.com/watch?v=QH25R_1f0wk",
    "thumb": "https://i.ytimg.com/vi/QH25R_1f0wk/mqdefault.jpg"
-  },
-  {
-   "id": "riegWs2cIHY",
-   "title": "Did today's boost go through? Friday shout-out to every Liquid collection",
-   "date": "2026-10-30",
-   "published": "2026-10-30T12:51:42+00:00",
-   "short": true,
-   "url": "https://www.youtube.com/shorts/riegWs2cIHY",
-   "thumb": "https://i.ytimg.com/vi/riegWs2cIHY/mqdefault.jpg"
-  },
-  {
-   "id": "6JTkpcQ9ZbE",
-   "title": "23.5% to 0% in one second. Spot the mistake? ANON Territory",
-   "date": "2026-10-29",
-   "published": "2026-10-29T20:17:17+00:00",
-   "short": true,
-   "url": "https://www.youtube.com/shorts/6JTkpcQ9ZbE",
-   "thumb": "https://i.ytimg.com/vi/6JTkpcQ9ZbE/mqdefault.jpg"
   }
  ],
- "updated": "2026-10-31T12:04:26Z"
+ "updated": "2026-10-31T13:04:35Z"
 }

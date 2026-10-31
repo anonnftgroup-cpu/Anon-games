@@ -2,9 +2,41 @@
  "channel": "https://www.youtube.com/@AnonNft",
  "start": "2026-08-10",
  "activity": "https://liquidnfts.finance/activities",
- "count": 118,
- "days": 62,
+ "count": 120,
+ "days": 63,
  "videos": [
+  {
+   "id": "JMfWGbp5OzQ",
+   "title": "ANON Week in Review: 7 Boosts in 7 Days, All On-Chain",
+   "published": "2026-10-31T13:01:27+00:00",
+   "short": false,
+   "day": 83,
+   "boost_date": "2026-10-31",
+   "collection": "Grumpy Cat NFTs",
+   "amount": null,
+   "amount_usd": null,
+   "amount_fusd": null,
+   "url": "https://www.youtube.com/watch?v=JMfWGbp5OzQ",
+   "thumb": "https://i.ytimg.com/vi/JMfWGbp5OzQ/mqdefault.jpg",
+   "summary": "Here's the ANON week in review, 25 to 31 October 2026. Every day this week we added liquidity to an ANON collection on Liquid NFTs, in public.\nThis week: 7 boosts of $1.08 each, $7.56 in total. Today's boost (Day 83/365) went into Grumpy Cat St Patrick's Day, taking the total from our daily boosts to $5,295.04 at the time of writing.\nANON holders get 10% back on new mints today only (31 Oct).\nMint a Grumpy Cat on Liquid\nFigures at the time of writing. Check it on-chain. Not financial advice.",
+   "description": "Here's the ANON week in review, 25 to 31 October 2026. Every day this week we added liquidity to an ANON collection on Liquid NFTs, in public.\n\nThis week: 7 boosts of $1.08 each, $7.56 in total. Today's boost (Day 83/365) went into Grumpy Cat St Patrick's Day, taking the total from our daily boosts to $5,295.04 at the time of writing.\n\nANON holders get 10% back on new mints today only (31 Oct).\n\nCheck the backing, then mint: https://anonnfts.com/collection-explorer\nEvery boost, dated: https://anonnfts.com/proof-of-work\nAll ANON collections: https://anonnfts.com/collections\nMint a Grumpy Cat on Liquid: https://liquidnfts.finance/polygon/collection/0xc12527361B9561198514b9bA4b1EBe3c0f968c60/mint\n\nFigures at the time of writing. Check it on-chain. Not financial advice."
+  },
+  {
+   "id": "_5GbKcwha1k",
+   "title": "Did we really boost every day this week?",
+   "published": "2026-10-31T12:56:43+00:00",
+   "short": true,
+   "day": 83,
+   "boost_date": "2026-10-31",
+   "collection": "Grumpy Cat NFTs",
+   "amount": null,
+   "amount_usd": null,
+   "amount_fusd": null,
+   "url": "https://www.youtube.com/shorts/_5GbKcwha1k",
+   "thumb": "https://i.ytimg.com/vi/_5GbKcwha1k/mqdefault.jpg",
+   "summary": "7 days, 7 boosts, all in public. Today's boost was $1.08 into Grumpy Cat St Patrick's Day on Liquid NFTs, taking our daily boosts to $5,295.04 at the time of writing (Day 83/365).\nANON holders get 10% back on new mints today only (31 Oct).\nMint a Grumpy Cat on Liquid\nFigures at the time of writing. Check it on-chain. Not financial advice.",
+   "description": "7 days, 7 boosts, all in public. Today's boost was $1.08 into Grumpy Cat St Patrick's Day on Liquid NFTs, taking our daily boosts to $5,295.04 at the time of writing (Day 83/365).\n\nANON holders get 10% back on new mints today only (31 Oct).\n\nCheck the backing, then mint: https://anonnfts.com/collection-explorer\nEvery boost, dated: https://anonnfts.com/proof-of-work\nMint a Grumpy Cat on Liquid: https://liquidnfts.finance/polygon/collection/0xc12527361B9561198514b9bA4b1EBe3c0f968c60/mint\n\nFigures at the time of writing. Check it on-chain. Not financial advice."
+  },
   {
    "id": "QH25R_1f0wk",
    "title": "Community Shout-Out and a Live Liquidity Boost on Liquid NFTs (Day 82/365)",
@@ -2002,5 +2034,5 @@
    "locked": true
   }
  ],
- "updated": "2026-10-30T16:20:03Z"
+ "updated": "2026-10-31T13:04:35Z"
 }
