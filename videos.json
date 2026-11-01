@@ -3,6 +3,24 @@
  "subscribe": "https://www.youtube.com/@AnonNft?sub_confirmation=1",
  "videos": [
   {
+   "id": "oR-C680OCpk",
+   "title": "Can you beat TOP DOG's snake? | ANON Snake",
+   "date": "2026-11-01",
+   "published": "2026-11-01T17:00:37+00:00",
+   "short": true,
+   "url": "https://www.youtube.com/shorts/oR-C680OCpk",
+   "thumb": "https://i.ytimg.com/vi/oR-C680OCpk/mqdefault.jpg"
+  },
+  {
+   "id": "TyhSfmCDRKM",
+   "title": "16 Gems, 320 Points: ANON Snake Full Run | Free Browser Game",
+   "date": "2026-11-01",
+   "published": "2026-11-01T17:00:22+00:00",
+   "short": false,
+   "url": "https://www.youtube.com/watch?v=TyhSfmCDRKM",
+   "thumb": "https://i.ytimg.com/vi/TyhSfmCDRKM/mqdefault.jpg"
+  },
+  {
    "id": "YshguR1xr64",
    "title": "Behind the Scenes: How a Daily ANON Liquidity Boost Works",
    "date": "2026-11-01",
@@ -55,25 +73,7 @@
    "short": true,
    "url": "https://www.youtube.com/shorts/TehhOuZlUMc",
    "thumb": "https://i.ytimg.com/vi/TehhOuZlUMc/mqdefault.jpg"
-  },
-  {
-   "id": "KY1CD0k4mUA",
-   "title": "What's Actually Underneath Your NFT?",
-   "date": "2026-10-31",
-   "published": "2026-10-31T13:32:48+00:00",
-   "short": true,
-   "url": "https://www.youtube.com/shorts/KY1CD0k4mUA",
-   "thumb": "https://i.ytimg.com/vi/KY1CD0k4mUA/mqdefault.jpg"
-  },
-  {
-   "id": "hk0a79NeJhs",
-   "title": "What Is NFT Liquidity Backing? Explained in Plain English",
-   "date": "2026-10-31",
-   "published": "2026-10-31T13:26:55+00:00",
-   "short": false,
-   "url": "https://www.youtube.com/watch?v=hk0a79NeJhs",
-   "thumb": "https://i.ytimg.com/vi/hk0a79NeJhs/mqdefault.jpg"
   }
  ],
- "updated": "2026-11-01T12:29:08Z"
+ "updated": "2026-11-01T17:12:57Z"
 }
