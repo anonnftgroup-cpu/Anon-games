@@ -2,9 +2,41 @@
  "channel": "https://www.youtube.com/@AnonNft",
  "start": "2026-08-10",
  "activity": "https://liquidnfts.finance/activities",
- "count": 120,
- "days": 63,
+ "count": 122,
+ "days": 64,
  "videos": [
+  {
+   "id": "YshguR1xr64",
+   "title": "Behind the Scenes: How a Daily ANON Liquidity Boost Works",
+   "published": "2026-11-01T12:21:40+00:00",
+   "short": false,
+   "day": 84,
+   "boost_date": "2026-11-01",
+   "collection": "ANON Revenue Share NFTs",
+   "amount": null,
+   "amount_usd": null,
+   "amount_fusd": null,
+   "url": "https://www.youtube.com/watch?v=YshguR1xr64",
+   "thumb": "https://i.ytimg.com/vi/YshguR1xr64/mqdefault.jpg",
+   "summary": "A behind-the-scenes look at one of our daily ANON boosts on Liquid NFTs, Sunday 1 November 2026.\nToday we opened the ANON Revenue Share NFTs collection, tapped Donate Liquidity and added $1.60.\nThat takes the total from our daily boosts to $5,296.64 at the time of writing (Day 84/365).\nMint a Lake District Astro on Liquid\nFigures at the time of writing. Check it on-chain. Not financial advice.",
+   "description": "A behind-the-scenes look at one of our daily ANON boosts on Liquid NFTs, Sunday 1 November 2026.\n\nToday we opened the ANON Revenue Share NFTs collection, tapped Donate Liquidity and added $1.60. The supply, floor and liquidity are all shown on the collection page, so anyone can check them.\n\nThat takes the total from our daily boosts to $5,296.64 at the time of writing (Day 84/365).\n\nCheck the backing, then mint: https://anonnfts.com/collection-explorer\nEvery boost, dated: https://anonnfts.com/proof-of-work\nAll ANON collections: https://anonnfts.com/collections\nMint a Lake District Astro on Liquid: https://liquidnfts.finance/polygon/collection/0xfa3415F281b61C9ee7E3b27E6c28E781D7158F6D/mint\n\nFigures at the time of writing. Check it on-chain. Not financial advice."
+  },
+  {
+   "id": "H-WtgNvztVk",
+   "title": "What does a daily NFT boost actually look like?",
+   "published": "2026-11-01T12:19:35+00:00",
+   "short": true,
+   "day": 84,
+   "boost_date": "2026-11-01",
+   "collection": "ANON Revenue Share NFTs",
+   "amount": null,
+   "amount_usd": null,
+   "amount_fusd": null,
+   "url": "https://www.youtube.com/shorts/H-WtgNvztVk",
+   "thumb": "https://i.ytimg.com/vi/H-WtgNvztVk/mqdefault.jpg",
+   "summary": "Behind the scenes of today's boost. $1.60 of liquidity went into ANON Revenue Share NFTs on Liquid NFTs, taking our daily boosts to $5,296.64 at the time of writing (Day 84/365).\nMint a Lake District Astro on Liquid\nFigures at the time of writing. Check it on-chain. Not financial advice.",
+   "description": "Behind the scenes of today's boost. $1.60 of liquidity went into ANON Revenue Share NFTs on Liquid NFTs, taking our daily boosts to $5,296.64 at the time of writing (Day 84/365).\n\nCheck the backing, then mint: https://anonnfts.com/collection-explorer\nEvery boost, dated: https://anonnfts.com/proof-of-work\nMint a Lake District Astro on Liquid: https://liquidnfts.finance/polygon/collection/0xfa3415F281b61C9ee7E3b27E6c28E781D7158F6D/mint\n\nFigures at the time of writing. Check it on-chain. Not financial advice."
+  },
   {
    "id": "JMfWGbp5OzQ",
    "title": "ANON Week in Review: 7 Boosts in 7 Days, All On-Chain",
@@ -2034,5 +2066,5 @@
    "locked": true
   }
  ],
- "updated": "2026-10-31T13:04:35Z"
+ "updated": "2026-11-01T12:29:07Z"
 }

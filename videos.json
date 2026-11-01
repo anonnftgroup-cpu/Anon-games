@@ -3,6 +3,24 @@
  "subscribe": "https://www.youtube.com/@AnonNft?sub_confirmation=1",
  "videos": [
   {
+   "id": "YshguR1xr64",
+   "title": "Behind the Scenes: How a Daily ANON Liquidity Boost Works",
+   "date": "2026-11-01",
+   "published": "2026-11-01T12:21:40+00:00",
+   "short": false,
+   "url": "https://www.youtube.com/watch?v=YshguR1xr64",
+   "thumb": "https://i.ytimg.com/vi/YshguR1xr64/mqdefault.jpg"
+  },
+  {
+   "id": "H-WtgNvztVk",
+   "title": "What does a daily NFT boost actually look like?",
+   "date": "2026-11-01",
+   "published": "2026-11-01T12:19:35+00:00",
+   "short": true,
+   "url": "https://www.youtube.com/shorts/H-WtgNvztVk",
+   "thumb": "https://i.ytimg.com/vi/H-WtgNvztVk/mqdefault.jpg"
+  },
+  {
    "id": "PL13dnOusAg",
    "title": "68 gaps on a Grumpy Cat, gold crown earned | ANON Flutter",
    "date": "2026-10-31",
@@ -55,25 +73,7 @@
    "short": false,
    "url": "https://www.youtube.com/watch?v=hk0a79NeJhs",
    "thumb": "https://i.ytimg.com/vi/hk0a79NeJhs/mqdefault.jpg"
-  },
-  {
-   "id": "JMfWGbp5OzQ",
-   "title": "ANON Week in Review: 7 Boosts in 7 Days, All On-Chain",
-   "date": "2026-10-31",
-   "published": "2026-10-31T13:01:27+00:00",
-   "short": false,
-   "url": "https://www.youtube.com/watch?v=JMfWGbp5OzQ",
-   "thumb": "https://i.ytimg.com/vi/JMfWGbp5OzQ/mqdefault.jpg"
-  },
-  {
-   "id": "_5GbKcwha1k",
-   "title": "Did we really boost every day this week?",
-   "date": "2026-10-31",
-   "published": "2026-10-31T12:56:43+00:00",
-   "short": true,
-   "url": "https://www.youtube.com/shorts/_5GbKcwha1k",
-   "thumb": "https://i.ytimg.com/vi/_5GbKcwha1k/mqdefault.jpg"
   }
  ],
- "updated": "2026-11-01T12:09:45Z"
+ "updated": "2026-11-01T12:29:08Z"
 }
