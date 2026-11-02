@@ -3,6 +3,15 @@
  "subscribe": "https://www.youtube.com/@AnonNft?sub_confirmation=1",
  "videos": [
   {
+   "id": "Tcc-SGERp4E",
+   "title": "Are NFTs Dead? Where the NFT Market Stands Now",
+   "date": "2026-11-02",
+   "published": "2026-11-02T17:53:43+00:00",
+   "short": true,
+   "url": "https://www.youtube.com/shorts/Tcc-SGERp4E",
+   "thumb": "https://i.ytimg.com/vi/Tcc-SGERp4E/mqdefault.jpg"
+  },
+  {
    "id": "qKWRdr8XeQE",
    "title": "Can you beat 50 in 12 seconds? | ANON Crossing",
    "date": "2026-11-02",
@@ -64,16 +73,7 @@
    "short": false,
    "url": "https://www.youtube.com/watch?v=TyhSfmCDRKM",
    "thumb": "https://i.ytimg.com/vi/TyhSfmCDRKM/mqdefault.jpg"
-  },
-  {
-   "id": "YshguR1xr64",
-   "title": "Behind the Scenes: How a Daily ANON Liquidity Boost Works",
-   "date": "2026-11-01",
-   "published": "2026-11-01T12:21:40+00:00",
-   "short": false,
-   "url": "https://www.youtube.com/watch?v=YshguR1xr64",
-   "thumb": "https://i.ytimg.com/vi/YshguR1xr64/mqdefault.jpg"
   }
  ],
- "updated": "2026-11-02T17:09:28Z"
+ "updated": "2026-11-02T17:57:25Z"
 }
