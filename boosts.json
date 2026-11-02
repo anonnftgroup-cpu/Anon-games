@@ -2,9 +2,41 @@
  "channel": "https://www.youtube.com/@AnonNft",
  "start": "2026-08-10",
  "activity": "https://liquidnfts.finance/activities",
- "count": 122,
- "days": 64,
+ "count": 124,
+ "days": 65,
  "videos": [
+  {
+   "id": "9fr2GqrF60s",
+   "title": "Did It Go Through? 1-Second Proof of a Daily ANON Liquidity Boost",
+   "published": "2026-11-02T03:54:27+00:00",
+   "short": false,
+   "day": 85,
+   "boost_date": "2026-11-02",
+   "collection": "ANON Revenue Share NFTs",
+   "amount": null,
+   "amount_usd": null,
+   "amount_fusd": null,
+   "url": "https://www.youtube.com/watch?v=9fr2GqrF60s",
+   "thumb": "https://i.ytimg.com/vi/9fr2GqrF60s/mqdefault.jpg",
+   "summary": "The 1-second proof first, then exactly how today's ANON boost happened on Liquid NFTs, Monday 2 November 2026.\nWe opened the ANON Revenue Share NFTs collection, tapped Donate Liquidity and added $1.33.\nThat takes the total from our daily boosts to $5,297.97 at the time of writing (Day 85/365).\nMint an Anon Ape on Liquid\nFigures at the time of writing. Check it on-chain. Not financial advice.",
+   "description": "The 1-second proof first, then exactly how today's ANON boost happened on Liquid NFTs, Monday 2 November 2026.\n\nWe opened the ANON Revenue Share NFTs collection, tapped Donate Liquidity and added $1.33. The supply, price and liquidity are all shown on the collection page, so anyone can check them.\n\nThat takes the total from our daily boosts to $5,297.97 at the time of writing (Day 85/365).\n\nCheck the backing, then mint: https://anonnfts.com/collection-explorer\nEvery boost, dated: https://anonnfts.com/proof-of-work\nAll ANON collections: https://anonnfts.com/collections\nMint an Anon Ape on Liquid: https://liquidnfts.finance/besc/collection/0xc75BE8C4b4F5C61C499d83A1aDfc800Cc040cB95/mint\n\nFigures at the time of writing. Check it on-chain. Not financial advice."
+  },
+  {
+   "id": "xgHOsvLYsik",
+   "title": "Did this NFT liquidity boost actually go through?",
+   "published": "2026-11-02T03:51:57+00:00",
+   "short": true,
+   "day": 85,
+   "boost_date": "2026-11-02",
+   "collection": "ANON Revenue Share NFTs",
+   "amount": null,
+   "amount_usd": null,
+   "amount_fusd": null,
+   "url": "https://www.youtube.com/shorts/xgHOsvLYsik",
+   "thumb": "https://i.ytimg.com/vi/xgHOsvLYsik/mqdefault.jpg",
+   "summary": "The 1-second proof, then how it happened. $1.33 of liquidity went into ANON Revenue Share NFTs on Liquid NFTs, taking our daily boosts to $5,297.97 at the time of writing (Day 85/365).\nMint an Anon Ape on Liquid\nFigures at the time of writing. Check it on-chain. Not financial advice.",
+   "description": "The 1-second proof, then how it happened. $1.33 of liquidity went into ANON Revenue Share NFTs on Liquid NFTs, taking our daily boosts to $5,297.97 at the time of writing (Day 85/365).\n\nCheck the backing, then mint: https://anonnfts.com/collection-explorer\nEvery boost, dated: https://anonnfts.com/proof-of-work\nMint an Anon Ape on Liquid: https://liquidnfts.finance/besc/collection/0xc75BE8C4b4F5C61C499d83A1aDfc800Cc040cB95/mint\n\nFigures at the time of writing. Check it on-chain. Not financial advice."
+  },
   {
    "id": "YshguR1xr64",
    "title": "Behind the Scenes: How a Daily ANON Liquidity Boost Works",
@@ -2066,5 +2098,5 @@
    "locked": true
   }
  ],
- "updated": "2026-11-01T12:29:07Z"
+ "updated": "2026-11-02T12:04:02Z"
 }
