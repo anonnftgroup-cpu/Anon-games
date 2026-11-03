@@ -2,9 +2,25 @@
  "channel": "https://www.youtube.com/@AnonNft",
  "start": "2026-08-10",
  "activity": "https://liquidnfts.finance/activities",
- "count": 124,
- "days": 65,
+ "count": 125,
+ "days": 66,
  "videos": [
+  {
+   "id": "lIGnZeOW9y0",
+   "title": "From $5,297.97 to what? Tracking our NFT boosts in public",
+   "published": "2026-11-03T06:43:56+00:00",
+   "short": true,
+   "day": 86,
+   "boost_date": "2026-11-03",
+   "collection": "ANON Revenue Share NFTs",
+   "amount": "$1.08",
+   "amount_usd": 1.08,
+   "amount_fusd": null,
+   "url": "https://www.youtube.com/shorts/lIGnZeOW9y0",
+   "thumb": "https://i.ytimg.com/vi/lIGnZeOW9y0/mqdefault.jpg",
+   "summary": "Running total day. 1 FUSD (about $1.08) of liquidity went into ANON Revenue Share NFTs on Liquid NFTs. The collection page showed $7,378.74 before and $7,379.81 after, taking our daily boosts to $5,299.05 at the time of writing (Day 86/365).\nMint a Grumpy Cat on Liquid\nFigures at the time of writing. Check it on-chain. Not financial advice.",
+   "description": "Running total day. 1 FUSD (about $1.08) of liquidity went into ANON Revenue Share NFTs on Liquid NFTs. The collection page showed $7,378.74 before and $7,379.81 after, taking our daily boosts to $5,299.05 at the time of writing (Day 86/365).\n\nCheck the backing, then mint: https://anonnfts.com/collection-explorer\nEvery boost, dated: https://anonnfts.com/proof-of-work\nMint a Grumpy Cat on Liquid: https://liquidnfts.finance/polygon/collection/0xc12527361B9561198514b9bA4b1EBe3c0f968c60/mint\n\nFigures at the time of writing. Check it on-chain. Not financial advice."
+  },
   {
    "id": "9fr2GqrF60s",
    "title": "Did It Go Through? 1-Second Proof of a Daily ANON Liquidity Boost",
@@ -2098,5 +2114,5 @@
    "locked": true
   }
  ],
- "updated": "2026-11-02T12:04:02Z"
+ "updated": "2026-11-03T12:08:57Z"
 }
