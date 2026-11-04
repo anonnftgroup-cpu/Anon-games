@@ -3,6 +3,15 @@
  "subscribe": "https://www.youtube.com/@AnonNft?sub_confirmation=1",
  "videos": [
   {
+   "id": "uFOcci2Ar5o",
+   "title": "Can You Make an NFT for Free?",
+   "date": "2026-11-04",
+   "published": "2026-11-04T18:14:45+00:00",
+   "short": true,
+   "url": "https://www.youtube.com/shorts/uFOcci2Ar5o",
+   "thumb": "https://i.ytimg.com/vi/uFOcci2Ar5o/mqdefault.jpg"
+  },
+  {
    "id": "UPWAFFI8QIM",
    "title": "Myth vs Fact: Can You Check What Backs an NFT? (ANON Daily Boost Proof)",
    "date": "2026-11-04",
@@ -64,16 +73,7 @@
    "short": false,
    "url": "https://www.youtube.com/watch?v=tlSBxvTbfAY",
    "thumb": "https://i.ytimg.com/vi/tlSBxvTbfAY/mqdefault.jpg"
-  },
-  {
-   "id": "h-tjqORvnc0",
-   "title": "Can you beat 190? | ANON Crossing",
-   "date": "2026-11-03",
-   "published": "2026-11-03T08:07:08+00:00",
-   "short": true,
-   "url": "https://www.youtube.com/shorts/h-tjqORvnc0",
-   "thumb": "https://i.ytimg.com/vi/h-tjqORvnc0/mqdefault.jpg"
   }
  ],
- "updated": "2026-11-04T12:02:47Z"
+ "updated": "2026-11-04T20:03:09Z"
 }
