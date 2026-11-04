@@ -3,6 +3,24 @@
  "subscribe": "https://www.youtube.com/@AnonNft?sub_confirmation=1",
  "videos": [
   {
+   "id": "UPWAFFI8QIM",
+   "title": "Myth vs Fact: Can You Check What Backs an NFT? (ANON Daily Boost Proof)",
+   "date": "2026-11-04",
+   "published": "2026-11-04T11:30:49+00:00",
+   "short": false,
+   "url": "https://www.youtube.com/watch?v=UPWAFFI8QIM",
+   "thumb": "https://i.ytimg.com/vi/UPWAFFI8QIM/mqdefault.jpg"
+  },
+  {
+   "id": "rB0nLKoLopw",
+   "title": "Can you actually check what backs an NFT?",
+   "date": "2026-11-04",
+   "published": "2026-11-04T11:30:05+00:00",
+   "short": true,
+   "url": "https://www.youtube.com/shorts/rB0nLKoLopw",
+   "thumb": "https://i.ytimg.com/vi/rB0nLKoLopw/mqdefault.jpg"
+  },
+  {
    "id": "7gMHQp8JiBY",
    "title": "How Do You Make an NFT?",
    "date": "2026-11-03",
@@ -55,25 +73,7 @@
    "short": true,
    "url": "https://www.youtube.com/shorts/h-tjqORvnc0",
    "thumb": "https://i.ytimg.com/vi/h-tjqORvnc0/mqdefault.jpg"
-  },
-  {
-   "id": "EINzZlLGCSs",
-   "title": "From $5,297.97 to $5,299.05: Tracking Our Daily ANON Liquidity Boosts in Public",
-   "date": "2026-11-03",
-   "published": "2026-11-03T06:47:23+00:00",
-   "short": false,
-   "url": "https://www.youtube.com/watch?v=EINzZlLGCSs",
-   "thumb": "https://i.ytimg.com/vi/EINzZlLGCSs/mqdefault.jpg"
-  },
-  {
-   "id": "lIGnZeOW9y0",
-   "title": "From $5,297.97 to what? Tracking our NFT boosts in public",
-   "date": "2026-11-03",
-   "published": "2026-11-03T06:43:56+00:00",
-   "short": true,
-   "url": "https://www.youtube.com/shorts/lIGnZeOW9y0",
-   "thumb": "https://i.ytimg.com/vi/lIGnZeOW9y0/mqdefault.jpg"
   }
  ],
- "updated": "2026-11-03T17:55:31Z"
+ "updated": "2026-11-04T12:02:47Z"
 }

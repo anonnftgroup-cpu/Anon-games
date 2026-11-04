@@ -2,9 +2,25 @@
  "channel": "https://www.youtube.com/@AnonNft",
  "start": "2026-08-10",
  "activity": "https://liquidnfts.finance/activities",
- "count": 125,
- "days": 66,
+ "count": 126,
+ "days": 67,
  "videos": [
+  {
+   "id": "rB0nLKoLopw",
+   "title": "Can you actually check what backs an NFT?",
+   "published": "2026-11-04T11:30:05+00:00",
+   "short": true,
+   "day": 87,
+   "boost_date": "2026-11-04",
+   "collection": "ANON Revenue Share NFTs",
+   "amount": "$1.08",
+   "amount_usd": 1.08,
+   "amount_fusd": null,
+   "url": "https://www.youtube.com/shorts/rB0nLKoLopw",
+   "thumb": "https://i.ytimg.com/vi/rB0nLKoLopw/mqdefault.jpg",
+   "summary": "Myth vs fact. Myth: you can't check what backs an NFT. Fact: on Liquid NFTs the liquidity figure is on the collection page. Today 1 FUSD (about $1.08) went into ANON Revenue Share NFTs, and the page went from $7,379.81 to $7,380.89, taking our daily boosts to $5,300.13 at the time of writing (Day 87/365).\nMint a Vengeance name on Liquid\nFigures at the time of writing. Check it on-chain. Not financial advice.",
+   "description": "Myth vs fact. Myth: you can't check what backs an NFT. Fact: on Liquid NFTs the liquidity figure is on the collection page. Today 1 FUSD (about $1.08) went into ANON Revenue Share NFTs, and the page went from $7,379.81 to $7,380.89, taking our daily boosts to $5,300.13 at the time of writing (Day 87/365).\n\nCheck the backing: https://anonnfts.com/collection-explorer\nEvery boost, dated: https://anonnfts.com/proof-of-work\nMint a Vengeance name on Liquid: https://liquidnfts.finance/polygon/collection/0x55Ad83e37bb61AE56AA5E8bb5f174B995C04d7b2/mint\n\nFigures at the time of writing. Check it on-chain. Not financial advice."
+  },
   {
    "id": "lIGnZeOW9y0",
    "title": "From $5,297.97 to what? Tracking our NFT boosts in public",
@@ -2114,5 +2130,5 @@
    "locked": true
   }
  ],
- "updated": "2026-11-03T12:08:57Z"
+ "updated": "2026-11-04T12:02:47Z"
 }
