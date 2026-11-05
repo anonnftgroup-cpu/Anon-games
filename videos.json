@@ -3,6 +3,24 @@
  "subscribe": "https://www.youtube.com/@AnonNft?sub_confirmation=1",
  "videos": [
   {
+   "id": "4bhvkpjYREs",
+   "title": "Can You Make an NFT for Free?",
+   "date": "2026-11-05",
+   "published": "2026-11-05T18:02:56+00:00",
+   "short": true,
+   "url": "https://www.youtube.com/shorts/4bhvkpjYREs",
+   "thumb": "https://i.ytimg.com/vi/4bhvkpjYREs/mqdefault.jpg"
+  },
+  {
+   "id": "iNnksOpVSec",
+   "title": "ANON in Crypto Magazine Issue 14 - 10% Off With ANON10",
+   "date": "2026-11-05",
+   "published": "2026-11-05T15:33:48+00:00",
+   "short": true,
+   "url": "https://www.youtube.com/shorts/iNnksOpVSec",
+   "thumb": "https://i.ytimg.com/vi/iNnksOpVSec/mqdefault.jpg"
+  },
+  {
    "id": "qy7M7AtDRHw",
    "title": "0-2 on Medium: Two ANON Four in a Row Losses vs the Computer",
    "date": "2026-11-05",
@@ -55,25 +73,7 @@
    "short": true,
    "url": "https://www.youtube.com/shorts/yUq-2XLZGqg",
    "thumb": "https://i.ytimg.com/vi/yUq-2XLZGqg/mqdefault.jpg"
-  },
-  {
-   "id": "4PoVyQb2_zY",
-   "title": "Dare: find the word in under 4 guesses | ANON Word",
-   "date": "2026-11-04",
-   "published": "2026-11-04T20:03:56+00:00",
-   "short": true,
-   "url": "https://www.youtube.com/shorts/4PoVyQb2_zY",
-   "thumb": "https://i.ytimg.com/vi/4PoVyQb2_zY/mqdefault.jpg"
-  },
-  {
-   "id": "uFOcci2Ar5o",
-   "title": "Can You Make an NFT for Free?",
-   "date": "2026-11-04",
-   "published": "2026-11-04T18:14:45+00:00",
-   "short": true,
-   "url": "https://www.youtube.com/shorts/uFOcci2Ar5o",
-   "thumb": "https://i.ytimg.com/vi/uFOcci2Ar5o/mqdefault.jpg"
   }
  ],
- "updated": "2026-11-05T12:09:26Z"
+ "updated": "2026-11-05T18:06:20Z"
 }
