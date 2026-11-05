@@ -2,9 +2,41 @@
  "channel": "https://www.youtube.com/@AnonNft",
  "start": "2026-08-10",
  "activity": "https://liquidnfts.finance/activities",
- "count": 126,
- "days": 67,
+ "count": 128,
+ "days": 68,
  "videos": [
+  {
+   "id": "a7wUDqhGh3M",
+   "title": "How Donating Liquidity Works on Liquid NFTs: A Beginner Walk-Through (Day 88/365)",
+   "published": "2026-11-05T08:15:33+00:00",
+   "short": false,
+   "day": 88,
+   "boost_date": "2026-11-05",
+   "collection": "ANON Revenue Share NFTs",
+   "amount": "$1.07",
+   "amount_usd": 1.07,
+   "amount_fusd": null,
+   "url": "https://www.youtube.com/watch?v=a7wUDqhGh3M",
+   "thumb": "https://i.ytimg.com/vi/a7wUDqhGh3M/mqdefault.jpg",
+   "summary": "New to Liquid NFTs? This walk-through shows how donating liquidity works, in three simple steps, using today's real boost as the example.\n1. Open a collection on Liquid NFTs (today: ANON Revenue Share NFTs).\n2. Tap Donate Liquidity, enter an amount and confirm in your wallet. Today: 1 FUSD, about $1.07.\n3. The liquidity figure on the collection page goes up: $7,380.89 before, $7,381.96 after, at the time of writing.\nOur daily boosts total is now $5,301.20 (Day 88/365), at the time of writing. Don't take our word for it. Check it on-chain.\nMint pick today, Anon Apes (BESC)\nWallet addresses blurred for privacy. Not financial advice.",
+   "description": "New to Liquid NFTs? This walk-through shows how donating liquidity works, in three simple steps, using today's real boost as the example.\n\n1. Open a collection on Liquid NFTs (today: ANON Revenue Share NFTs).\n2. Tap Donate Liquidity, enter an amount and confirm in your wallet. Today: 1 FUSD, about $1.07.\n3. The liquidity figure on the collection page goes up: $7,380.89 before, $7,381.96 after, at the time of writing.\n\nOur daily boosts total is now $5,301.20 (Day 88/365), at the time of writing. Don't take our word for it. Check it on-chain.\n\nBeginner guide: https://anonnfts.com/how-liquid-works\nCollection Explorer: https://anonnfts.com/collection-explorer\nEvery boost logged: https://anonnfts.com/proof-of-work\nMint pick today, Anon Apes (BESC): https://liquidnfts.finance/besc/collection/0xc75BE8C4b4F5C61C499d83A1aDfc800Cc040cB95/mint\n\nWallet addresses blurred for privacy. Not financial advice."
+  },
+  {
+   "id": "NtgXl4_SCLI",
+   "title": "How do you donate NFT liquidity? (3 steps) ✅",
+   "published": "2026-11-05T08:12:18+00:00",
+   "short": true,
+   "day": 88,
+   "boost_date": "2026-11-05",
+   "collection": "ANON Revenue Share NFTs",
+   "amount": null,
+   "amount_usd": null,
+   "amount_fusd": null,
+   "url": "https://www.youtube.com/shorts/NtgXl4_SCLI",
+   "thumb": "https://i.ytimg.com/vi/NtgXl4_SCLI/mqdefault.jpg",
+   "summary": "Beginner in 15 seconds: open a collection on Liquid NFTs, tap Donate Liquidity, and the liquidity figure on the page goes up.\nToday: 1 FUSD ($1.07) into ANON Revenue Share NFTs. Liquidity $7,380.89 → $7,381.96, at the time of writing. Daily boosts total $5,301.20. Day 88/365.\nCheck it on-chain 👀\nMint pick, Anon Apes (BESC)\nNot financial advice.",
+   "description": "Beginner in 15 seconds: open a collection on Liquid NFTs, tap Donate Liquidity, and the liquidity figure on the page goes up.\nToday: 1 FUSD ($1.07) into ANON Revenue Share NFTs. Liquidity $7,380.89 → $7,381.96, at the time of writing. Daily boosts total $5,301.20. Day 88/365.\nCheck it on-chain 👀\n\nBeginner guide: https://anonnfts.com/how-liquid-works\nCollection Explorer: https://anonnfts.com/collection-explorer\nProof of work: https://anonnfts.com/proof-of-work\nMint pick, Anon Apes (BESC): https://liquidnfts.finance/besc/collection/0xc75BE8C4b4F5C61C499d83A1aDfc800Cc040cB95/mint\n\nNot financial advice.\n#nft #liquidnfts #shorts"
+  },
   {
    "id": "rB0nLKoLopw",
    "title": "Can you actually check what backs an NFT?",
@@ -2130,5 +2162,5 @@
    "locked": true
   }
  ],
- "updated": "2026-11-04T12:02:47Z"
+ "updated": "2026-11-05T12:09:25Z"
 }
