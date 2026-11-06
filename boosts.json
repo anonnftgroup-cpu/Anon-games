@@ -2,9 +2,41 @@
  "channel": "https://www.youtube.com/@AnonNft",
  "start": "2026-08-10",
  "activity": "https://liquidnfts.finance/activities",
- "count": 128,
- "days": 68,
+ "count": 130,
+ "days": 69,
  "videos": [
+  {
+   "id": "W4ogMRekr8U",
+   "title": "Friday Shout-Out: 2.5 FUSD Boost to Grumpy Cat on Liquid NFTs (Polygon), Day 89/365",
+   "published": "2026-11-06T07:15:25+00:00",
+   "short": false,
+   "day": 89,
+   "boost_date": "2026-11-06",
+   "collection": "Grumpy Cat NFTs",
+   "amount": "$2.68",
+   "amount_usd": 2.68,
+   "amount_fusd": 2.5,
+   "url": "https://www.youtube.com/watch?v=W4ogMRekr8U",
+   "thumb": "https://i.ytimg.com/vi/W4ogMRekr8U/mqdefault.jpg",
+   "summary": "Friday community shout-out: today's daily liquidity boost went into another collection on Liquid NFTs. Day 89 of 365, not one day skipped.\nDonate liquidity: 2.5 FUSD entered (about $2.68 at the on-screen rate), then Donate tapped\nResult: \"Liquidity donated successfully!\"\nAfter the boost: liquidity $207.96\nDaily boosts total: $5,303.88 at the time of writing\nAll figures are as shown on screen at the time of writing. Wallet approval, signing and Face ID screens, and the keypad are cut out for privacy.\nWhich Liquid collection should we boost next? Tell us in the comments.\nNot financial advice. Figures are as shown at the time of writing. Always check it on-chain yourself.\nMint a Grumpy Cat on…",
+   "description": "Friday community shout-out: today's daily liquidity boost went into another collection on Liquid NFTs. Day 89 of 365, not one day skipped.\n\nToday's boost for Grumpy Cat St Patrick's Day – ANONs Group on Liquid NFTs (Polygon):\n- Before the boost: floor $107.34, liquidity $205.28 (191.2405 FUSD), 15 of 90 minted, mint price $25.07\n- Donate liquidity: 2.5 FUSD entered (about $2.68 at the on-screen rate), then Donate tapped\n- Result: \"Liquidity donated successfully!\"\n- After the boost: liquidity $207.96\n- Daily boosts total: $5,303.88 at the time of writing\n\nAll figures are as shown on screen at the time of writing. Wallet approval, signing and Face ID screens, and the keypad are cut out for privacy.\n\nWhich Liquid collection should we boost next? Tell us in the comments.\n\nEvery boost, dated and logged: https://anonnfts.com/proof-of-work\nCheck the backing on-chain: https://anonnfts.com/check-backing-on-chain-1\nANON NFTs: https://anonnfts.com\nJoin the ANON NFTs Telegram: https://t.me/+1HQa39STOkhjNTJk\n\nNot financial advice. Figures are as shown at the time of writing. Always check it on-chain yourself.\n\n#NFT #LiquidNFTs #Polygon #Web3 #ANONNFTs #DailyBoost\n\nMint a Grumpy Cat on Liquid: https://liquidnfts.finance/polygon/collection/0xc12527361B9561198514b9bA4b1EBe3c0f968c60/mint"
+  },
+  {
+   "id": "Ilyvmn4OOYY",
+   "title": "Grumpy Cat Got Today's Boost — Which Collection Next?",
+   "published": "2026-11-06T07:14:38+00:00",
+   "short": true,
+   "day": 89,
+   "boost_date": "2026-11-06",
+   "collection": "Grumpy Cat NFTs",
+   "amount": "$2.68",
+   "amount_usd": 2.68,
+   "amount_fusd": 2.5,
+   "url": "https://www.youtube.com/shorts/Ilyvmn4OOYY",
+   "thumb": "https://i.ytimg.com/vi/Ilyvmn4OOYY/mqdefault.jpg",
+   "summary": "Friday community shout-out, Day 89 of 365 daily liquidity boosts. We donated 2.5 FUSD (about $2.68) to Grumpy Cat St Patrick's Day – ANONs Group on Liquid NFTs (Polygon). Liquidity on the page went from $205.28 to $207.96, at the time of writing. Check it on-chain.\nWhich Liquid collection should we boost next?\nNot financial advice.\nMint a Grumpy Cat on Liquid",
+   "description": "Friday community shout-out, Day 89 of 365 daily liquidity boosts. We donated 2.5 FUSD (about $2.68) to Grumpy Cat St Patrick's Day – ANONs Group on Liquid NFTs (Polygon). Liquidity on the page went from $205.28 to $207.96, at the time of writing. Check it on-chain.\n\nWhich Liquid collection should we boost next?\n\nEvery boost, dated and logged: https://anonnfts.com/proof-of-work\nCheck the backing on-chain: https://anonnfts.com/check-backing-on-chain-1\nJoin the ANON NFTs Telegram: https://t.me/+1HQa39STOkhjNTJk\nNot financial advice.\n\nMint a Grumpy Cat on Liquid: https://liquidnfts.finance/polygon/collection/0xc12527361B9561198514b9bA4b1EBe3c0f968c60/mint"
+  },
   {
    "id": "a7wUDqhGh3M",
    "title": "How Donating Liquidity Works on Liquid NFTs: A Beginner Walk-Through (Day 88/365)",
@@ -2162,5 +2194,5 @@
    "locked": true
   }
  ],
- "updated": "2026-11-05T12:09:25Z"
+ "updated": "2026-11-06T08:14:11Z"
 }
