@@ -3,6 +3,15 @@
  "subscribe": "https://www.youtube.com/@AnonNft?sub_confirmation=1",
  "videos": [
   {
+   "id": "8Ayul2nbCXE",
+   "title": "What Do You Actually Own When You Buy an NFT?",
+   "date": "2026-11-08",
+   "published": "2026-11-08T18:00:05+00:00",
+   "short": true,
+   "url": "https://www.youtube.com/shorts/8Ayul2nbCXE",
+   "thumb": "https://i.ytimg.com/vi/8Ayul2nbCXE/mqdefault.jpg"
+  },
+  {
    "id": "k9Joc6Xcsyw",
    "title": "World’s worst Block Drop? Can you beat 200? | ANON Block Drop",
    "date": "2026-11-08",
@@ -64,16 +73,7 @@
    "short": true,
    "url": "https://www.youtube.com/shorts/1qbR6LPhvaI",
    "thumb": "https://i.ytimg.com/vi/1qbR6LPhvaI/mqdefault.jpg"
-  },
-  {
-   "id": "W4ogMRekr8U",
-   "title": "Friday Shout-Out: 2.5 FUSD Boost to Grumpy Cat on Liquid NFTs (Polygon), Day 89/365",
-   "date": "2026-11-06",
-   "published": "2026-11-06T07:15:25+00:00",
-   "short": false,
-   "url": "https://www.youtube.com/watch?v=W4ogMRekr8U",
-   "thumb": "https://i.ytimg.com/vi/W4ogMRekr8U/mqdefault.jpg"
   }
  ],
- "updated": "2026-11-08T17:15:35Z"
+ "updated": "2026-11-08T18:01:12Z"
 }
