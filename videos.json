@@ -3,6 +3,15 @@
  "subscribe": "https://www.youtube.com/@AnonNft?sub_confirmation=1",
  "videos": [
   {
+   "id": "Lg_4MwC6Xb8",
+   "title": "One row from the top… then it clears | Beat 200? ANON Block Drop",
+   "date": "2026-11-08",
+   "published": "2026-11-08T20:07:53+00:00",
+   "short": true,
+   "url": "https://www.youtube.com/shorts/Lg_4MwC6Xb8",
+   "thumb": "https://i.ytimg.com/vi/Lg_4MwC6Xb8/mqdefault.jpg"
+  },
+  {
    "id": "8Ayul2nbCXE",
    "title": "What Do You Actually Own When You Buy an NFT?",
    "date": "2026-11-08",
@@ -64,16 +73,7 @@
    "short": false,
    "url": "https://www.youtube.com/watch?v=P7haxFqcI0w",
    "thumb": "https://i.ytimg.com/vi/P7haxFqcI0w/mqdefault.jpg"
-  },
-  {
-   "id": "1qbR6LPhvaI",
-   "title": "2 for 2 on Medium. Your turn? | ANON Four in a Row",
-   "date": "2026-11-06",
-   "published": "2026-11-06T08:12:50+00:00",
-   "short": true,
-   "url": "https://www.youtube.com/shorts/1qbR6LPhvaI",
-   "thumb": "https://i.ytimg.com/vi/1qbR6LPhvaI/mqdefault.jpg"
   }
  ],
- "updated": "2026-11-08T18:01:12Z"
+ "updated": "2026-11-08T20:11:16Z"
 }
