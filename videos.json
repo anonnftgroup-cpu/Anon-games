@@ -3,6 +3,51 @@
  "subscribe": "https://www.youtube.com/@AnonNft?sub_confirmation=1",
  "videos": [
   {
+   "id": "DIqSJauj7Vs",
+   "title": "Why Buy an NFT When You Can Copy the Image?",
+   "date": "2026-11-09",
+   "published": "2026-11-09T17:54:30+00:00",
+   "short": true,
+   "url": "https://www.youtube.com/shorts/DIqSJauj7Vs",
+   "thumb": "https://i.ytimg.com/vi/DIqSJauj7Vs/mqdefault.jpg"
+  },
+  {
+   "id": "BXVgvCExHAI",
+   "title": "Kung Fu Saga First Free Weapon (Wartomb Bow)",
+   "date": "2026-11-09",
+   "published": "2026-11-09T12:19:06+00:00",
+   "short": true,
+   "url": "https://www.youtube.com/shorts/BXVgvCExHAI",
+   "thumb": "https://i.ytimg.com/vi/BXVgvCExHAI/mqdefault.jpg"
+  },
+  {
+   "id": "mAfrnQoz1Ic",
+   "title": "Kung Fu Saga First Boss Fight (Beginner)",
+   "date": "2026-11-09",
+   "published": "2026-11-09T12:17:24+00:00",
+   "short": true,
+   "url": "https://www.youtube.com/shorts/mAfrnQoz1Ic",
+   "thumb": "https://i.ytimg.com/vi/mAfrnQoz1Ic/mqdefault.jpg"
+  },
+  {
+   "id": "N2i_edHpxWQ",
+   "title": "Kung Fu Saga Best Class for Beginners",
+   "date": "2026-11-09",
+   "published": "2026-11-09T12:15:19+00:00",
+   "short": true,
+   "url": "https://www.youtube.com/shorts/N2i_edHpxWQ",
+   "thumb": "https://i.ytimg.com/vi/N2i_edHpxWQ/mqdefault.jpg"
+  },
+  {
+   "id": "uwqfOdG8vyM",
+   "title": "Kung Fu Saga Beginner Guide Part 1: Best Class (Rage vs Tian vs Archer) and Your First 7 Days",
+   "date": "2026-11-09",
+   "published": "2026-11-09T12:12:01+00:00",
+   "short": false,
+   "url": "https://www.youtube.com/watch?v=uwqfOdG8vyM",
+   "thumb": "https://i.ytimg.com/vi/uwqfOdG8vyM/mqdefault.jpg"
+  },
+  {
    "id": "Ck2YpK90iVw",
    "title": "Did this NFT liquidity boost actually go through?",
    "date": "2026-11-09",
@@ -28,52 +73,7 @@
    "short": true,
    "url": "https://www.youtube.com/shorts/8Ayul2nbCXE",
    "thumb": "https://i.ytimg.com/vi/8Ayul2nbCXE/mqdefault.jpg"
-  },
-  {
-   "id": "k9Joc6Xcsyw",
-   "title": "World’s worst Block Drop? Can you beat 200? | ANON Block Drop",
-   "date": "2026-11-08",
-   "published": "2026-11-08T17:12:44+00:00",
-   "short": true,
-   "url": "https://www.youtube.com/shorts/k9Joc6Xcsyw",
-   "thumb": "https://i.ytimg.com/vi/k9Joc6Xcsyw/mqdefault.jpg"
-  },
-  {
-   "id": "B7zdw7YXH4Q",
-   "title": "World’s worst Block Drop? Can you beat 200? | ANON Block Drop",
-   "date": "2026-11-08",
-   "published": "2026-11-08T14:19:56+00:00",
-   "short": false,
-   "url": "https://www.youtube.com/watch?v=B7zdw7YXH4Q",
-   "thumb": "https://i.ytimg.com/vi/B7zdw7YXH4Q/mqdefault.jpg"
-  },
-  {
-   "id": "tW2OKq6B9C0",
-   "title": "What a Daily Boost Looks Like Behind the Scenes. Rest or Build?",
-   "date": "2026-11-08",
-   "published": "2026-11-08T10:51:22+00:00",
-   "short": true,
-   "url": "https://www.youtube.com/shorts/tW2OKq6B9C0",
-   "thumb": "https://i.ytimg.com/vi/tW2OKq6B9C0/mqdefault.jpg"
-  },
-  {
-   "id": "XdP1rjZSUBM",
-   "title": "Sunday Behind the Scenes: 1.5 FUSD Boost to ANON Revenue Share on Liquid NFTs (Polygon)",
-   "date": "2026-11-08",
-   "published": "2026-11-08T10:50:07+00:00",
-   "short": false,
-   "url": "https://www.youtube.com/watch?v=XdP1rjZSUBM",
-   "thumb": "https://i.ytimg.com/vi/XdP1rjZSUBM/mqdefault.jpg"
-  },
-  {
-   "id": "1RBTKfY0XPs",
-   "title": "90 Days of Public Boosts. Been Here Since Day 1?",
-   "date": "2026-11-07",
-   "published": "2026-11-07T07:25:28+00:00",
-   "short": true,
-   "url": "https://www.youtube.com/shorts/1RBTKfY0XPs",
-   "thumb": "https://i.ytimg.com/vi/1RBTKfY0XPs/mqdefault.jpg"
   }
  ],
- "updated": "2026-11-09T12:08:48Z"
+ "updated": "2026-11-09T17:56:43Z"
 }
