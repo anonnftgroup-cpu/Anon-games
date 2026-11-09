@@ -3,6 +3,15 @@
  "subscribe": "https://www.youtube.com/@AnonNft?sub_confirmation=1",
  "videos": [
   {
+   "id": "Ck2YpK90iVw",
+   "title": "Did this NFT liquidity boost actually go through?",
+   "date": "2026-11-09",
+   "published": "2026-11-09T09:41:34+00:00",
+   "short": true,
+   "url": "https://www.youtube.com/shorts/Ck2YpK90iVw",
+   "thumb": "https://i.ytimg.com/vi/Ck2YpK90iVw/mqdefault.jpg"
+  },
+  {
    "id": "Lg_4MwC6Xb8",
    "title": "One row from the top… then it clears | Beat 200? ANON Block Drop",
    "date": "2026-11-08",
@@ -64,16 +73,7 @@
    "short": true,
    "url": "https://www.youtube.com/shorts/1RBTKfY0XPs",
    "thumb": "https://i.ytimg.com/vi/1RBTKfY0XPs/mqdefault.jpg"
-  },
-  {
-   "id": "P7haxFqcI0w",
-   "title": "Day 90 Milestone: 2 FUSD Boost to ANON Revenue Share on Liquid NFTs (Polygon)",
-   "date": "2026-11-07",
-   "published": "2026-11-07T07:23:41+00:00",
-   "short": false,
-   "url": "https://www.youtube.com/watch?v=P7haxFqcI0w",
-   "thumb": "https://i.ytimg.com/vi/P7haxFqcI0w/mqdefault.jpg"
   }
  ],
- "updated": "2026-11-08T20:11:16Z"
+ "updated": "2026-11-09T12:08:48Z"
 }
