@@ -2,9 +2,25 @@
  "channel": "https://www.youtube.com/@AnonNft",
  "start": "2026-08-10",
  "activity": "https://liquidnfts.finance/activities",
- "count": 135,
- "days": 73,
+ "count": 136,
+ "days": 74,
  "videos": [
+  {
+   "id": "qeBy0XnWTjQ",
+   "title": "Can you spot what changed on this NFT page?",
+   "published": "2026-11-10T13:07:10+00:00",
+   "short": true,
+   "day": 93,
+   "boost_date": "2026-11-10",
+   "collection": "Grumpy Cat NFTs",
+   "amount": "1.25 FUSD",
+   "amount_usd": null,
+   "amount_fusd": 1.25,
+   "url": "https://www.youtube.com/shorts/qeBy0XnWTjQ",
+   "thumb": "https://i.ytimg.com/vi/qeBy0XnWTjQ/mqdefault.jpg",
+   "summary": "Can you spot what changed? Same page, before and after today's boost. We donated 1.25 FUSD to Grumpy Cat St Patrick's Day – ANONs Group on Liquid NFTs (Polygon). Liquidity on the page went from $207.96 to $209.30, at the time of writing. Day 93 of 365. Check it on-chain.\nDid you spot it before the reveal? Yes or no below.\nNot financial advice.\nMint a Grumpy Cat on Liquid",
+   "description": "Can you spot what changed? Same page, before and after today's boost. We donated 1.25 FUSD to Grumpy Cat St Patrick's Day – ANONs Group on Liquid NFTs (Polygon). Liquidity on the page went from $207.96 to $209.30, at the time of writing. Day 93 of 365. Check it on-chain.\n\nDid you spot it before the reveal? Yes or no below.\n\nEvery boost, dated and logged: https://anonnfts.com/proof-of-work\nCheck the backing on-chain: https://anonnfts.com/check-backing-on-chain-1\nJoin the ANON NFTs Telegram: https://t.me/+1HQa39STOkhjNTJk\nNot financial advice.\n\nMint a Grumpy Cat on Liquid: https://liquidnfts.finance/polygon/collection/0xc12527361B9561198514b9bA4b1EBe3c0f968c60/mint"
+  },
   {
    "id": "Ck2YpK90iVw",
    "title": "Did this NFT liquidity boost actually go through?",
@@ -2274,5 +2290,5 @@
    "description": "Milestone: Day 90 of 365 daily liquidity boosts. Today we donated 2 FUSD to ANON Revenue Share NFTs on Liquid NFTs (Polygon). Liquidity on the page went from $7,381.96 to $7,384.11, at the time of writing.\n\nBeen following since Day 1? Tell us below.\n\nEvery boost, dated and logged: https://anonnfts.com/proof-of-work\nCheck the backing on-chain: https://anonnfts.com/check-backing-on-chain-1\nJoin the ANON NFTs Telegram: https://t.me/+1HQa39STOkhjNTJk\nNot financial advice.\n\nMint an Anon Ape on Liquid: https://liquidnfts.finance/besc/collection/0xc75BE8C4b4F5C61C499d83A1aDfc800Cc040cB95/mint"
   }
  ],
- "updated": "2026-11-09T12:08:47Z"
+ "updated": "2026-11-10T18:01:43Z"
 }
