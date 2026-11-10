@@ -3,6 +3,24 @@
  "subscribe": "https://www.youtube.com/@AnonNft?sub_confirmation=1",
  "videos": [
   {
+   "id": "n6qkD-P3pRw",
+   "title": "Dare: clear the board and beat 980 | ANON Brick Breaker",
+   "date": "2026-11-10",
+   "published": "2026-11-10T20:13:39+00:00",
+   "short": true,
+   "url": "https://www.youtube.com/shorts/n6qkD-P3pRw",
+   "thumb": "https://i.ytimg.com/vi/n6qkD-P3pRw/mqdefault.jpg"
+  },
+  {
+   "id": "KJEEFb6KQDc",
+   "title": "Dare: clear the board without a drop | ANON Brick Breaker",
+   "date": "2026-11-10",
+   "published": "2026-11-10T20:12:25+00:00",
+   "short": true,
+   "url": "https://www.youtube.com/shorts/KJEEFb6KQDc",
+   "thumb": "https://i.ytimg.com/vi/KJEEFb6KQDc/mqdefault.jpg"
+  },
+  {
    "id": "K0ZbCj0Jk7o",
    "title": "Do You Need Crypto to Buy an NFT?",
    "date": "2026-11-10",
@@ -55,25 +73,7 @@
    "short": false,
    "url": "https://www.youtube.com/watch?v=sx9Jm2SDStg",
    "thumb": "https://i.ytimg.com/vi/sx9Jm2SDStg/mqdefault.jpg"
-  },
-  {
-   "id": "qeBy0XnWTjQ",
-   "title": "Can you spot what changed on this NFT page?",
-   "date": "2026-11-10",
-   "published": "2026-11-10T13:07:10+00:00",
-   "short": true,
-   "url": "https://www.youtube.com/shorts/qeBy0XnWTjQ",
-   "thumb": "https://i.ytimg.com/vi/qeBy0XnWTjQ/mqdefault.jpg"
-  },
-  {
-   "id": "VniJGkFdcac",
-   "title": "Dare: survive 5 waves of Space Rocks | ANON Space Rocks",
-   "date": "2026-11-09",
-   "published": "2026-11-09T20:02:21+00:00",
-   "short": true,
-   "url": "https://www.youtube.com/shorts/VniJGkFdcac",
-   "thumb": "https://i.ytimg.com/vi/VniJGkFdcac/mqdefault.jpg"
   }
  ],
- "updated": "2026-11-10T18:01:43Z"
+ "updated": "2026-11-10T20:17:16Z"
 }
