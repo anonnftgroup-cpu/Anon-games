@@ -3,6 +3,15 @@
  "subscribe": "https://www.youtube.com/@AnonNft?sub_confirmation=1",
  "videos": [
   {
+   "id": "rt-HtbhMWqQ",
+   "title": "The ANON Shop Just Got a Glow-Up",
+   "date": "2026-11-10",
+   "published": "2026-11-10T23:27:31+00:00",
+   "short": true,
+   "url": "https://www.youtube.com/shorts/rt-HtbhMWqQ",
+   "thumb": "https://i.ytimg.com/vi/rt-HtbhMWqQ/mqdefault.jpg"
+  },
+  {
    "id": "n6qkD-P3pRw",
    "title": "Dare: clear the board and beat 980 | ANON Brick Breaker",
    "date": "2026-11-10",
@@ -64,16 +73,7 @@
    "short": true,
    "url": "https://www.youtube.com/shorts/NzxsRLEZNb0",
    "thumb": "https://i.ytimg.com/vi/NzxsRLEZNb0/mqdefault.jpg"
-  },
-  {
-   "id": "sx9Jm2SDStg",
-   "title": "Kung Fu Saga Beginner Guide Part 2: Story Quests, Free Mount and Gear (Level 32 to 42 Free-to-Play)",
-   "date": "2026-11-10",
-   "published": "2026-11-10T13:33:38+00:00",
-   "short": false,
-   "url": "https://www.youtube.com/watch?v=sx9Jm2SDStg",
-   "thumb": "https://i.ytimg.com/vi/sx9Jm2SDStg/mqdefault.jpg"
   }
  ],
- "updated": "2026-11-10T20:17:16Z"
+ "updated": "2026-11-11T12:10:07Z"
 }
