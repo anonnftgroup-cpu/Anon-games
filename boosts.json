@@ -2,9 +2,25 @@
  "channel": "https://www.youtube.com/@AnonNft",
  "start": "2026-08-10",
  "activity": "https://liquidnfts.finance/activities",
- "count": 136,
- "days": 74,
+ "count": 137,
+ "days": 75,
  "videos": [
+  {
+   "id": "leb6ym6lxAo",
+   "title": "Where does an NFT liquidity boost actually show up?",
+   "published": "2026-11-11T13:34:21+00:00",
+   "short": true,
+   "day": 94,
+   "boost_date": "2026-11-11",
+   "collection": "ANON Revenue Share NFTs",
+   "amount": "1.11 FUSD",
+   "amount_usd": null,
+   "amount_fusd": 1.11,
+   "url": "https://www.youtube.com/shorts/leb6ym6lxAo",
+   "thumb": "https://i.ytimg.com/vi/leb6ym6lxAo/mqdefault.jpg",
+   "summary": "Where does an NFT liquidity boost show up? On the collection page. We donated 1.11 FUSD to ANON Revenue Share NFTs on Liquid NFTs (Polygon). Liquidity on the page went from $7,386.79 to $7,387.98, at the time of writing. Day 94 of 365. Check it on-chain.\nWould you check the collection page after a boost? Yes or no below.\nNot financial advice.\nMint the first ANON collection on Liquid",
+   "description": "Where does an NFT liquidity boost show up? On the collection page. We donated 1.11 FUSD to ANON Revenue Share NFTs on Liquid NFTs (Polygon). Liquidity on the page went from $7,386.79 to $7,387.98, at the time of writing. Day 94 of 365. Check it on-chain.\n\nWould you check the collection page after a boost? Yes or no below.\n\nEvery boost, dated and logged: https://anonnfts.com/proof-of-work\nCheck the backing on-chain: https://anonnfts.com/check-backing-on-chain-1\nJoin the ANON NFTs Telegram: https://t.me/+1HQa39STOkhjNTJk\nNot financial advice.\n\nMint the first ANON collection on Liquid: https://liquidnfts.finance/polygon/collection/0xF220a2b73d9549BaEE2655Cf5707cCCC35212144/mint"
+  },
   {
    "id": "qeBy0XnWTjQ",
    "title": "Can you spot what changed on this NFT page?",
@@ -2290,5 +2306,5 @@
    "description": "Milestone: Day 90 of 365 daily liquidity boosts. Today we donated 2 FUSD to ANON Revenue Share NFTs on Liquid NFTs (Polygon). Liquidity on the page went from $7,381.96 to $7,384.11, at the time of writing.\n\nBeen following since Day 1? Tell us below.\n\nEvery boost, dated and logged: https://anonnfts.com/proof-of-work\nCheck the backing on-chain: https://anonnfts.com/check-backing-on-chain-1\nJoin the ANON NFTs Telegram: https://t.me/+1HQa39STOkhjNTJk\nNot financial advice.\n\nMint an Anon Ape on Liquid: https://liquidnfts.finance/besc/collection/0xc75BE8C4b4F5C61C499d83A1aDfc800Cc040cB95/mint"
   }
  ],
- "updated": "2026-11-10T18:01:43Z"
+ "updated": "2026-11-11T18:25:22Z"
 }
