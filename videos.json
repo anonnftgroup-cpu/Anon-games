@@ -3,6 +3,15 @@
  "subscribe": "https://www.youtube.com/@AnonNft?sub_confirmation=1",
  "videos": [
   {
+   "id": "jzorScrPY6k",
+   "title": "How do you donate NFT liquidity? (3 steps)",
+   "date": "2026-11-12",
+   "published": "2026-11-12T10:06:23+00:00",
+   "short": true,
+   "url": "https://www.youtube.com/shorts/jzorScrPY6k",
+   "thumb": "https://i.ytimg.com/vi/jzorScrPY6k/mqdefault.jpg"
+  },
+  {
    "id": "tNjtp-hU7Fo",
    "title": "Dare: earn the gold crown at 50 | ANON Flutter",
    "date": "2026-11-11",
@@ -64,16 +73,7 @@
    "short": true,
    "url": "https://www.youtube.com/shorts/PEsj-tQ6xts",
    "thumb": "https://i.ytimg.com/vi/PEsj-tQ6xts/mqdefault.jpg"
-  },
-  {
-   "id": "leb6ym6lxAo",
-   "title": "Where does an NFT liquidity boost actually show up?",
-   "date": "2026-11-11",
-   "published": "2026-11-11T13:34:21+00:00",
-   "short": true,
-   "url": "https://www.youtube.com/shorts/leb6ym6lxAo",
-   "thumb": "https://i.ytimg.com/vi/leb6ym6lxAo/mqdefault.jpg"
   }
  ],
- "updated": "2026-11-11T20:17:36Z"
+ "updated": "2026-11-12T12:09:59Z"
 }

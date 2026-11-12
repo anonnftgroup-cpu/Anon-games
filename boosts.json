@@ -2,9 +2,25 @@
  "channel": "https://www.youtube.com/@AnonNft",
  "start": "2026-08-10",
  "activity": "https://liquidnfts.finance/activities",
- "count": 137,
- "days": 75,
+ "count": 138,
+ "days": 76,
  "videos": [
+  {
+   "id": "jzorScrPY6k",
+   "title": "How do you donate NFT liquidity? (3 steps)",
+   "published": "2026-11-12T10:06:23+00:00",
+   "short": true,
+   "day": 95,
+   "boost_date": "2026-11-12",
+   "collection": "ANON Revenue Share NFTs",
+   "amount": "1 FUSD",
+   "amount_usd": null,
+   "amount_fusd": 1.0,
+   "url": "https://www.youtube.com/shorts/jzorScrPY6k",
+   "thumb": "https://i.ytimg.com/vi/jzorScrPY6k/mqdefault.jpg",
+   "summary": "How do you donate NFT liquidity? Three simple steps: open a collection on Liquid NFTs, tap Donate Liquidity, and check the figure on the page. We donated 1 FUSD to ANON Revenue Share NFTs on Liquid NFTs (Polygon). Liquidity on the page went from $7,387.98 to $7,389.06, at the time of writing. Day 95 of 365. Check it on-chain.\nWhich step would you try first? Tell me below.\nNot financial advice.\nMint an Anon Ape on Liquid",
+   "description": "How do you donate NFT liquidity? Three simple steps: open a collection on Liquid NFTs, tap Donate Liquidity, and check the figure on the page. We donated 1 FUSD to ANON Revenue Share NFTs on Liquid NFTs (Polygon). Liquidity on the page went from $7,387.98 to $7,389.06, at the time of writing. Day 95 of 365. Check it on-chain.\n\nWhich step would you try first? Tell me below.\n\nEvery boost, dated and logged: https://anonnfts.com/proof-of-work\nCheck the backing on-chain: https://anonnfts.com/check-backing-on-chain-1\nJoin the ANON NFTs Telegram: https://t.me/+1HQa39STOkhjNTJk\nNot financial advice.\n\nMint an Anon Ape on Liquid: https://liquidnfts.finance/besc/collection/0xc75BE8C4b4F5C61C499d83A1aDfc800Cc040cB95/mint"
+  },
   {
    "id": "leb6ym6lxAo",
    "title": "Where does an NFT liquidity boost actually show up?",
@@ -2306,5 +2322,5 @@
    "description": "Milestone: Day 90 of 365 daily liquidity boosts. Today we donated 2 FUSD to ANON Revenue Share NFTs on Liquid NFTs (Polygon). Liquidity on the page went from $7,381.96 to $7,384.11, at the time of writing.\n\nBeen following since Day 1? Tell us below.\n\nEvery boost, dated and logged: https://anonnfts.com/proof-of-work\nCheck the backing on-chain: https://anonnfts.com/check-backing-on-chain-1\nJoin the ANON NFTs Telegram: https://t.me/+1HQa39STOkhjNTJk\nNot financial advice.\n\nMint an Anon Ape on Liquid: https://liquidnfts.finance/besc/collection/0xc75BE8C4b4F5C61C499d83A1aDfc800Cc040cB95/mint"
   }
  ],
- "updated": "2026-11-11T18:25:22Z"
+ "updated": "2026-11-12T12:09:59Z"
 }
