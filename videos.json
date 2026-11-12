@@ -3,6 +3,15 @@
  "subscribe": "https://www.youtube.com/@AnonNft?sub_confirmation=1",
  "videos": [
   {
+   "id": "oBXVC47z_SE",
+   "title": "Does minting your art mean it will sell?",
+   "date": "2026-11-12",
+   "published": "2026-11-12T17:58:01+00:00",
+   "short": true,
+   "url": "https://www.youtube.com/shorts/oBXVC47z_SE",
+   "thumb": "https://i.ytimg.com/vi/oBXVC47z_SE/mqdefault.jpg"
+  },
+  {
    "id": "jzorScrPY6k",
    "title": "How do you donate NFT liquidity? (3 steps)",
    "date": "2026-11-12",
@@ -64,16 +73,7 @@
    "short": false,
    "url": "https://www.youtube.com/watch?v=r5VC1zrX42s",
    "thumb": "https://i.ytimg.com/vi/r5VC1zrX42s/mqdefault.jpg"
-  },
-  {
-   "id": "PEsj-tQ6xts",
-   "title": "Dare: fly 50 gaps for a gold crown | ANON Flutter",
-   "date": "2026-11-11",
-   "published": "2026-11-11T17:05:33+00:00",
-   "short": true,
-   "url": "https://www.youtube.com/shorts/PEsj-tQ6xts",
-   "thumb": "https://i.ytimg.com/vi/PEsj-tQ6xts/mqdefault.jpg"
   }
  ],
- "updated": "2026-11-12T12:09:59Z"
+ "updated": "2026-11-12T20:10:15Z"
 }
