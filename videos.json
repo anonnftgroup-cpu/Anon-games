@@ -3,6 +3,15 @@
  "subscribe": "https://www.youtube.com/@AnonNft?sub_confirmation=1",
  "videos": [
   {
+   "id": "kS9yqmtSRx8",
+   "title": "How Do You Check an NFT Collection Before You Buy?",
+   "date": "2026-11-13",
+   "published": "2026-11-13T17:54:45+00:00",
+   "short": true,
+   "url": "https://www.youtube.com/shorts/kS9yqmtSRx8",
+   "thumb": "https://i.ytimg.com/vi/kS9yqmtSRx8/mqdefault.jpg"
+  },
+  {
    "id": "v9z477gmOJg",
    "title": "Nobody lasts 30 seconds. Prove me wrong | ANON Star Dodge",
    "date": "2026-11-13",
@@ -64,16 +73,7 @@
    "short": true,
    "url": "https://www.youtube.com/shorts/tNjtp-hU7Fo",
    "thumb": "https://i.ytimg.com/vi/tNjtp-hU7Fo/mqdefault.jpg"
-  },
-  {
-   "id": "BAOmJA3K-GU",
-   "title": "Kung Fu Saga Forge: Road of Enhancement",
-   "date": "2026-11-11",
-   "published": "2026-11-11T18:21:39+00:00",
-   "short": true,
-   "url": "https://www.youtube.com/shorts/BAOmJA3K-GU",
-   "thumb": "https://i.ytimg.com/vi/BAOmJA3K-GU/mqdefault.jpg"
   }
  ],
- "updated": "2026-11-13T17:08:58Z"
+ "updated": "2026-11-13T17:55:58Z"
 }
