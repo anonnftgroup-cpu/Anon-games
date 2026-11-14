@@ -3,6 +3,15 @@
  "subscribe": "https://www.youtube.com/@AnonNft?sub_confirmation=1",
  "videos": [
   {
+   "id": "TzscznO2O_8",
+   "title": "Dare: reach 300. Prove me wrong | ANON Snake",
+   "date": "2026-11-14",
+   "published": "2026-11-14T20:05:11+00:00",
+   "short": true,
+   "url": "https://www.youtube.com/shorts/TzscznO2O_8",
+   "thumb": "https://i.ytimg.com/vi/TzscznO2O_8/mqdefault.jpg"
+  },
+  {
    "id": "ME2ipO3oIMg",
    "title": "What does an NFT floor price really mean?",
    "date": "2026-11-14",
@@ -64,16 +73,7 @@
    "short": true,
    "url": "https://www.youtube.com/shorts/v9z477gmOJg",
    "thumb": "https://i.ytimg.com/vi/v9z477gmOJg/mqdefault.jpg"
-  },
-  {
-   "id": "EGMKCIXHIk4",
-   "title": "How do Liquid collections get more liquidity?",
-   "date": "2026-11-13",
-   "published": "2026-11-13T07:41:36+00:00",
-   "short": true,
-   "url": "https://www.youtube.com/shorts/EGMKCIXHIk4",
-   "thumb": "https://i.ytimg.com/vi/EGMKCIXHIk4/mqdefault.jpg"
   }
  ],
- "updated": "2026-11-14T18:03:46Z"
+ "updated": "2026-11-14T20:20:30Z"
 }
