@@ -3,6 +3,15 @@
  "subscribe": "https://www.youtube.com/@AnonNft?sub_confirmation=1",
  "videos": [
   {
+   "id": "rKSkuxwfqEk",
+   "title": "Did we boost every day this week?",
+   "date": "2026-11-14",
+   "published": "2026-11-14T09:58:40+00:00",
+   "short": true,
+   "url": "https://www.youtube.com/shorts/rKSkuxwfqEk",
+   "thumb": "https://i.ytimg.com/vi/rKSkuxwfqEk/mqdefault.jpg"
+  },
+  {
    "id": "oYlkQ2uETYo",
    "title": "Nobody lasts 40 seconds. Prove me wrong | ANON Star Dodge",
    "date": "2026-11-13",
@@ -64,16 +73,7 @@
    "short": true,
    "url": "https://www.youtube.com/shorts/oBXVC47z_SE",
    "thumb": "https://i.ytimg.com/vi/oBXVC47z_SE/mqdefault.jpg"
-  },
-  {
-   "id": "jzorScrPY6k",
-   "title": "How do you donate NFT liquidity? (3 steps)",
-   "date": "2026-11-12",
-   "published": "2026-11-12T10:06:23+00:00",
-   "short": true,
-   "url": "https://www.youtube.com/shorts/jzorScrPY6k",
-   "thumb": "https://i.ytimg.com/vi/jzorScrPY6k/mqdefault.jpg"
   }
  ],
- "updated": "2026-11-13T20:11:25Z"
+ "updated": "2026-11-14T10:03:07Z"
 }
