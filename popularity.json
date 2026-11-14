@@ -1,6 +1,6 @@
 {
  "_note": "Arcade sort order. 'order' is what the hub shows (rewritten daily by reorder-by-popularity.py). 'base' is the editorial order; 'boost' adds editorial weight (0-1) in the daily blend. Games missing from 'order' are shown at the end, never hidden.",
- "updated": "2026-11-13",
+ "updated": "2026-11-14",
  "source": "plays rpc popularity(7)",
  "order": [
   "daily-word",
@@ -11,8 +11,8 @@
   "brick-breaker",
   "space-rocks",
   "anon-2048",
-  "anon-flutter",
   "shadow-maze",
+  "anon-flutter",
   "gem-match",
   "sudoku",
   "word-unlimited",
@@ -34,8 +34,8 @@
   "jigsaw",
   "crazy-eights",
   "reversi",
-  "hearts",
   "sea-battle",
+  "hearts",
   "ninja-memory",
   "flag-swipe",
   "slide-puzzle",
@@ -44,8 +44,8 @@
   "tictactoe",
   "light-trails",
   "paddle-duel",
-  "bomb-maze",
   "barrel-climb",
+  "bomb-maze",
   "sky-defence",
   "bug-blaster",
   "pyramid-hop",
@@ -59,18 +59,19 @@
   "territory"
  ],
  "plays": {
-  "daily-word": 38,
-  "shadow-dodge": 17,
-  "solitaire": 2,
+  "daily-word": 41,
+  "shadow-dodge": 10,
+  "solitaire": 1,
   "block-drop": 9,
   "anon-snake": 1,
   "brick-breaker": 7,
   "space-rocks": 10,
+  "shadow-maze": 1,
   "anon-flutter": 9,
   "sudoku": 1,
   "galaxy-shooter": 2,
-  "connect4": 2,
-  "hearts": 1
+  "connect4": 1,
+  "barrel-climb": 1
  },
  "base": [
   "solitaire",
