@@ -3,6 +3,15 @@
  "subscribe": "https://www.youtube.com/@AnonNft?sub_confirmation=1",
  "videos": [
   {
+   "id": "B9pLILN1C8w",
+   "title": "Can You Make an NFT for Free? Lazy Minting Explained",
+   "date": "2026-11-15",
+   "published": "2026-11-15T17:59:01+00:00",
+   "short": true,
+   "url": "https://www.youtube.com/shorts/B9pLILN1C8w",
+   "thumb": "https://i.ytimg.com/vi/B9pLILN1C8w/mqdefault.jpg"
+  },
+  {
    "id": "bOzxUQpvnPU",
    "title": "Dare: collect 5 pink gems. Prove me wrong | ANON Galaxy Pinball",
    "date": "2026-11-15",
@@ -64,16 +73,7 @@
    "short": true,
    "url": "https://www.youtube.com/shorts/HN-xPyK3-cg",
    "thumb": "https://i.ytimg.com/vi/HN-xPyK3-cg/mqdefault.jpg"
-  },
-  {
-   "id": "rKSkuxwfqEk",
-   "title": "Did we boost every day this week?",
-   "date": "2026-11-14",
-   "published": "2026-11-14T09:58:40+00:00",
-   "short": true,
-   "url": "https://www.youtube.com/shorts/rKSkuxwfqEk",
-   "thumb": "https://i.ytimg.com/vi/rKSkuxwfqEk/mqdefault.jpg"
   }
  ],
- "updated": "2026-11-15T17:07:04Z"
+ "updated": "2026-11-15T18:01:05Z"
 }
