@@ -3,6 +3,15 @@
  "subscribe": "https://www.youtube.com/@AnonNft?sub_confirmation=1",
  "videos": [
   {
+   "id": "bOzxUQpvnPU",
+   "title": "Dare: collect 5 pink gems. Prove me wrong | ANON Galaxy Pinball",
+   "date": "2026-11-15",
+   "published": "2026-11-15T17:04:17+00:00",
+   "short": true,
+   "url": "https://www.youtube.com/shorts/bOzxUQpvnPU",
+   "thumb": "https://i.ytimg.com/vi/bOzxUQpvnPU/mqdefault.jpg"
+  },
+  {
    "id": "mAhooVT5RjM",
    "title": "One boost a day, all week: 9-15 Nov 2026 (Days 92-98)",
    "date": "2026-11-15",
@@ -64,16 +73,7 @@
    "short": true,
    "url": "https://www.youtube.com/shorts/rKSkuxwfqEk",
    "thumb": "https://i.ytimg.com/vi/rKSkuxwfqEk/mqdefault.jpg"
-  },
-  {
-   "id": "oYlkQ2uETYo",
-   "title": "Nobody lasts 40 seconds. Prove me wrong | ANON Star Dodge",
-   "date": "2026-11-13",
-   "published": "2026-11-13T20:09:58+00:00",
-   "short": true,
-   "url": "https://www.youtube.com/shorts/oYlkQ2uETYo",
-   "thumb": "https://i.ytimg.com/vi/oYlkQ2uETYo/mqdefault.jpg"
   }
  ],
- "updated": "2026-11-15T11:03:03Z"
+ "updated": "2026-11-15T17:07:04Z"
 }
