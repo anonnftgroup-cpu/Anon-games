@@ -3,6 +3,24 @@
  "subscribe": "https://www.youtube.com/@AnonNft?sub_confirmation=1",
  "videos": [
   {
+   "id": "mAhooVT5RjM",
+   "title": "One boost a day, all week: 9-15 Nov 2026 (Days 92-98)",
+   "date": "2026-11-15",
+   "published": "2026-11-15T06:25:40+00:00",
+   "short": false,
+   "url": "https://www.youtube.com/watch?v=mAhooVT5RjM",
+   "thumb": "https://i.ytimg.com/vi/mAhooVT5RjM/mqdefault.jpg"
+  },
+  {
+   "id": "yEQvMiGboQA",
+   "title": "5:50am Sunday. Did the boost go through?",
+   "date": "2026-11-15",
+   "published": "2026-11-15T06:21:53+00:00",
+   "short": true,
+   "url": "https://www.youtube.com/shorts/yEQvMiGboQA",
+   "thumb": "https://i.ytimg.com/vi/yEQvMiGboQA/mqdefault.jpg"
+  },
+  {
    "id": "TzscznO2O_8",
    "title": "Dare: reach 300. Prove me wrong | ANON Snake",
    "date": "2026-11-14",
@@ -55,25 +73,7 @@
    "short": true,
    "url": "https://www.youtube.com/shorts/oYlkQ2uETYo",
    "thumb": "https://i.ytimg.com/vi/oYlkQ2uETYo/mqdefault.jpg"
-  },
-  {
-   "id": "kS9yqmtSRx8",
-   "title": "How Do You Check an NFT Collection Before You Buy?",
-   "date": "2026-11-13",
-   "published": "2026-11-13T17:54:45+00:00",
-   "short": true,
-   "url": "https://www.youtube.com/shorts/kS9yqmtSRx8",
-   "thumb": "https://i.ytimg.com/vi/kS9yqmtSRx8/mqdefault.jpg"
-  },
-  {
-   "id": "v9z477gmOJg",
-   "title": "Nobody lasts 30 seconds. Prove me wrong | ANON Star Dodge",
-   "date": "2026-11-13",
-   "published": "2026-11-13T17:05:35+00:00",
-   "short": true,
-   "url": "https://www.youtube.com/shorts/v9z477gmOJg",
-   "thumb": "https://i.ytimg.com/vi/v9z477gmOJg/mqdefault.jpg"
   }
  ],
- "updated": "2026-11-14T20:20:30Z"
+ "updated": "2026-11-15T11:03:03Z"
 }
