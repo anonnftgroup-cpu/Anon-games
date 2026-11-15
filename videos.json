@@ -3,6 +3,15 @@
  "subscribe": "https://www.youtube.com/@AnonNft?sub_confirmation=1",
  "videos": [
   {
+   "id": "n4XjQwbqiFQ",
+   "title": "Free ANON Galaxy Pinball in your browser, no download | Dare: hit the crown bank",
+   "date": "2026-11-15",
+   "published": "2026-11-15T20:12:40+00:00",
+   "short": true,
+   "url": "https://www.youtube.com/shorts/n4XjQwbqiFQ",
+   "thumb": "https://i.ytimg.com/vi/n4XjQwbqiFQ/mqdefault.jpg"
+  },
+  {
    "id": "B9pLILN1C8w",
    "title": "Can You Make an NFT for Free? Lazy Minting Explained",
    "date": "2026-11-15",
@@ -64,16 +73,7 @@
    "short": true,
    "url": "https://www.youtube.com/shorts/9eFOLKpYjpE",
    "thumb": "https://i.ytimg.com/vi/9eFOLKpYjpE/mqdefault.jpg"
-  },
-  {
-   "id": "HN-xPyK3-cg",
-   "title": "It's here. The ANON Colouring Book just arrived",
-   "date": "2026-11-14",
-   "published": "2026-11-14T13:07:14+00:00",
-   "short": true,
-   "url": "https://www.youtube.com/shorts/HN-xPyK3-cg",
-   "thumb": "https://i.ytimg.com/vi/HN-xPyK3-cg/mqdefault.jpg"
   }
  ],
- "updated": "2026-11-15T18:01:05Z"
+ "updated": "2026-11-15T20:14:30Z"
 }
