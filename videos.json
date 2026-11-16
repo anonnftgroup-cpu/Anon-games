@@ -3,6 +3,15 @@
  "subscribe": "https://www.youtube.com/@AnonNft?sub_confirmation=1",
  "videos": [
   {
+   "id": "AGdBX86CLyg",
+   "title": "Do You Need a Credit Card to Buy an NFT?",
+   "date": "2026-11-16",
+   "published": "2026-11-16T18:14:14+00:00",
+   "short": true,
+   "url": "https://www.youtube.com/shorts/AGdBX86CLyg",
+   "thumb": "https://i.ytimg.com/vi/AGdBX86CLyg/mqdefault.jpg"
+  },
+  {
    "id": "jTit4RB5n6Y",
    "title": "Free ANON Moon Lander in your browser, no download | Dare: land it softly",
    "date": "2026-11-16",
@@ -64,16 +73,7 @@
    "short": false,
    "url": "https://www.youtube.com/watch?v=mAhooVT5RjM",
    "thumb": "https://i.ytimg.com/vi/mAhooVT5RjM/mqdefault.jpg"
-  },
-  {
-   "id": "yEQvMiGboQA",
-   "title": "5:50am Sunday. Did the boost go through?",
-   "date": "2026-11-15",
-   "published": "2026-11-15T06:21:53+00:00",
-   "short": true,
-   "url": "https://www.youtube.com/shorts/yEQvMiGboQA",
-   "thumb": "https://i.ytimg.com/vi/yEQvMiGboQA/mqdefault.jpg"
   }
  ],
- "updated": "2026-11-16T17:07:51Z"
+ "updated": "2026-11-16T18:16:12Z"
 }
