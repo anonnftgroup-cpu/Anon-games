@@ -2,9 +2,25 @@
  "channel": "https://www.youtube.com/@AnonNft",
  "start": "2026-08-10",
  "activity": "https://liquidnfts.finance/activities",
- "count": 144,
+ "count": 145,
  "days": 81,
  "videos": [
+  {
+   "id": "fyY_MqjAsxY",
+   "title": "100 days in a row. Can you keep a streak like this?",
+   "published": "2026-11-17T09:56:54+00:00",
+   "short": true,
+   "day": 100,
+   "boost_date": "2026-11-17",
+   "collection": "Grumpy Cat NFTs",
+   "amount": null,
+   "amount_usd": null,
+   "amount_fusd": null,
+   "url": "https://www.youtube.com/shorts/fyY_MqjAsxY",
+   "thumb": "https://i.ytimg.com/vi/fyY_MqjAsxY/mqdefault.jpg",
+   "summary": "This is what 100 days in a row of daily liquidity boosts looks like. Day 100 of 365. Every boost is dated on our Proof of Work page\nCan you make it to 365 with us?\nNot financial advice.\nMint a Grumpy Cat on Liquid",
+   "description": "This is what 100 days in a row of daily liquidity boosts looks like. Day 100 of 365. Every boost is dated on our Proof of Work page: https://anonnfts.com/proof-of-work\n\nCan you make it to 365 with us?\n\nJoin the ANON NFTs Telegram: https://t.me/+1HQa39STOkhjNTJk\nNot financial advice.\n\nMint a Grumpy Cat on Liquid: https://liquidnfts.finance/polygon/collection/0xc12527361B9561198514b9bA4b1EBe3c0f968c60/mint"
+  },
   {
    "id": "HyMO_ymmOcg",
    "title": "Can you spot what changed on this NFT page?",
@@ -2418,5 +2434,5 @@
    "description": "Milestone: Day 90 of 365 daily liquidity boosts. Today we donated 2 FUSD to ANON Revenue Share NFTs on Liquid NFTs (Polygon). Liquidity on the page went from $7,381.96 to $7,384.11, at the time of writing.\n\nBeen following since Day 1? Tell us below.\n\nEvery boost, dated and logged: https://anonnfts.com/proof-of-work\nCheck the backing on-chain: https://anonnfts.com/check-backing-on-chain-1\nJoin the ANON NFTs Telegram: https://t.me/+1HQa39STOkhjNTJk\nNot financial advice.\n\nMint an Anon Ape on Liquid: https://liquidnfts.finance/besc/collection/0xc75BE8C4b4F5C61C499d83A1aDfc800Cc040cB95/mint"
   }
  ],
- "updated": "2026-11-17T06:16:07Z"
+ "updated": "2026-11-17T12:15:16Z"
 }
