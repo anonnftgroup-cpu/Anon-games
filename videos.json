@@ -3,6 +3,15 @@
  "subscribe": "https://www.youtube.com/@AnonNft?sub_confirmation=1",
  "videos": [
   {
+   "id": "HyMO_ymmOcg",
+   "title": "Can you spot what changed on this NFT page?",
+   "date": "2026-11-17",
+   "published": "2026-11-17T06:14:34+00:00",
+   "short": true,
+   "url": "https://www.youtube.com/shorts/HyMO_ymmOcg",
+   "thumb": "https://i.ytimg.com/vi/HyMO_ymmOcg/mqdefault.jpg"
+  },
+  {
    "id": "gnG2mYvJLQI",
    "title": "Free ANON Moon Lander in your browser, no download | Dare: beat 370",
    "date": "2026-11-16",
@@ -64,16 +73,7 @@
    "short": true,
    "url": "https://www.youtube.com/shorts/B9pLILN1C8w",
    "thumb": "https://i.ytimg.com/vi/B9pLILN1C8w/mqdefault.jpg"
-  },
-  {
-   "id": "bOzxUQpvnPU",
-   "title": "Dare: collect 5 pink gems. Prove me wrong | ANON Galaxy Pinball",
-   "date": "2026-11-15",
-   "published": "2026-11-15T17:04:17+00:00",
-   "short": true,
-   "url": "https://www.youtube.com/shorts/bOzxUQpvnPU",
-   "thumb": "https://i.ytimg.com/vi/bOzxUQpvnPU/mqdefault.jpg"
   }
  ],
- "updated": "2026-11-16T20:17:05Z"
+ "updated": "2026-11-17T06:16:07Z"
 }
