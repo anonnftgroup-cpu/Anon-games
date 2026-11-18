@@ -3,6 +3,24 @@
  "subscribe": "https://www.youtube.com/@AnonNft?sub_confirmation=1",
  "videos": [
   {
+   "id": "8MTKeEVeiKM",
+   "title": "Where does donated NFT liquidity go?",
+   "date": "2026-11-18",
+   "published": "2026-11-18T06:14:57+00:00",
+   "short": true,
+   "url": "https://www.youtube.com/shorts/8MTKeEVeiKM",
+   "thumb": "https://i.ytimg.com/vi/8MTKeEVeiKM/mqdefault.jpg"
+  },
+  {
+   "id": "Q1M7Nw_wHRU",
+   "title": "Free ANON Territory in your browser, no download | Dare: beat 160",
+   "date": "2026-11-17",
+   "published": "2026-11-17T20:06:19+00:00",
+   "short": true,
+   "url": "https://www.youtube.com/shorts/Q1M7Nw_wHRU",
+   "thumb": "https://i.ytimg.com/vi/Q1M7Nw_wHRU/mqdefault.jpg"
+  },
+  {
    "id": "gkD2zZiwAqQ",
    "title": "Is Anyone Still Buying NFTs?",
    "date": "2026-11-17",
@@ -55,25 +73,7 @@
    "short": true,
    "url": "https://www.youtube.com/shorts/gnG2mYvJLQI",
    "thumb": "https://i.ytimg.com/vi/gnG2mYvJLQI/mqdefault.jpg"
-  },
-  {
-   "id": "AGdBX86CLyg",
-   "title": "Do You Need a Credit Card to Buy an NFT?",
-   "date": "2026-11-16",
-   "published": "2026-11-16T18:14:14+00:00",
-   "short": true,
-   "url": "https://www.youtube.com/shorts/AGdBX86CLyg",
-   "thumb": "https://i.ytimg.com/vi/AGdBX86CLyg/mqdefault.jpg"
-  },
-  {
-   "id": "jTit4RB5n6Y",
-   "title": "Free ANON Moon Lander in your browser, no download | Dare: land it softly",
-   "date": "2026-11-16",
-   "published": "2026-11-16T17:03:23+00:00",
-   "short": true,
-   "url": "https://www.youtube.com/shorts/jTit4RB5n6Y",
-   "thumb": "https://i.ytimg.com/vi/jTit4RB5n6Y/mqdefault.jpg"
   }
  ],
- "updated": "2026-11-17T17:56:45Z"
+ "updated": "2026-11-18T06:16:21Z"
 }
