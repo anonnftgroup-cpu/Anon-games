@@ -1,6 +1,6 @@
 {
  "_note": "Arcade sort order. 'order' is what the hub shows (rewritten daily by reorder-by-popularity.py). 'base' is the editorial order; 'boost' adds editorial weight (0-1) in the daily blend. Games missing from 'order' are shown at the end, never hidden.",
- "updated": "2026-11-18",
+ "updated": "2026-11-19",
  "source": "plays rpc popularity(7)",
  "order": [
   "daily-word",
@@ -10,9 +10,9 @@
   "shadow-maze",
   "anon-2048",
   "block-drop",
-  "anon-flutter",
   "gem-match",
   "brick-breaker",
+  "anon-flutter",
   "space-rocks",
   "sudoku",
   "word-unlimited",
@@ -45,9 +45,9 @@
   "tictactoe",
   "paddle-duel",
   "barrel-climb",
+  "bug-blaster",
   "bomb-maze",
   "sky-defence",
-  "bug-blaster",
   "pyramid-hop",
   "shadow-echo",
   "backing-quiz",
@@ -59,14 +59,14 @@
   "backing-builder"
  ],
  "plays": {
-  "daily-word": 28,
+  "daily-word": 26,
   "shadow-dodge": 4,
   "solitaire": 1,
   "anon-snake": 2,
   "shadow-maze": 2,
-  "anon-flutter": 11,
   "gem-match": 1,
   "brick-breaker": 1,
+  "anon-flutter": 2,
   "pinball": 2,
   "galaxy-shooter": 2,
   "paper-toss": 1,
@@ -74,8 +74,8 @@
   "light-trails": 1,
   "paddle-duel": 1,
   "barrel-climb": 2,
+  "bug-blaster": 7,
   "sky-defence": 1,
-  "bug-blaster": 1,
   "territory": 4
  },
  "base": [
