@@ -2,9 +2,25 @@
  "channel": "https://www.youtube.com/@AnonNft",
  "start": "2026-08-10",
  "activity": "https://liquidnfts.finance/activities",
- "count": 146,
- "days": 82,
+ "count": 147,
+ "days": 83,
  "videos": [
+  {
+   "id": "NysKHXTiNNc",
+   "title": "How do you donate NFT liquidity? (3 steps)",
+   "published": "2026-11-19T10:52:28+00:00",
+   "short": true,
+   "day": 102,
+   "boost_date": "2026-11-19",
+   "collection": "ANON Revenue Share NFTs",
+   "amount": "1.09 FUSD",
+   "amount_usd": null,
+   "amount_fusd": 1.09,
+   "url": "https://www.youtube.com/shorts/NysKHXTiNNc",
+   "thumb": "https://i.ytimg.com/vi/NysKHXTiNNc/mqdefault.jpg",
+   "summary": "How do you donate NFT liquidity? (3 steps) Pick a collection, donate, confirm. We donated 1.09 FUSD to ANON Revenue Share NFTs on Liquid NFTs (Polygon). Liquidity on the page went from $7,394.97 to $7,396.14, at the time of writing. Day 102 of 365. Check it on-chain.\nFun fact: Jacky Hunt-Broersma ran a marathon every day for 102 days in a row in 2022, an unofficial record when AP reported it. We have now boosted every day for 102 days. Source (NBC Los Angeles, AP)\nWhich of the 3 steps should we explain next? Tell us below.\nNot financial advice.\nSee ANON Revenue Share NFTs on Liquid\nMint a Ghost Dead Hand Ace on Liquid",
+   "description": "How do you donate NFT liquidity? (3 steps) Pick a collection, donate, confirm. We donated 1.09 FUSD to ANON Revenue Share NFTs on Liquid NFTs (Polygon). Liquidity on the page went from $7,394.97 to $7,396.14, at the time of writing. Day 102 of 365. Check it on-chain.\n\nFun fact: Jacky Hunt-Broersma ran a marathon every day for 102 days in a row in 2022, an unofficial record when AP reported it. We have now boosted every day for 102 days. Source (NBC Los Angeles, AP): https://www.nbclosangeles.com/news/national-international/102-marathons-in-102-days-amputees-unofficial-world-record/2882479/\n\nWhich of the 3 steps should we explain next? Tell us below.\n\nEvery boost, dated and logged: https://anonnfts.com/proof-of-work\nCheck the backing on-chain: https://anonnfts.com/check-backing-on-chain-1\nJoin the ANON NFTs Telegram: https://t.me/+1HQa39STOkhjNTJk\nNot financial advice.\n\n#NFTLiquidity #LiquidNFTs #ANONNFTs\n\nSee ANON Revenue Share NFTs on Liquid: https://liquidnfts.finance/polygon/collection/0xF220a2b73d9549BaEE2655Cf5707cCCC35212144\nMint a Ghost Dead Hand Ace on Liquid: https://liquidnfts.finance/besc/collection/0xb927989D738538Cb606CC0723cBC32C1e333f787/mint"
+  },
   {
    "id": "8MTKeEVeiKM",
    "title": "Where does donated NFT liquidity go?",
@@ -2450,5 +2466,5 @@
    "description": "Milestone: Day 90 of 365 daily liquidity boosts. Today we donated 2 FUSD to ANON Revenue Share NFTs on Liquid NFTs (Polygon). Liquidity on the page went from $7,381.96 to $7,384.11, at the time of writing.\n\nBeen following since Day 1? Tell us below.\n\nEvery boost, dated and logged: https://anonnfts.com/proof-of-work\nCheck the backing on-chain: https://anonnfts.com/check-backing-on-chain-1\nJoin the ANON NFTs Telegram: https://t.me/+1HQa39STOkhjNTJk\nNot financial advice.\n\nMint an Anon Ape on Liquid: https://liquidnfts.finance/besc/collection/0xc75BE8C4b4F5C61C499d83A1aDfc800Cc040cB95/mint"
   }
  ],
- "updated": "2026-11-18T06:16:20Z"
+ "updated": "2026-11-19T10:54:14Z"
 }
