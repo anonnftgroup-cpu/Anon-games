@@ -3,10 +3,19 @@
  "subscribe": "https://www.youtube.com/@AnonNft?sub_confirmation=1",
  "videos": [
   {
+   "id": "pceBvVTxKeU",
+   "title": "Free ANON Barrel Climb in your browser, no download | Dare: hit 1200 on two hearts",
+   "date": "2026-11-20",
+   "published": "2026-11-20T20:08:44+00:00",
+   "short": true,
+   "url": "https://www.youtube.com/shorts/pceBvVTxKeU",
+   "thumb": "https://i.ytimg.com/vi/pceBvVTxKeU/mqdefault.jpg"
+  },
+  {
    "id": "mWc8DpkQI6E",
    "title": "Do You Pay Gas on a Free NFT Mint?",
    "date": "2026-11-20",
-   "published": "2026-11-20T17:59:09+00:00",
+   "published": "2026-11-20T17:57:50+00:00",
    "short": true,
    "url": "https://www.youtube.com/shorts/mWc8DpkQI6E",
    "thumb": "https://i.ytimg.com/vi/mWc8DpkQI6E/mqdefault.jpg"
@@ -64,16 +73,7 @@
    "short": true,
    "url": "https://www.youtube.com/shorts/bSVaqXVJiIw",
    "thumb": "https://i.ytimg.com/vi/bSVaqXVJiIw/mqdefault.jpg"
-  },
-  {
-   "id": "azNeyVcvaug",
-   "title": "Kung Fu Saga Forge tip: level up gear with Silver only",
-   "date": "2026-11-19",
-   "published": "2026-11-19T12:07:33+00:00",
-   "short": true,
-   "url": "https://www.youtube.com/shorts/azNeyVcvaug",
-   "thumb": "https://i.ytimg.com/vi/azNeyVcvaug/mqdefault.jpg"
   }
  ],
- "updated": "2026-11-20T17:14:02Z"
+ "updated": "2026-11-20T20:10:45Z"
 }
