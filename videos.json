@@ -3,6 +3,15 @@
  "subscribe": "https://www.youtube.com/@AnonNft?sub_confirmation=1",
  "videos": [
   {
+   "id": "mWc8DpkQI6E",
+   "title": "Do You Pay Gas on a Free NFT Mint?",
+   "date": "2026-11-20",
+   "published": "2026-11-20T17:59:09+00:00",
+   "short": true,
+   "url": "https://www.youtube.com/shorts/mWc8DpkQI6E",
+   "thumb": "https://i.ytimg.com/vi/mWc8DpkQI6E/mqdefault.jpg"
+  },
+  {
    "id": "Xfnw9gWtKL4",
    "title": "Free ANON Barrel Climb in your browser, no download | Dare: reach the boss on 5300",
    "date": "2026-11-20",
@@ -64,15 +73,6 @@
    "short": true,
    "url": "https://www.youtube.com/shorts/azNeyVcvaug",
    "thumb": "https://i.ytimg.com/vi/azNeyVcvaug/mqdefault.jpg"
-  },
-  {
-   "id": "NysKHXTiNNc",
-   "title": "How do you donate NFT liquidity? (3 steps)",
-   "date": "2026-11-19",
-   "published": "2026-11-19T10:52:28+00:00",
-   "short": true,
-   "url": "https://www.youtube.com/shorts/NysKHXTiNNc",
-   "thumb": "https://i.ytimg.com/vi/NysKHXTiNNc/mqdefault.jpg"
   }
  ],
  "updated": "2026-11-20T17:14:02Z"
