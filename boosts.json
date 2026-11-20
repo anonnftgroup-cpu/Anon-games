@@ -2,9 +2,25 @@
  "channel": "https://www.youtube.com/@AnonNft",
  "start": "2026-08-10",
  "activity": "https://liquidnfts.finance/activities",
- "count": 147,
- "days": 83,
+ "count": 148,
+ "days": 84,
  "videos": [
+  {
+   "id": "ZUycrbwXXQA",
+   "title": "Which NFT collection deserves a cheer today? Lake District Astro",
+   "published": "2026-11-20T09:30:47+00:00",
+   "short": true,
+   "day": 103,
+   "boost_date": "2026-11-20",
+   "collection": "ANON Revenue Share NFTs",
+   "amount": "1.03 FUSD",
+   "amount_usd": null,
+   "amount_fusd": 1.03,
+   "url": "https://www.youtube.com/shorts/ZUycrbwXXQA",
+   "thumb": "https://i.ytimg.com/vi/ZUycrbwXXQA/mqdefault.jpg",
+   "summary": "Which NFT collection deserves a cheer today? Friday spotlight: Lake District Astro, a collection of Lake District photographs on Liquid NFTs (Polygon), 15 of 20 minted at the time of writing. We also donated 1.03 FUSD to ANON Revenue Share NFTs. Liquidity on the page went from $7,396.14 to $7,397.25, at the time of writing. Day 103 of 365. Check it on-chain.\nFun fact: Aaron Robinson ran a marathon every day for 103 days in a row, an unofficial run (Hope for Justice's page does not say Guinness confirmed it). We have now boosted every day for 103 days. Source\nWhich Liquid collection should we cheer on next? Tell us below.\nNot financial advice.\nSee ANON Revenue Share NFTs on Liquid\nMint a…",
+   "description": "Which NFT collection deserves a cheer today? Friday spotlight: Lake District Astro, a collection of Lake District photographs on Liquid NFTs (Polygon), 15 of 20 minted at the time of writing. We also donated 1.03 FUSD to ANON Revenue Share NFTs. Liquidity on the page went from $7,396.14 to $7,397.25, at the time of writing. Day 103 of 365. Check it on-chain.\n\nFun fact: Aaron Robinson ran a marathon every day for 103 days in a row, an unofficial run (Hope for Justice's page does not say Guinness confirmed it). We have now boosted every day for 103 days. Source: https://hopeforjustice.org/news/world-record-marathon-fundraiser-gets-global-news-coverage/\n\nWhich Liquid collection should we cheer on next? Tell us below.\n\nEvery boost, dated and logged: https://anonnfts.com/proof-of-work\nCheck the backing on-chain: https://anonnfts.com/check-backing-on-chain-1\nJoin the ANON NFTs Telegram: https://t.me/+1HQa39STOkhjNTJk\nNot financial advice.\n\n#NFTLiquidity #LiquidNFTs #ANONNFTs\n\nSee ANON Revenue Share NFTs on Liquid: https://liquidnfts.finance/polygon/collection/0xF220a2b73d9549BaEE2655Cf5707cCCC35212144\nMint a Lake District Astro on Liquid: https://liquidnfts.finance/polygon/collection/0xfa3415F281b61C9ee7E3b27E6c28E781D7158F6D/mint"
+  },
   {
    "id": "NysKHXTiNNc",
    "title": "How do you donate NFT liquidity? (3 steps)",
@@ -2466,5 +2482,5 @@
    "description": "Milestone: Day 90 of 365 daily liquidity boosts. Today we donated 2 FUSD to ANON Revenue Share NFTs on Liquid NFTs (Polygon). Liquidity on the page went from $7,381.96 to $7,384.11, at the time of writing.\n\nBeen following since Day 1? Tell us below.\n\nEvery boost, dated and logged: https://anonnfts.com/proof-of-work\nCheck the backing on-chain: https://anonnfts.com/check-backing-on-chain-1\nJoin the ANON NFTs Telegram: https://t.me/+1HQa39STOkhjNTJk\nNot financial advice.\n\nMint an Anon Ape on Liquid: https://liquidnfts.finance/besc/collection/0xc75BE8C4b4F5C61C499d83A1aDfc800Cc040cB95/mint"
   }
  ],
- "updated": "2026-11-19T10:54:14Z"
+ "updated": "2026-11-20T09:33:02Z"
 }
