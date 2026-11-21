@@ -2,9 +2,25 @@
  "channel": "https://www.youtube.com/@AnonNft",
  "start": "2026-08-10",
  "activity": "https://liquidnfts.finance/activities",
- "count": 148,
- "days": 84,
+ "count": 149,
+ "days": 85,
  "videos": [
+  {
+   "id": "_O8t6FwO9q4",
+   "title": "Did we boost every day this week?",
+   "published": "2026-11-21T09:16:37+00:00",
+   "short": true,
+   "day": 104,
+   "boost_date": "2026-11-21",
+   "collection": "ANON Revenue Share NFTs",
+   "amount": "1.5 FUSD",
+   "amount_usd": null,
+   "amount_fusd": 1.5,
+   "url": "https://www.youtube.com/shorts/_O8t6FwO9q4",
+   "thumb": "https://i.ytimg.com/vi/_O8t6FwO9q4/mqdefault.jpg",
+   "summary": "Did we boost every day this week? Yes. Seven public boosts, all on-chain. Today we donated 1.5 FUSD to ANON Revenue Share NFTs on Liquid NFTs (Polygon). Liquidity on the page went from $7,397.25 to $7,398.86, at the time of writing. Day 104 of 365. Check it on-chain.\nFun fact: Jacky Hunt-Broersma ran 104 marathons in 104 days in a row, a Guinness World Record. We have now boosted every day for 104 days. Source\nDid you catch all seven? Tell me below.\nNot financial advice.\nMint an Anon Ape on Liquid",
+   "description": "Did we boost every day this week? Yes. Seven public boosts, all on-chain. Today we donated 1.5 FUSD to ANON Revenue Share NFTs on Liquid NFTs (Polygon). Liquidity on the page went from $7,397.25 to $7,398.86, at the time of writing. Day 104 of 365. Check it on-chain.\n\nFun fact: Jacky Hunt-Broersma ran 104 marathons in 104 days in a row, a Guinness World Record. We have now boosted every day for 104 days. Source: https://www.guinnessworldrecords.com/news/2023/7/running-changed-my-life-amputee-runs-104-marathons-in-104-days-755771\n\nDid you catch all seven? Tell me below.\n\nEvery boost, dated and logged: https://anonnfts.com/proof-of-work\nCheck the backing on-chain: https://anonnfts.com/check-backing-on-chain-1\nJoin the ANON NFTs Telegram: https://t.me/+1HQa39STOkhjNTJk\nNot financial advice.\n\n#NFTLiquidity #LiquidNFTs #ANONNFTs\n\nMint an Anon Ape on Liquid: https://liquidnfts.finance/besc/collection/0xc75BE8C4b4F5C61C499d83A1aDfc800Cc040cB95/mint"
+  },
   {
    "id": "ZUycrbwXXQA",
    "title": "Which NFT collection deserves a cheer today? Lake District Astro",
@@ -2482,5 +2498,5 @@
    "description": "Milestone: Day 90 of 365 daily liquidity boosts. Today we donated 2 FUSD to ANON Revenue Share NFTs on Liquid NFTs (Polygon). Liquidity on the page went from $7,381.96 to $7,384.11, at the time of writing.\n\nBeen following since Day 1? Tell us below.\n\nEvery boost, dated and logged: https://anonnfts.com/proof-of-work\nCheck the backing on-chain: https://anonnfts.com/check-backing-on-chain-1\nJoin the ANON NFTs Telegram: https://t.me/+1HQa39STOkhjNTJk\nNot financial advice.\n\nMint an Anon Ape on Liquid: https://liquidnfts.finance/besc/collection/0xc75BE8C4b4F5C61C499d83A1aDfc800Cc040cB95/mint"
   }
  ],
- "updated": "2026-11-20T09:33:02Z"
+ "updated": "2026-11-21T09:20:35Z"
 }
