@@ -3,6 +3,42 @@
  "subscribe": "https://www.youtube.com/@AnonNft?sub_confirmation=1",
  "videos": [
   {
+   "id": "ZQJ3TrTZHuE",
+   "title": "Kung Fu Saga Rare Orange Gear: Cateran Waist Plates",
+   "date": "2026-11-22",
+   "published": "2026-11-22T19:36:00+00:00",
+   "short": true,
+   "url": "https://www.youtube.com/shorts/ZQJ3TrTZHuE",
+   "thumb": "https://i.ytimg.com/vi/ZQJ3TrTZHuE/mqdefault.jpg"
+  },
+  {
+   "id": "9qjZCrRM0S4",
+   "title": "Kung Fu Saga: Hit Level 50 on Free Play",
+   "date": "2026-11-22",
+   "published": "2026-11-22T19:34:00+00:00",
+   "short": true,
+   "url": "https://www.youtube.com/shorts/9qjZCrRM0S4",
+   "thumb": "https://i.ytimg.com/vi/9qjZCrRM0S4/mqdefault.jpg"
+  },
+  {
+   "id": "EXQWseo_pp4",
+   "title": "Kung Fu Saga Dripdew Spirit: Tame the Avatar",
+   "date": "2026-11-22",
+   "published": "2026-11-22T19:32:00+00:00",
+   "short": true,
+   "url": "https://www.youtube.com/shorts/EXQWseo_pp4",
+   "thumb": "https://i.ytimg.com/vi/EXQWseo_pp4/mqdefault.jpg"
+  },
+  {
+   "id": "zd4lpYlMo88",
+   "title": "Kung Fu Saga Forge: 3 Grade Gear Past Level 10",
+   "date": "2026-11-22",
+   "published": "2026-11-22T19:30:00+00:00",
+   "short": true,
+   "url": "https://www.youtube.com/shorts/zd4lpYlMo88",
+   "thumb": "https://i.ytimg.com/vi/zd4lpYlMo88/mqdefault.jpg"
+  },
+  {
    "id": "bx2xmsSWNeU",
    "title": "Why Do NFT Gas Fees Change?",
    "date": "2026-11-22",
@@ -75,5 +111,5 @@
    "thumb": "https://i.ytimg.com/vi/RurhrpHWLZU/mqdefault.jpg"
   }
  ],
- "updated": "2026-11-22T19:24:14Z"
+ "updated": "2026-11-22T19:37:55Z"
 }
