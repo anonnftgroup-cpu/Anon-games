@@ -3,6 +3,15 @@
  "subscribe": "https://www.youtube.com/@AnonNft?sub_confirmation=1",
  "videos": [
   {
+   "id": "yruObMVKVvg",
+   "title": "Is an NFT's Price the Same as Its Backing?",
+   "date": "2026-11-23",
+   "published": "2026-11-23T18:01:43+00:00",
+   "short": true,
+   "url": "https://www.youtube.com/shorts/yruObMVKVvg",
+   "thumb": "https://i.ytimg.com/vi/yruObMVKVvg/mqdefault.jpg"
+  },
+  {
    "id": "mE_iXbSVto8",
    "title": "How many points was the first ghost catch?",
    "date": "2026-11-23",
@@ -64,16 +73,7 @@
    "short": true,
    "url": "https://www.youtube.com/shorts/EXQWseo_pp4",
    "thumb": "https://i.ytimg.com/vi/EXQWseo_pp4/mqdefault.jpg"
-  },
-  {
-   "id": "zd4lpYlMo88",
-   "title": "Kung Fu Saga Forge: 3 Grade Gear Past Level 10",
-   "date": "2026-11-22",
-   "published": "2026-11-22T19:29:26+00:00",
-   "short": true,
-   "url": "https://www.youtube.com/shorts/zd4lpYlMo88",
-   "thumb": "https://i.ytimg.com/vi/zd4lpYlMo88/mqdefault.jpg"
   }
  ],
- "updated": "2026-11-23T17:06:13Z"
+ "updated": "2026-11-23T18:03:51Z"
 }
