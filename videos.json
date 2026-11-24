@@ -3,6 +3,15 @@
  "subscribe": "https://www.youtube.com/@AnonNft?sub_confirmation=1",
  "videos": [
   {
+   "id": "_YPJvlB4bTQ",
+   "title": "Can you spot what changed on this NFT page?",
+   "date": "2026-11-24",
+   "published": "2026-11-24T08:30:41+00:00",
+   "short": true,
+   "url": "https://www.youtube.com/shorts/_YPJvlB4bTQ",
+   "thumb": "https://i.ytimg.com/vi/_YPJvlB4bTQ/mqdefault.jpg"
+  },
+  {
    "id": "PRShUcQPE1Q",
    "title": "I tried to reach a shrine and first hit 110 with 27 seconds left",
    "date": "2026-11-23",
@@ -64,16 +73,7 @@
    "short": true,
    "url": "https://www.youtube.com/shorts/ZQJ3TrTZHuE",
    "thumb": "https://i.ytimg.com/vi/ZQJ3TrTZHuE/mqdefault.jpg"
-  },
-  {
-   "id": "9qjZCrRM0S4",
-   "title": "Kung Fu Saga: Hit Level 50 on Free Play",
-   "date": "2026-11-22",
-   "published": "2026-11-22T19:33:05+00:00",
-   "short": true,
-   "url": "https://www.youtube.com/shorts/9qjZCrRM0S4",
-   "thumb": "https://i.ytimg.com/vi/9qjZCrRM0S4/mqdefault.jpg"
   }
  ],
- "updated": "2026-11-23T20:14:59Z"
+ "updated": "2026-11-24T08:31:42Z"
 }

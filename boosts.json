@@ -2,9 +2,25 @@
  "channel": "https://www.youtube.com/@AnonNft",
  "start": "2026-08-10",
  "activity": "https://liquidnfts.finance/activities",
- "count": 152,
- "days": 87,
+ "count": 153,
+ "days": 88,
  "videos": [
+  {
+   "id": "_YPJvlB4bTQ",
+   "title": "Can you spot what changed on this NFT page?",
+   "published": "2026-11-24T08:30:41+00:00",
+   "short": true,
+   "day": 107,
+   "boost_date": "2026-11-24",
+   "collection": "ANON Revenue Share NFTs",
+   "amount": "1 FUSD",
+   "amount_usd": null,
+   "amount_fusd": 1.0,
+   "url": "https://www.youtube.com/shorts/_YPJvlB4bTQ",
+   "thumb": "https://i.ytimg.com/vi/_YPJvlB4bTQ/mqdefault.jpg",
+   "summary": "Can you spot what changed on this NFT page? The liquidity figure. We donated 1 FUSD to ANON Revenue Share NFTs on Liquid NFTs (Polygon). Liquidity on the page went from $7,401.21 to $7,402.28, at the time of writing. Day 107 of 365. Check it on-chain.\nWhich figure did you spot first? Tell me below.\nNot financial advice.\nMint a Grumpy Cat on Liquid",
+   "description": "Can you spot what changed on this NFT page? The liquidity figure. We donated 1 FUSD to ANON Revenue Share NFTs on Liquid NFTs (Polygon). Liquidity on the page went from $7,401.21 to $7,402.28, at the time of writing. Day 107 of 365. Check it on-chain.\n\nWhich figure did you spot first? Tell me below.\n\nEvery boost, dated and logged: https://anonnfts.com/proof-of-work\nCheck the backing on-chain: https://anonnfts.com/check-backing-on-chain-1\nJoin the ANON NFTs Telegram: https://t.me/+1HQa39STOkhjNTJk\nNot financial advice.\n\nMint a Grumpy Cat on Liquid: https://liquidnfts.finance/polygon/collection/0xc12527361B9561198514b9bA4b1EBe3c0f968c60/mint"
+  },
   {
    "id": "DagfbKosPsI",
    "title": "Did this NFT boost go through?",
@@ -2546,5 +2562,5 @@
    "description": "Milestone: Day 90 of 365 daily liquidity boosts. Today we donated 2 FUSD to ANON Revenue Share NFTs on Liquid NFTs (Polygon). Liquidity on the page went from $7,381.96 to $7,384.11, at the time of writing.\n\nBeen following since Day 1? Tell us below.\n\nEvery boost, dated and logged: https://anonnfts.com/proof-of-work\nCheck the backing on-chain: https://anonnfts.com/check-backing-on-chain-1\nJoin the ANON NFTs Telegram: https://t.me/+1HQa39STOkhjNTJk\nNot financial advice.\n\nMint an Anon Ape on Liquid: https://liquidnfts.finance/besc/collection/0xc75BE8C4b4F5C61C499d83A1aDfc800Cc040cB95/mint"
   }
  ],
- "updated": "2026-11-23T09:19:35Z"
+ "updated": "2026-11-24T08:31:42Z"
 }
