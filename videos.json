@@ -3,6 +3,15 @@
  "subscribe": "https://www.youtube.com/@AnonNft?sub_confirmation=1",
  "videos": [
   {
+   "id": "yFYHjAhiRw0",
+   "title": "Kung Fu Saga secret #2: 20 Bounty rounds a day at level 53",
+   "date": "2026-11-24",
+   "published": "2026-11-24T12:12:19+00:00",
+   "short": true,
+   "url": "https://www.youtube.com/shorts/yFYHjAhiRw0",
+   "thumb": "https://i.ytimg.com/vi/yFYHjAhiRw0/mqdefault.jpg"
+  },
+  {
    "id": "_YPJvlB4bTQ",
    "title": "Can you spot what changed on this NFT page?",
    "date": "2026-11-24",
@@ -64,16 +73,7 @@
    "short": true,
    "url": "https://www.youtube.com/shorts/PiZIzwNXqPs",
    "thumb": "https://i.ytimg.com/vi/PiZIzwNXqPs/mqdefault.jpg"
-  },
-  {
-   "id": "ZQJ3TrTZHuE",
-   "title": "Kung Fu Saga Rare Orange Gear: Cateran Waist Plates",
-   "date": "2026-11-22",
-   "published": "2026-11-22T19:34:33+00:00",
-   "short": true,
-   "url": "https://www.youtube.com/shorts/ZQJ3TrTZHuE",
-   "thumb": "https://i.ytimg.com/vi/ZQJ3TrTZHuE/mqdefault.jpg"
   }
  ],
- "updated": "2026-11-24T08:31:42Z"
+ "updated": "2026-11-24T12:14:03Z"
 }
