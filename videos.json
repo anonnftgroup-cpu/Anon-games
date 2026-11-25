@@ -3,6 +3,15 @@
  "subscribe": "https://www.youtube.com/@AnonNft?sub_confirmation=1",
  "videos": [
   {
+   "id": "mWqarjwHA9o",
+   "title": "How far did one clear take this Bomb Maze run?",
+   "date": "2026-11-25",
+   "published": "2026-11-25T17:11:21+00:00",
+   "short": true,
+   "url": "https://www.youtube.com/shorts/mWqarjwHA9o",
+   "thumb": "https://i.ytimg.com/vi/mWqarjwHA9o/mqdefault.jpg"
+  },
+  {
    "id": "kS0RjjwfSzI",
    "title": "Kung Fu Saga secret #3: free Level Sack boots at level 50",
    "date": "2026-11-25",
@@ -64,16 +73,7 @@
    "short": true,
    "url": "https://www.youtube.com/shorts/_YPJvlB4bTQ",
    "thumb": "https://i.ytimg.com/vi/_YPJvlB4bTQ/mqdefault.jpg"
-  },
-  {
-   "id": "PRShUcQPE1Q",
-   "title": "I tried to reach a shrine and first hit 110 with 27 seconds left",
-   "date": "2026-11-23",
-   "published": "2026-11-23T20:03:43+00:00",
-   "short": true,
-   "url": "https://www.youtube.com/shorts/PRShUcQPE1Q",
-   "thumb": "https://i.ytimg.com/vi/PRShUcQPE1Q/mqdefault.jpg"
   }
  ],
- "updated": "2026-11-25T12:21:36Z"
+ "updated": "2026-11-25T17:12:24Z"
 }
