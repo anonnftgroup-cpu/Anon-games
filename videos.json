@@ -3,6 +3,15 @@
  "subscribe": "https://www.youtube.com/@AnonNft?sub_confirmation=1",
  "videos": [
   {
+   "id": "YjfiGs4QxWM",
+   "title": "Who Sets an NFT's Floor Price?",
+   "date": "2026-11-25",
+   "published": "2026-11-25T17:59:05+00:00",
+   "short": true,
+   "url": "https://www.youtube.com/shorts/YjfiGs4QxWM",
+   "thumb": "https://i.ytimg.com/vi/YjfiGs4QxWM/mqdefault.jpg"
+  },
+  {
    "id": "mWqarjwHA9o",
    "title": "How far did one clear take this Bomb Maze run?",
    "date": "2026-11-25",
@@ -64,16 +73,7 @@
    "short": true,
    "url": "https://www.youtube.com/shorts/yFYHjAhiRw0",
    "thumb": "https://i.ytimg.com/vi/yFYHjAhiRw0/mqdefault.jpg"
-  },
-  {
-   "id": "_YPJvlB4bTQ",
-   "title": "Can you spot what changed on this NFT page?",
-   "date": "2026-11-24",
-   "published": "2026-11-24T08:30:41+00:00",
-   "short": true,
-   "url": "https://www.youtube.com/shorts/_YPJvlB4bTQ",
-   "thumb": "https://i.ytimg.com/vi/_YPJvlB4bTQ/mqdefault.jpg"
   }
  ],
- "updated": "2026-11-25T17:12:24Z"
+ "updated": "2026-11-25T18:00:48Z"
 }
