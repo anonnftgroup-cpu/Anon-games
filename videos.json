@@ -3,6 +3,15 @@
  "subscribe": "https://www.youtube.com/@AnonNft?sub_confirmation=1",
  "videos": [
   {
+   "id": "kS0RjjwfSzI",
+   "title": "Kung Fu Saga secret #3: free Level Sack boots at level 50",
+   "date": "2026-11-25",
+   "published": "2026-11-25T12:19:46+00:00",
+   "short": true,
+   "url": "https://www.youtube.com/shorts/kS0RjjwfSzI",
+   "thumb": "https://i.ytimg.com/vi/kS0RjjwfSzI/mqdefault.jpg"
+  },
+  {
    "id": "ZZ4u0rXMDFw",
    "title": "Does a liquidity donation show up on the page?",
    "date": "2026-11-25",
@@ -64,16 +73,7 @@
    "short": true,
    "url": "https://www.youtube.com/shorts/PRShUcQPE1Q",
    "thumb": "https://i.ytimg.com/vi/PRShUcQPE1Q/mqdefault.jpg"
-  },
-  {
-   "id": "yruObMVKVvg",
-   "title": "Is an NFT's Price the Same as Its Backing?",
-   "date": "2026-11-23",
-   "published": "2026-11-23T18:01:43+00:00",
-   "short": true,
-   "url": "https://www.youtube.com/shorts/yruObMVKVvg",
-   "thumb": "https://i.ytimg.com/vi/yruObMVKVvg/mqdefault.jpg"
   }
  ],
- "updated": "2026-11-25T10:27:17Z"
+ "updated": "2026-11-25T12:21:36Z"
 }
