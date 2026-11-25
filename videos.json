@@ -3,6 +3,15 @@
  "subscribe": "https://www.youtube.com/@AnonNft?sub_confirmation=1",
  "videos": [
   {
+   "id": "ZZ4u0rXMDFw",
+   "title": "Does a liquidity donation show up on the page?",
+   "date": "2026-11-25",
+   "published": "2026-11-25T10:26:30+00:00",
+   "short": true,
+   "url": "https://www.youtube.com/shorts/ZZ4u0rXMDFw",
+   "thumb": "https://i.ytimg.com/vi/ZZ4u0rXMDFw/mqdefault.jpg"
+  },
+  {
    "id": "FI3DcDAeFVU",
    "title": "I tried the 5 pink gems mission and it paid 2,500, to 3,090",
    "date": "2026-11-24",
@@ -64,16 +73,7 @@
    "short": true,
    "url": "https://www.youtube.com/shorts/yruObMVKVvg",
    "thumb": "https://i.ytimg.com/vi/yruObMVKVvg/mqdefault.jpg"
-  },
-  {
-   "id": "mE_iXbSVto8",
-   "title": "How many points was the first ghost catch?",
-   "date": "2026-11-23",
-   "published": "2026-11-23T17:04:44+00:00",
-   "short": true,
-   "url": "https://www.youtube.com/shorts/mE_iXbSVto8",
-   "thumb": "https://i.ytimg.com/vi/mE_iXbSVto8/mqdefault.jpg"
   }
  ],
- "updated": "2026-11-24T20:16:39Z"
+ "updated": "2026-11-25T10:27:17Z"
 }

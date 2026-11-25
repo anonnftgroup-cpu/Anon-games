@@ -2,9 +2,25 @@
  "channel": "https://www.youtube.com/@AnonNft",
  "start": "2026-08-10",
  "activity": "https://liquidnfts.finance/activities",
- "count": 153,
- "days": 88,
+ "count": 154,
+ "days": 89,
  "videos": [
+  {
+   "id": "ZZ4u0rXMDFw",
+   "title": "Does a liquidity donation show up on the page?",
+   "published": "2026-11-25T10:26:30+00:00",
+   "short": true,
+   "day": 108,
+   "boost_date": "2026-11-25",
+   "collection": "ANON Revenue Share NFTs",
+   "amount": "1 FUSD",
+   "amount_usd": null,
+   "amount_fusd": 1.0,
+   "url": "https://www.youtube.com/shorts/ZZ4u0rXMDFw",
+   "thumb": "https://i.ytimg.com/vi/ZZ4u0rXMDFw/mqdefault.jpg",
+   "summary": "Does a liquidity donation show up on the page? Yes. We donated 1 FUSD to ANON Revenue Share NFTs on Liquid NFTs (Polygon). Liquidity on the page went from $7,402.28 to $7,403.35, at the time of writing. Day 108 of 365. Check it on-chain.\nDid that answer it? Yes or no below, and tell us what you want explained next.\nNot financial advice.\nMint a Vengeance name on Liquid",
+   "description": "Does a liquidity donation show up on the page? Yes. We donated 1 FUSD to ANON Revenue Share NFTs on Liquid NFTs (Polygon). Liquidity on the page went from $7,402.28 to $7,403.35, at the time of writing. Day 108 of 365. Check it on-chain.\n\nDid that answer it? Yes or no below, and tell us what you want explained next.\n\nEvery boost, dated and logged: https://anonnfts.com/proof-of-work\nCheck the backing on-chain: https://anonnfts.com/check-backing-on-chain-1\nJoin the ANON NFTs Telegram: https://t.me/+1HQa39STOkhjNTJk\nNot financial advice.\n\nMint a Vengeance name on Liquid: https://liquidnfts.finance/polygon/collection/0x55Ad83e37bb61AE56AA5E8bb5f174B995C04d7b2/mint"
+  },
   {
    "id": "_YPJvlB4bTQ",
    "title": "Can you spot what changed on this NFT page?",
@@ -2562,5 +2578,5 @@
    "description": "Milestone: Day 90 of 365 daily liquidity boosts. Today we donated 2 FUSD to ANON Revenue Share NFTs on Liquid NFTs (Polygon). Liquidity on the page went from $7,381.96 to $7,384.11, at the time of writing.\n\nBeen following since Day 1? Tell us below.\n\nEvery boost, dated and logged: https://anonnfts.com/proof-of-work\nCheck the backing on-chain: https://anonnfts.com/check-backing-on-chain-1\nJoin the ANON NFTs Telegram: https://t.me/+1HQa39STOkhjNTJk\nNot financial advice.\n\nMint an Anon Ape on Liquid: https://liquidnfts.finance/besc/collection/0xc75BE8C4b4F5C61C499d83A1aDfc800Cc040cB95/mint"
   }
  ],
- "updated": "2026-11-24T08:31:42Z"
+ "updated": "2026-11-25T10:27:16Z"
 }
