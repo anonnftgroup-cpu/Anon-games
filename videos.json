@@ -3,6 +3,15 @@
  "subscribe": "https://www.youtube.com/@AnonNft?sub_confirmation=1",
  "videos": [
   {
+   "id": "9L6T0CKljQo",
+   "title": "Is Minting an NFT the Same as Buying One?",
+   "date": "2026-11-26",
+   "published": "2026-11-26T18:05:56+00:00",
+   "short": true,
+   "url": "https://www.youtube.com/shorts/9L6T0CKljQo",
+   "thumb": "https://i.ytimg.com/vi/9L6T0CKljQo/mqdefault.jpg"
+  },
+  {
    "id": "58vr23xLzdw",
    "title": "What was the 1,230 to 1,660 jump worth?",
    "date": "2026-11-26",
@@ -64,16 +73,7 @@
    "short": true,
    "url": "https://www.youtube.com/shorts/kS0RjjwfSzI",
    "thumb": "https://i.ytimg.com/vi/kS0RjjwfSzI/mqdefault.jpg"
-  },
-  {
-   "id": "ZZ4u0rXMDFw",
-   "title": "Does a liquidity donation show up on the page?",
-   "date": "2026-11-25",
-   "published": "2026-11-25T10:26:30+00:00",
-   "short": true,
-   "url": "https://www.youtube.com/shorts/ZZ4u0rXMDFw",
-   "thumb": "https://i.ytimg.com/vi/ZZ4u0rXMDFw/mqdefault.jpg"
   }
  ],
- "updated": "2026-11-26T17:09:40Z"
+ "updated": "2026-11-26T18:08:51Z"
 }
