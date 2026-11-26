@@ -3,6 +3,15 @@
  "subscribe": "https://www.youtube.com/@AnonNft?sub_confirmation=1",
  "videos": [
   {
+   "id": "MvJFW8NMr68",
+   "title": "I tried a shrine fill and it reset the timer to 40, at 410",
+   "date": "2026-11-26",
+   "published": "2026-11-26T20:09:12+00:00",
+   "short": true,
+   "url": "https://www.youtube.com/shorts/MvJFW8NMr68",
+   "thumb": "https://i.ytimg.com/vi/MvJFW8NMr68/mqdefault.jpg"
+  },
+  {
    "id": "9L6T0CKljQo",
    "title": "Is Minting an NFT the Same as Buying One?",
    "date": "2026-11-26",
@@ -64,16 +73,7 @@
    "short": true,
    "url": "https://www.youtube.com/shorts/mWqarjwHA9o",
    "thumb": "https://i.ytimg.com/vi/mWqarjwHA9o/mqdefault.jpg"
-  },
-  {
-   "id": "kS0RjjwfSzI",
-   "title": "Kung Fu Saga secret #3: free Level Sack boots at level 50",
-   "date": "2026-11-25",
-   "published": "2026-11-25T12:19:46+00:00",
-   "short": true,
-   "url": "https://www.youtube.com/shorts/kS0RjjwfSzI",
-   "thumb": "https://i.ytimg.com/vi/kS0RjjwfSzI/mqdefault.jpg"
   }
  ],
- "updated": "2026-11-26T18:08:51Z"
+ "updated": "2026-11-26T20:10:23Z"
 }
