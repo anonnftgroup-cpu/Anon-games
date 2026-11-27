@@ -3,6 +3,15 @@
  "subscribe": "https://www.youtube.com/@AnonNft?sub_confirmation=1",
  "videos": [
   {
+   "id": "rf-RoCwOT7E",
+   "title": "Do You Need a Wallet to Read an NFT Smart Contract?",
+   "date": "2026-11-27",
+   "published": "2026-11-27T18:03:15+00:00",
+   "short": true,
+   "url": "https://www.youtube.com/shorts/rf-RoCwOT7E",
+   "thumb": "https://i.ytimg.com/vi/rf-RoCwOT7E/mqdefault.jpg"
+  },
+  {
    "id": "CJZlzXeZRFA",
    "title": "Can you reach 600 on your last heart?",
    "date": "2026-11-27",
@@ -64,16 +73,7 @@
    "short": true,
    "url": "https://www.youtube.com/shorts/58vr23xLzdw",
    "thumb": "https://i.ytimg.com/vi/58vr23xLzdw/mqdefault.jpg"
-  },
-  {
-   "id": "lYHQCaXnhN0",
-   "title": "How do you donate NFT liquidity? (3 steps)",
-   "date": "2026-11-26",
-   "published": "2026-11-26T14:22:10+00:00",
-   "short": true,
-   "url": "https://www.youtube.com/shorts/lYHQCaXnhN0",
-   "thumb": "https://i.ytimg.com/vi/lYHQCaXnhN0/mqdefault.jpg"
   }
  ],
- "updated": "2026-11-27T17:12:41Z"
+ "updated": "2026-11-27T18:04:45Z"
 }
