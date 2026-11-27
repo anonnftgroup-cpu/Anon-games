@@ -3,15 +3,6 @@
  "subscribe": "https://www.youtube.com/@AnonNft?sub_confirmation=1",
  "videos": [
   {
-   "id": "DLcPfyzQdXY",
-   "title": "I tried Ball 1 and finished with a 710 bonus, at 4,000",
-   "date": "2026-11-27",
-   "published": "2026-11-27T20:07:47+00:00",
-   "short": true,
-   "url": "https://www.youtube.com/shorts/DLcPfyzQdXY",
-   "thumb": "https://i.ytimg.com/vi/DLcPfyzQdXY/mqdefault.jpg"
-  },
-  {
    "id": "rf-RoCwOT7E",
    "title": "Do You Need a Wallet to Read an NFT Smart Contract?",
    "date": "2026-11-27",
@@ -73,7 +64,16 @@
    "short": true,
    "url": "https://www.youtube.com/shorts/9L6T0CKljQo",
    "thumb": "https://i.ytimg.com/vi/9L6T0CKljQo/mqdefault.jpg"
+  },
+  {
+   "id": "58vr23xLzdw",
+   "title": "What was the 1,230 to 1,660 jump worth?",
+   "date": "2026-11-26",
+   "published": "2026-11-26T17:07:59+00:00",
+   "short": true,
+   "url": "https://www.youtube.com/shorts/58vr23xLzdw",
+   "thumb": "https://i.ytimg.com/vi/58vr23xLzdw/mqdefault.jpg"
   }
  ],
- "updated": "2026-11-27T20:15:04Z"
+ "updated": "2026-11-27T20:17:54Z"
 }
