@@ -3,6 +3,15 @@
  "subscribe": "https://www.youtube.com/@AnonNft?sub_confirmation=1",
  "videos": [
   {
+   "id": "isvlY3IJnMM",
+   "title": "Have you met the first ANON NFT collection?",
+   "date": "2026-11-27",
+   "published": "2026-11-27T14:30:34+00:00",
+   "short": true,
+   "url": "https://www.youtube.com/shorts/isvlY3IJnMM",
+   "thumb": "https://i.ytimg.com/vi/isvlY3IJnMM/mqdefault.jpg"
+  },
+  {
    "id": "SzefT0Tm6eY",
    "title": "Black Friday: 20% Back on ANON NFT Mints for Holders (Ends Sat 23:59 UK)",
    "date": "2026-11-27",
@@ -64,16 +73,7 @@
    "short": true,
    "url": "https://www.youtube.com/shorts/4isYp9311MI",
    "thumb": "https://i.ytimg.com/vi/4isYp9311MI/mqdefault.jpg"
-  },
-  {
-   "id": "L8mR_YsVNDI",
-   "title": "I tried to hold 3 hearts and was already on 2 at 200",
-   "date": "2026-11-25",
-   "published": "2026-11-25T20:04:54+00:00",
-   "short": true,
-   "url": "https://www.youtube.com/shorts/L8mR_YsVNDI",
-   "thumb": "https://i.ytimg.com/vi/L8mR_YsVNDI/mqdefault.jpg"
   }
  ],
- "updated": "2026-11-27T14:06:35Z"
+ "updated": "2026-11-27T14:31:58Z"
 }
