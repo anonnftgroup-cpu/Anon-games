@@ -3,6 +3,15 @@
  "subscribe": "https://www.youtube.com/@AnonNft?sub_confirmation=1",
  "videos": [
   {
+   "id": "SzefT0Tm6eY",
+   "title": "Black Friday: 20% Back on ANON NFT Mints for Holders (Ends Sat 23:59 UK)",
+   "date": "2026-11-27",
+   "published": "2026-11-27T14:03:26+00:00",
+   "short": true,
+   "url": "https://www.youtube.com/shorts/SzefT0Tm6eY",
+   "thumb": "https://i.ytimg.com/vi/SzefT0Tm6eY/mqdefault.jpg"
+  },
+  {
    "id": "cogBQJ-Inew",
    "title": "Kung Fu Saga secret #5: Set Stones need same-grade gear",
    "date": "2026-11-27",
@@ -64,16 +73,7 @@
    "short": true,
    "url": "https://www.youtube.com/shorts/L8mR_YsVNDI",
    "thumb": "https://i.ytimg.com/vi/L8mR_YsVNDI/mqdefault.jpg"
-  },
-  {
-   "id": "YjfiGs4QxWM",
-   "title": "Who Sets an NFT's Floor Price?",
-   "date": "2026-11-25",
-   "published": "2026-11-25T17:59:05+00:00",
-   "short": true,
-   "url": "https://www.youtube.com/shorts/YjfiGs4QxWM",
-   "thumb": "https://i.ytimg.com/vi/YjfiGs4QxWM/mqdefault.jpg"
   }
  ],
- "updated": "2026-11-27T12:12:17Z"
+ "updated": "2026-11-27T14:06:35Z"
 }
