@@ -3,6 +3,15 @@
  "subscribe": "https://www.youtube.com/@AnonNft?sub_confirmation=1",
  "videos": [
   {
+   "id": "CJZlzXeZRFA",
+   "title": "Can you reach 600 on your last heart?",
+   "date": "2026-11-27",
+   "published": "2026-11-27T17:11:34+00:00",
+   "short": true,
+   "url": "https://www.youtube.com/shorts/CJZlzXeZRFA",
+   "thumb": "https://i.ytimg.com/vi/CJZlzXeZRFA/mqdefault.jpg"
+  },
+  {
    "id": "isvlY3IJnMM",
    "title": "Have you met the first ANON NFT collection?",
    "date": "2026-11-27",
@@ -64,16 +73,7 @@
    "short": true,
    "url": "https://www.youtube.com/shorts/lYHQCaXnhN0",
    "thumb": "https://i.ytimg.com/vi/lYHQCaXnhN0/mqdefault.jpg"
-  },
-  {
-   "id": "4isYp9311MI",
-   "title": "Kung Fu Saga secret #4: the 3X EXP anima zone",
-   "date": "2026-11-26",
-   "published": "2026-11-26T12:13:04+00:00",
-   "short": true,
-   "url": "https://www.youtube.com/shorts/4isYp9311MI",
-   "thumb": "https://i.ytimg.com/vi/4isYp9311MI/mqdefault.jpg"
   }
  ],
- "updated": "2026-11-27T14:31:58Z"
+ "updated": "2026-11-27T17:12:41Z"
 }
